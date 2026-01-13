@@ -3,115 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>全栈商城 - 云端版</title>
+    <title>云端商城</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: #f8f9fa; color: #333; padding-bottom: 50px; }
-        #wake-up-notice { background-color: #f39c12; color: white; text-align: center; padding: 10px; font-size: 0.9rem; display: none; position: fixed; top: 0; width: 100%; z-index: 9999; }
-        nav { background-color: #2c3e50; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .cart-btn { background-color: #e74c3c; border: none; padding: 8px 15px; color: white; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .cart-btn:hover { background-color: #c0392b; transform: scale(1.05); }
-        .auth-btn { background: transparent; border: 1px solid rgba(255,255,255,0.5); color: white; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
-        header { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; text-align: center; padding: 4rem 1rem; margin-bottom: 2rem; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 2rem; }
-        .product-card { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
-        .product-img { width: 100%; height: 200px; object-fit: cover; background: #eee; }
-        .product-info { padding: 1.5rem; flex-grow: 1; }
-        .product-footer { margin-top: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .price { color: #e74c3c; font-size: 1.4rem; font-weight: bold; }
-        .add-btn { background-color: #2c3e50; color: white; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: '微软雅黑'; }
+        body { background: #f5f5f5; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .product-card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center; }
+        .product-img { width: 100%; height: 200px; object-fit: contain; margin-bottom: 15px; }
+        .product-name { font-size: 18px; font-weight: 600; margin-bottom: 10px; }
+        .product-price { color: #e63946; font-size: 20px; margin-bottom: 10px; }
+        .product-desc { color: #666; font-size: 14px; }
     </style>
 </head>
 <body>
-    <div id="wake-up-notice">⏳ 服务器正在唤醒，首次加载可能需要 50 秒，请耐心等待...</div>
-    <nav>
-        <h2 onclick="location.reload()" style="cursor: pointer;">DigitalShop</h2>
-        <div style="display: flex; gap: 15px; align-items: center;">
-            <span id="user-display" style="font-size:0.9rem; color:#ddd"></span>
-            <button id="auth-btn" class="auth-btn">加载中...</button>
-            <button class="cart-btn" onclick="window.location.href='cart.html'">购物车 (<span id="cart-count">0</span>)</button>
-        </div>
-    </nav>
-    <header>
-        <h1>全球极客数码</h1>
-        <p style="margin-top:10px; opacity:0.8">数据存储在云端，重启不丢失</p>
-    </header>
     <div class="container">
-        <div id="shop-content" class="product-grid"></div>
+        <div class="header">
+            <h1>云端商城 - 数据存储在Supabase</h1>
+        </div>
+        <div class="product-grid" id="product-list">
+            <!-- 商品列表由JS动态加载 -->
+        </div>
     </div>
+
     <script>
-        // ====================================================
-        // 🔴 关键步骤：等你 Render 部署好后，把网址填在下面
-        // 例如：const API_BASE = 'https://zxs-api.onrender.com';
-        // 现在你可以先保留 http://localhost:3000 上传，等部署完再回来改
-        // ====================================================
+        // ========== 必改：替换为你的Render域名 ==========
         const API_BASE = 'https://my-shop-demo.onrender.com'; 
-        
-        let products = [];
-        async function init() {
-            checkUser(); updateCartCount();
-            await fetchProducts();
-            reportToAdmin('访问页面', '进入了商城首页');
-        }
-        async function fetchProducts() {
-            const container = document.getElementById('shop-content');
-            const notice = document.getElementById('wake-up-notice');
-            container.innerHTML = '<p style="text-align:center; padding:50px; color:#666;">正在连接云端服务器...</p>';
-            const slowTimer = setTimeout(() => { notice.style.display = 'block'; }, 2000);
+        // ==================================================
+
+        // 页面加载时加载商品+记录浏览行为
+        window.onload = async function() {
+            // 1. 加载商品列表
+            await loadProducts();
+            
+            // 2. 记录当前页面的浏览行为（模拟用户ID，实际可从登录态获取）
+            recordBrowseBehavior({
+                user_id: `user_${Math.floor(Math.random() * 10000)}`, // 随机用户ID
+                product_id: 0, // 0代表首页浏览，点击商品时会记录具体商品ID
+                product_name: '商城首页'
+            });
+
+            // 3. 给商品卡片添加点击事件（点击时记录具体商品浏览）
+            document.querySelectorAll('.product-card').forEach(card => {
+                card.onclick = function() {
+                    const productId = this.dataset.productId;
+                    const productName = this.dataset.productName;
+                    recordBrowseBehavior({
+                        user_id: `user_${Math.floor(Math.random() * 10000)}`,
+                        product_id: productId,
+                        product_name: productName
+                    });
+                    alert(`已记录浏览：${productName}`);
+                };
+            });
+        };
+
+        // 加载商品列表
+        async function loadProducts() {
             try {
                 const res = await fetch(`${API_BASE}/api/products`);
-                if(!res.ok) throw new Error("API Error");
-                products = await res.json();
-                renderProducts();
-                clearTimeout(slowTimer); notice.style.display = 'none';
-            } catch (e) {
-                clearTimeout(slowTimer); notice.style.display = 'none';
-                container.innerHTML = `<div style="text-align:center; color:#c0392b; padding:20px;"><h3>连接失败</h3><p>请确保 Render 后端已启动，并更新了 API_BASE 地址。</p></div>`;
+                const products = await res.json();
+                const productList = document.getElementById('product-list');
+                products.forEach(product => {
+                    productList.innerHTML += `
+                        <div class="product-card" data-product-id="${product.id}" data-product-name="${product.name}">
+                            <img src="${product.img}" class="product-img" alt="${product.name}">
+                            <div class="product-name">${product.name}</div>
+                            <div class="product-price">¥${product.price}</div>
+                            <div class="product-desc">${product.desc}</div>
+                        </div>
+                    `;
+                });
+            } catch (err) {
+                console.error('加载商品失败：', err);
             }
         }
-        function renderProducts() {
-            const container = document.getElementById('shop-content');
-            let html = '';
-            products.forEach(p => {
-                html += `<div class="product-card"><img src="${p.img}" class="product-img"><div class="product-info"><h3>${p.name}</h3><p style="color:#666;font-size:0.9rem;margin-bottom:10px;">${p.desc||''}</p><div class="product-footer"><span class="price">¥${p.price}</span><button class="add-btn" onclick="addToCart(${p.id})">加入购物车</button></div></div></div>`;
-            });
-            container.innerHTML = html;
-        }
-        async function reportToAdmin(action, detail) {
-            const user = JSON.parse(localStorage.getItem('currentUser')) || { username: '匿名游客' };
-            try { await fetch(`${API_BASE}/api/report`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user: user.username, action, detail }) }); } catch (e) {}
-        }
-        function addToCart(id) {
-            const product = products.find(p => p.id === id);
-            let list = JSON.parse(localStorage.getItem('myCart')) || [];
-            const existing = list.find(i => i.id === id);
-            if (existing) existing.quantity++; else list.push({ ...product, quantity: 1 });
-            localStorage.setItem('myCart', JSON.stringify(list));
-            updateCartCount();
-            reportToAdmin('加入购物车', `意向商品：${product.name} (¥${product.price})`);
-            alert('已加入购物车');
-        }
-        function updateCartCount() {
-            let list = JSON.parse(localStorage.getItem('myCart')) || [];
-            document.getElementById('cart-count').innerText = list.reduce((sum, i) => sum + i.quantity, 0);
-        }
-        function checkUser() {
-            const user = JSON.parse(localStorage.getItem('currentUser'));
-            const btn = document.getElementById('auth-btn');
-            const display = document.getElementById('user-display');
-            if (user) {
-                display.innerText = `你好, ${user.username}`;
-                btn.innerText = "退出";
-                btn.onclick = () => { if(confirm("退出登录？")) { localStorage.removeItem('currentUser'); location.reload(); }};
-            } else {
-                display.innerText = "";
-                btn.innerText = "登录/注册";
-                btn.onclick = () => location.href = "login.html";
+
+        // 记录浏览行为（调用后端接口）
+        async function recordBrowseBehavior(data) {
+            try {
+                const res = await fetch(`${API_BASE}/api/record-browse`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                console.log('浏览行为记录成功：', result);
+            } catch (err) {
+                console.error('记录浏览行为失败：', err);
             }
         }
-        init();
     </script>
 </body>
-
 </html>
