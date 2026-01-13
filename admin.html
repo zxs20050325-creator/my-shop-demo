@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>商品浏览记录监控平台</title>
+    <title>商品浏览记录监控平台（仅真实数据）</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: '微软雅黑', sans-serif; }
@@ -46,7 +46,7 @@
     <div class="container">
         <!-- 页面头部 -->
         <div class="header">
-            <h1>商品浏览记录监控平台</h1>
+            <h1>商品浏览记录监控平台（仅真实数据）</h1>
             <div>
                 <button class="control-btn" onclick="fetchBrowseStats()">🔄 立即刷新</button>
                 <button class="control-btn auto-refresh" onclick="toggleAutoRefresh()" id="auto-refresh-btn">⚡ 自动刷新（开）</button>
@@ -65,7 +65,7 @@
             </div>
             <div class="kpi-card">
                 <div class="kpi-label">热门商品</div>
-                <div class="kpi-value" id="hot-product">--</div>
+                <div class="kpi-value" id="hot-product">暂无</div>
             </div>
             <div class="kpi-card">
                 <div class="kpi-label">平均停留时间（秒）</div>
@@ -110,16 +110,16 @@
     </div>
 
     <script>
-        // ========== 核心配置：替换为你的Render域名 ==========
+        // ========== 必改：替换为你的Render域名 ==========
         const API_BASE = 'https://my-shop-demo.onrender.com'; 
         // ==================================================
 
         // 初始化所有图表
         let charts = {};
-        let autoRefreshTimer = setInterval(fetchBrowseStats, 5000); // 默认5秒自动刷新
+        let autoRefreshTimer = setInterval(fetchBrowseStats, 5000); // 5秒自动刷新
         let isAutoRefresh = true;
 
-        // 页面加载时初始化图表+获取数据
+        // 页面加载时初始化图表+获取真实数据
         window.onload = () => {
             initCharts();
             fetchBrowseStats();
@@ -203,7 +203,7 @@
                         data: [],
                         backgroundColor: (context) => {
                             const value = context.dataset.data[context.dataIndex];
-                            const alpha = Math.min(0.9, 0.2 + (value / Math.max(...context.dataset.data)));
+                            const alpha = Math.min(0.9, 0.2 + (value / (Math.max(...context.dataset.data) || 1)));
                             return `rgba(37, 99, 235, ${alpha})`;
                         },
                         borderRadius: 6
@@ -219,35 +219,38 @@
             });
         }
 
-        // 2. 修复版：获取浏览统计数据（适配你的后端接口）
+        // 2. 仅加载真实数据（无模拟兜底）
         async function fetchBrowseStats() {
             try {
-                // 简化请求逻辑，确保跨域+正确解析数据
                 const response = await fetch(`${API_BASE}/api/browse-stats`, {
                     method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    mode: 'cors' // 显式允许跨域
+                    headers: { 'Content-Type': 'application/json' },
+                    mode: 'cors'
                 });
-
-                // 直接解析数据（后端已验证返回正常JSON）
                 const data = await response.json();
                 
-                // 更新页面数据
+                // 更新页面真实数据
                 updateKPIs(data.kpis);    
                 updateCharts(data.charts); 
-                console.log('✅ 数据加载成功：', data);
+                console.log('✅ 加载真实浏览数据：', data);
             } catch (error) {
-                console.error('❌ 数据加载失败（使用模拟数据）：', error);
-                // 仅在真失败时加载模拟数据，无弹窗干扰
-                const mockData = getMockBrowseStats();
-                updateKPIs(mockData.kpis);
-                updateCharts(mockData.charts);
+                console.error('❌ 获取真实数据失败：', error);
+                // 异常时显示空数据
+                const emptyData = {
+                    kpis: { totalBrowse: 0, todayBrowse: 0, hotProduct: '暂无', avgStayTime: 0 },
+                    charts: {
+                        hourlyTrend: { labels: [], data: [] },
+                        productRatio: { labels: [], data: [] },
+                        dailyTrend: { labels: [], data: [] },
+                        hotProducts: { labels: [], data: [] }
+                    }
+                };
+                updateKPIs(emptyData.kpis);
+                updateCharts(emptyData.charts);
             }
         }
 
-        // 3. 更新KPI指标
+        // 3. 更新KPI指标（仅真实数据）
         function updateKPIs(kpiData) {
             document.getElementById('total-browse').innerText = kpiData.totalBrowse;
             document.getElementById('today-browse').innerText = kpiData.todayBrowse;
@@ -255,24 +258,24 @@
             document.getElementById('avg-stay-time').innerText = kpiData.avgStayTime;
         }
 
-        // 4. 更新所有图表数据
+        // 4. 更新图表数据（仅真实数据）
         function updateCharts(chartData) {
-            // 4.1 24小时趋势
+            // 24小时趋势
             charts.hourly.data.labels = chartData.hourlyTrend.labels;
             charts.hourly.data.datasets[0].data = chartData.hourlyTrend.data;
             charts.hourly.update();
 
-            // 4.2 商品占比
+            // 商品占比
             charts.productRatio.data.labels = chartData.productRatio.labels;
             charts.productRatio.data.datasets[0].data = chartData.productRatio.data;
             charts.productRatio.update();
 
-            // 4.3 近7天趋势
+            // 近7天趋势
             charts.daily.data.labels = chartData.dailyTrend.labels;
             charts.daily.data.datasets[0].data = chartData.dailyTrend.data;
             charts.daily.update();
 
-            // 4.4 热门商品
+            // 热门商品
             charts.hotProducts.data.labels = chartData.hotProducts.labels;
             charts.hotProducts.data.datasets[0].data = chartData.hotProducts.data;
             charts.hotProducts.update();
@@ -291,31 +294,6 @@
                 btn.classList.remove('stop');
             }
             isAutoRefresh = !isAutoRefresh;
-        }
-
-        // 6. 模拟数据（兜底用）
-        function getMockBrowseStats() {
-            return {
-                kpis: { totalBrowse: 2580, todayBrowse: 326, hotProduct: '云端-高性能键盘', avgStayTime: 28 },
-                charts: {
-                    hourlyTrend: {
-                        labels: Array.from({ length: 24 }, (_, i) => `${i}时`),
-                        data: Array.from({ length: 24 }, (_, i) => i >= 8 && i <= 22 ? Math.floor(Math.random() * 50 + 10) : Math.floor(Math.random() * 10))
-                    },
-                    productRatio: {
-                        labels: ['云端-高性能键盘', '云端-无线耳机', '云端-电竞椅', '云端-4K显示器'],
-                        data: [850, 620, 580, 530]
-                    },
-                    dailyTrend: {
-                        labels: ['1月7日', '1月8日', '1月9日', '1月10日', '1月11日', '1月12日', '1月13日'],
-                        data: [280, 320, 290, 350, 410, 380, 326]
-                    },
-                    hotProducts: {
-                        labels: ['云端-高性能键盘', '云端-无线耳机', '云端-电竞椅', '云端-4K显示器'],
-                        data: [850, 620, 580, 530]
-                    }
-                }
-            };
         }
     </script>
 </body>
