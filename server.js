@@ -14,7 +14,7 @@ app.use(express.static(path.join(__dirname, '.')));
 
 // 配置Supabase（替换成你自己的URL和KEY）
 const SUPABASE_URL = 'https://fulyzmmwivpwrvfoifdy.supabase.co'; // 你的Supabase URL
-const SUPABASE_KEY = '你的Supabase anon public密钥'; // 替换成自己的密钥
+const SUPABASE_KEY = 'sb_publishable_miLBqFe78ez-ZTruWfF1Mw_C_fCC2Ui'; // 替换成自己的密钥
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // 新增：根路径路由 - 访问域名时直接返回前端首页index.html
@@ -53,3 +53,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
