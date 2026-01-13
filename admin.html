@@ -12,7 +12,7 @@ app.use(express.static(path.join(__dirname, '.')));
 
 // ====================== 替换成你自己的Supabase信息 ======================
 const SUPABASE_URL = 'https://fulyzmmwivpwrvfoifdy.supabase.co'; // 你的Supabase URL
-const SUPABASE_KEY = '你的Supabase anon public密钥'; // 替换成自己的密钥
+const SUPABASE_KEY = 'sb_publishable_miLBqFe78ez-ZTruWfF1Mw_C_fCC2Ui'; // 替换成自己的密钥
 // =====================================================================
 
 // 初始化Supabase客户端
@@ -105,3 +105,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
