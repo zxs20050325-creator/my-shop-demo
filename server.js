@@ -1,107 +1,79 @@
-// 引入必要的模块
+// server.js
 const express = require('express');
 const { createClient } = require('@supabase/supabase-js');
 const path = require('path');
-const cors = require('cors'); // 解决跨域问题
+const cors = require('cors');
 
-// 初始化Express应用
 const app = express();
 
-// 配置中间件
+// 中间件
 app.use(express.json());
-app.use(cors()); // 允许跨域请求
-app.use(express.static(path.join(__dirname, '.'))); // 托管前端文件
+app.use(cors());
+app.use(express.static(path.join(__dirname, '.'))); // 托管当前目录下的所有静态文件
 
-// ====================== 替换为你的Supabase真实信息 ======================
-const SUPABASE_URL = 'https://fulyzmmwivpwrvfoifdy.supabase.co'; // 你的URL
-const SUPABASE_KEY = '替换成你的完整anon public密钥（eyJhbGci开头）'; // 必改！
+// ====================== 🔑 替换为你的 Supabase 信息 ======================
+const SUPABASE_URL = 'https://fulyzmmwivpwrvfoifdy.supabase.co';
+// 👇 必须替换为你的 anon public key（在 Supabase → Project Settings → API 中）
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; 
 // =====================================================================
 
-// 初始化Supabase客户端
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// 初始化：自动创建浏览记录表和商品表
-async function initTables() {
-  try {
-    await supabase.rpc('exec', {
-      sql: `
-        -- 浏览记录表（存储真实浏览行为）
-        CREATE TABLE IF NOT EXISTS browse_logs (
-          id SERIAL PRIMARY KEY,
-          user_id TEXT NOT NULL,       -- 访问用户ID
-          product_id INTEGER NOT NULL, -- 浏览商品ID
-          product_name TEXT NOT NULL,  -- 商品名称
-          browse_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 浏览时间
-          stay_seconds INTEGER DEFAULT 0, -- 停留秒数
-          ip_address TEXT DEFAULT ''   -- IP地址
-        );
-
-        -- 商品表（兼容原有商城功能）
-        CREATE TABLE IF NOT EXISTS products (
-          id SERIAL PRIMARY KEY,
-          name TEXT NOT NULL,
-          price INTEGER NOT NULL,
-          desc TEXT,
-          img TEXT
-        );
-      `
-    });
-    console.log('数据表初始化成功');
-  } catch (err) {
-    console.log('数据表已存在或初始化失败：', err.message);
-  }
-}
-initTables();
-
-// 1. 根路由：返回商城首页
+// 根路由：商城首页
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// 2. 商品API接口 - 返回商品数据
+// 商品列表接口（带演示数据兜底）
 app.get('/api/products', async (req, res) => {
   try {
     const { data, error } = await supabase.from('products').select('*');
     if (error || !data || data.length === 0) {
-      const demoProducts = [
-        {"id":1,"name":"云端-高性能键盘","price":599,"desc":"数据存储在Supabase，永不丢失","img":"https://placehold.co/400x300/2c3e50/FFF?text=CloudKey"},
-        {"id":2,"name":"云端-无线耳机","price":1299,"desc":"支持超长待机，数据云同步","img":"https://placehold.co/400x300/e74c3c/FFF?text=CloudAudio"},
-        {"id":3,"name":"云端-电竞椅","price":899,"desc":"保护你的腰椎","img":"https://placehold.co/400x300/3498db/FFF?text=CloudChair"},
-        {"id":4,"name":"云端-4K显示器","price":2499,"desc":"清晰度爆表","img":"https://placehold.co/400x300/9b59b6/FFF?text=CloudScreen"}
-      ];
-      return res.json(demoProducts);
+      return res.json([
+        { id: 1, name: "云端-高性能键盘", price: 599, desc: "数据存储在Supabase，永不丢失", img: "https://placehold.co/400x300/2c3e50/FFF?text=CloudKey" },
+        { id: 2, name: "云端-无线耳机", price: 1299, desc: "支持超长待机，数据云同步", img: "https://placehold.co/400x300/e74c3c/FFF?text=CloudAudio" },
+        { id: 3, name: "云端-电竞椅", price: 899, desc: "保护你的腰椎", img: "https://placehold.co/400x300/3498db/FFF?text=CloudChair" },
+        { id: 4, name: "云端-4K显示器", price: 2499, desc: "清晰度爆表", img: "https://placehold.co/400x300/9b59b6/FFF?text=CloudScreen" }
+      ]);
     }
     res.json(data);
   } catch (err) {
-    res.status(500).json({ error: '获取商品数据失败' });
+    console.error('❌ 获取商品失败:', err.message);
+    res.status(500).json({ error: '服务器内部错误' });
   }
 });
 
-// 3. 记录用户浏览行为（商城页调用）
+// 记录用户浏览行为
 app.post('/api/record-browse', async (req, res) => {
   try {
     const { user_id, product_id, product_name, stay_seconds, ip_address } = req.body;
+
     if (!user_id || !product_id || !product_name) {
-      return res.status(400).json({ error: '用户ID、商品ID、商品名称为必填' });
+      return res.status(400).json({ error: 'user_id、product_id、product_name 为必填字段' });
     }
-    // 插入真实浏览记录到Supabase
+
     const { data, error } = await supabase
       .from('browse_logs')
       .insert([{
-        user_id,
-        product_id,
-        product_name,
-        stay_seconds: stay_seconds || Math.floor(Math.random() * 60 + 5),
-        ip_address: ip_address || req.ip
-      }]);
+        user_id: String(user_id),
+        product_id: Number(product_id),
+        product_name: String(product_name),
+        stay_seconds: stay_seconds ? Number(stay_seconds) : Math.floor(Math.random() * 60 + 5),
+        ip_address: ip_address || req.ip || 'unknown'
+      }])
+      .select();
+
     if (error) throw error;
-    res.json({ success: true, data });
+
+    console.log('✅ 浏览记录已保存:', data[0]);
+    res.json({ success: true, data: data[0] });
   } catch (err) {
-    res.status(500).json({ error: '记录浏览行为失败：' + err.message });
+    console.error('❌ 记录浏览失败:', err.message);
+    res.status(500).json({ error: '记录失败: ' + err.message });
   }
 });
 
-// 4. 获取浏览数据统计（仅返回真实数据，无模拟兜底）
+// 获取真实浏览统计数据（仅从数据库读取，无模拟数据）
 app.get('/api/browse-stats', async (req, res) => {
   try {
     // 1. 总浏览量
@@ -117,93 +89,102 @@ app.get('/api/browse-stats', async (req, res) => {
       .select('*', { count: 'exact', head: true })
       .gte('browse_time', today.toISOString());
 
-    // 3. 商品浏览占比
-    const { data: productBrowseData } = await supabase
+    // 3. 所有浏览记录（用于聚合）
+    const { data: logs } = await supabase
       .from('browse_logs')
-      .select('product_name, count(*) as count')
-      .group('product_name');
+      .select('product_name, stay_seconds, browse_time');
 
-    // 4. 24小时浏览趋势
-    const hourlyStats = [];
-    for (let i = 0; i < 24; i++) {
-      const hourStart = new Date();
-      hourStart.setHours(i, 0, 0, 0);
-      const hourEnd = new Date(hourStart);
-      hourEnd.setHours(i + 1, 0, 0, 0);
-      const { count } = await supabase
-        .from('browse_logs')
-        .select('*', { count: 'exact', head: true })
-        .gte('browse_time', hourStart.toISOString())
-        .lt('browse_time', hourEnd.toISOString());
-      hourlyStats.push({ hour: `${i}时`, count: count || 0 });
-    }
-
-    // 5. 近7天浏览量
-    const dailyStats = [];
-    for (let i = 6; i >= 0; i--) {
-      const day = new Date();
-      day.setDate(day.getDate() - i);
-      day.setHours(0, 0, 0, 0);
-      const dayEnd = new Date(day);
-      dayEnd.setHours(23, 59, 59, 999);
-      const { count } = await supabase
-        .from('browse_logs')
-        .select('*', { count: 'exact', head: true })
-        .gte('browse_time', day.toISOString())
-        .lte('browse_time', dayEnd.toISOString());
-      dailyStats.push({
-        date: `${day.getMonth() + 1}月${day.getDate()}日`,
-        count: count || 0
+    if (!logs || logs.length === 0) {
+      // 如果无任何记录，返回空数据结构
+      return res.json({
+        kpis: { totalBrowse: 0, todayBrowse: 0, hotProduct: '暂无', avgStayTime: 0 },
+        charts: {
+          hourlyTrend: { labels: [], data: [] },
+          productRatio: { labels: [], data: [] },
+          dailyTrend: { labels: [], data: [] },
+          hotProducts: { labels: [], data: [] }
+        }
       });
     }
 
-    // 6. 热门商品TOP5
-    const { data: hotProductData } = await supabase
-      .from('browse_logs')
-      .select('product_name, count(*) as count')
-      .group('product_name')
-      .order('count', { ascending: false })
-      .limit(5);
+    // 4. 商品浏览次数统计
+    const productCount = {};
+    logs.forEach(log => {
+      productCount[log.product_name] = (productCount[log.product_name] || 0) + 1;
+    });
 
-    // 7. 平均停留时间
-    const { data: stayTimeData } = await supabase
-      .from('browse_logs')
-      .select('stay_seconds');
-    const avgStayTime = stayTimeData.length > 0 
-      ? Math.round(stayTimeData.reduce((sum, item) => sum + item.stay_seconds, 0) / stayTimeData.length)
-      : 0;
+    // 5. 热门商品 TOP5
+    const hotProducts = Object.entries(productCount)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
 
-    // 仅返回真实数据（无数据则为0/空）
+    // 6. 平均停留时间
+    const totalStay = logs.reduce((sum, log) => sum + (log.stay_seconds || 0), 0);
+    const avgStayTime = Math.round(totalStay / logs.length);
+
+    // 7. 24小时趋势（每小时）
+    const hourlyData = Array(24).fill(0);
+    const now = new Date();
+    logs.forEach(log => {
+      const logTime = new Date(log.browse_time);
+      const hour = logTime.getHours();
+      // 只统计今天的数据
+      if (logTime.toDateString() === now.toDateString()) {
+        hourlyData[hour]++;
+      }
+    });
+    const hourlyLabels = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}时`);
+
+    // 8. 近7天趋势
+    const dailyLabels = [];
+    const dailyData = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      date.setHours(0, 0, 0, 0);
+      const dateString = date.toDateString();
+      dailyLabels.push(`${date.getMonth() + 1}月${date.getDate()}日`);
+      
+      const count = logs.filter(log => 
+        new Date(log.browse_time).toDateString() === dateString
+      ).length;
+      dailyData.push(count);
+    }
+
+    // 9. 商品占比（全部）
+    const productRatioLabels = Object.keys(productCount);
+    const productRatioData = Object.values(productCount);
+
+    // 返回真实数据
     res.json({
       kpis: {
         totalBrowse: totalBrowse || 0,
         todayBrowse: todayBrowse || 0,
-        hotProduct: hotProductData && hotProductData.length > 0 ? hotProductData[0].product_name : '暂无',
+        hotProduct: hotProducts.length > 0 ? hotProducts[0][0] : '暂无',
         avgStayTime: avgStayTime
       },
       charts: {
         hourlyTrend: {
-          labels: hourlyStats.map(item => item.hour),
-          data: hourlyStats.map(item => item.count)
+          labels: hourlyLabels,
+          data: hourlyData
         },
         productRatio: {
-          labels: productBrowseData ? productBrowseData.map(item => item.product_name) : [],
-          data: productBrowseData ? productBrowseData.map(item => item.count) : []
+          labels: productRatioLabels,
+          data: productRatioData
         },
         dailyTrend: {
-          labels: dailyStats.map(item => item.date),
-          data: dailyStats.map(item => item.count)
+          labels: dailyLabels,
+          data: dailyData
         },
         hotProducts: {
-          labels: hotProductData ? hotProductData.map(item => item.product_name) : [],
-          data: hotProductData ? hotProductData.map(item => item.count) : []
+          labels: hotProducts.map(item => item[0]),
+          data: hotProducts.map(item => item[1])
         }
       }
     });
   } catch (err) {
-    console.error('获取浏览统计失败：', err);
-    // 异常时返回空数据（无模拟）
-    res.json({
+    console.error('❌ 统计接口出错:', err);
+    res.status(500).json({
       kpis: { totalBrowse: 0, todayBrowse: 0, hotProduct: '暂无', avgStayTime: 0 },
       charts: {
         hourlyTrend: { labels: [], data: [] },
@@ -215,10 +196,10 @@ app.get('/api/browse-stats', async (req, res) => {
   }
 });
 
-// 配置端口
+// 启动服务
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`✅ 服务启动成功！端口：${PORT}`);
-  console.log(`🔗 商城页面：http://localhost:${PORT}`);
-  console.log(`📊 监控页面：http://localhost:${PORT}/admin.html`);
+  console.log(`✅ 服务启动成功！`);
+  console.log(`🔗 商城首页: http://localhost:${PORT}`);
+  console.log(`📊 数据看板: http://localhost:${PORT}/admin.html`);
 });
