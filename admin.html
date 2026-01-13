@@ -1,108 +1,314 @@
-// 引入必要的模块
-const express = require('express');
-const { createClient } = require('@supabase/supabase-js');
-const path = require('path');
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品浏览记录监控平台</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: '微软雅黑', sans-serif; }
+        body { background-color: #f0f2f5; color: #333; padding: 20px 0; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 0 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #e5e7eb; }
+        .header h1 { color: #1f2937; font-size: 28px; }
+        .control-btn { background: #2563eb; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 16px; transition: background 0.3s; }
+        .control-btn:hover { background: #1d4ed8; }
+        .auto-refresh { margin-left: 10px; background: #10b981; }
+        .auto-refresh.stop { background: #ef4444; }
 
-// 初始化Express应用
-const app = express();
-app.use(express.json());
+        /* KPI指标区 */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .kpi-card { background: white; border-radius: 12px; padding: 25px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); text-align: center; transition: transform 0.3s; }
+        .kpi-card:hover { transform: translateY(-5px); }
+        .kpi-value { font-size: 36px; font-weight: 700; color: #2563eb; margin: 15px 0 5px; }
+        .kpi-label { font-size: 14px; color: #6b7280; }
 
-// 配置静态文件服务，托管前端页面（包括数据驾驶舱的HTML）
-app.use(express.static(path.join(__dirname, '.')));
+        /* 图表网格 */
+        .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 20px; margin-bottom: 20px; }
+        .full-width { grid-column: 1 / -1; }
+        .chart-card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .chart-title { font-size: 18px; font-weight: 600; margin-bottom: 20px; color: #1f2937; }
+        .chart-container { width: 100%; height: 350px; position: relative; }
 
-// ====================== 替换成你自己的Supabase信息 ======================
-const SUPABASE_URL = 'https://fulyzmmwivpwrvfoifdy.supabase.co'; // 你的Supabase URL
-const SUPABASE_KEY = 'sb_publishable_miLBqFe78ez-ZTruWfF1Mw_C_fCC2Ui'; // 替换成自己的密钥
-// =====================================================================
+        /* 响应式适配 */
+        @media (max-width: 768px) {
+            .chart-grid { grid-template-columns: 1fr; }
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .chart-container { height: 250px; }
+        }
+        @media (max-width: 480px) {
+            .kpi-grid { grid-template-columns: 1fr; }
+            .header h1 { font-size: 22px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 页面头部 -->
+        <div class="header">
+            <h1>商品浏览记录监控平台</h1>
+            <div>
+                <button class="control-btn" onclick="fetchBrowseStats()">🔄 立即刷新</button>
+                <button class="control-btn auto-refresh" onclick="toggleAutoRefresh()" id="auto-refresh-btn">⚡ 自动刷新（开）</button>
+            </div>
+        </div>
 
-// 初始化Supabase客户端
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+        <!-- KPI核心指标 -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-label">总浏览量</div>
+                <div class="kpi-value" id="total-browse">0</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">今日浏览量</div>
+                <div class="kpi-value" id="today-browse">0</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">热门商品</div>
+                <div class="kpi-value" id="hot-product">--</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">平均停留时间（秒）</div>
+                <div class="kpi-value" id="avg-stay-time">0</div>
+            </div>
+        </div>
 
-// 初始化：确保Supabase有logs表（首次运行自动创建，无需手动操作）
-async function initSupabaseTable() {
-  try {
-    // 创建logs表：存储运营日志（时间、用户、行为、详情）
-    await supabase.rpc('exec', {
-      sql: `
-        CREATE TABLE IF NOT EXISTS logs (
-          id SERIAL PRIMARY KEY,
-          time TEXT NOT NULL,
-          user TEXT NOT NULL,
-          action TEXT NOT NULL,
-          detail TEXT NOT NULL
-        );
-      `
-    });
-    console.log('Supabase logs表初始化成功');
-  } catch (err) {
-    console.log('logs表初始化（已存在则忽略）：', err.message);
-  }
-}
-initSupabaseTable();
+        <!-- 图表展示区 -->
+        <div class="chart-grid">
+            <!-- 1. 24小时浏览趋势（折线图） -->
+            <div class="chart-card">
+                <div class="chart-title">24小时浏览量趋势</div>
+                <div class="chart-container">
+                    <canvas id="hourly-trend-chart"></canvas>
+                </div>
+            </div>
 
-// 1. 根路由：访问域名时返回数据驾驶舱页面（你提供的HTML）
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
+            <!-- 2. 商品浏览占比（饼图） -->
+            <div class="chart-card">
+                <div class="chart-title">商品浏览占比</div>
+                <div class="chart-container">
+                    <canvas id="product-ratio-chart"></canvas>
+                </div>
+            </div>
 
-// 2. 商品API接口（保留原有功能）
-app.get('/api/products', async (req, res) => {
-  try {
-    const { data, error } = await supabase.from('products').select('*');
-    if (error || !data || data.length === 0) {
-      const demoProducts = [
-        {"id":1,"name":"云端-高性能键盘","price":599,"desc":"数据存储在Supabase，永不丢失","img":"https://placehold.co/400x300/2c3e50/FFF?text=CloudKey"},
-        {"id":2,"name":"云端-无线耳机","price":1299,"desc":"支持超长待机，数据云同步","img":"https://placehold.co/400x300/e74c3c/FFF?text=CloudAudio"},
-        {"id":3,"name":"云端-电竞椅","price":899,"desc":"保护你的腰椎","img":"https://placehold.co/400x300/3498db/FFF?text=CloudChair"},
-        {"id":4,"name":"云端-4K显示器","price":2499,"desc":"清晰度爆表","img":"https://placehold.co/400x300/9b8b-2f91c3c77f20?text=CloudScreen"}
-      ];
-      return res.json(demoProducts);
-    }
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: '获取商品数据失败' });
-  }
-});
+            <!-- 3. 近7天浏览量（柱状图） -->
+            <div class="chart-card full-width">
+                <div class="chart-title">近7天浏览量趋势</div>
+                <div class="chart-container">
+                    <canvas id="daily-trend-chart"></canvas>
+                </div>
+            </div>
 
-// 3. 数据驾驶舱核心接口：获取日志列表
-app.get('/logs', async (req, res) => {
-  try {
-    // 从Supabase获取日志，按ID倒序（最新的在前）
-    const { data, error } = await supabase
-      .from('logs')
-      .select('*')
-      .order('id', { ascending: false });
-    
-    if (error) throw error;
-    // 如果没有日志，返回模拟数据让页面不空白
-    if (!data || data.length === 0) {
-      const mockLogs = [
-        { time: new Date().toLocaleString(), user: '用户1001', action: '访问页面', detail: '访问商城首页' },
-        { time: new Date().toLocaleString(), user: '用户1002', action: '加入购物车', detail: '加入云端-高性能键盘 ¥599' },
-        { time: new Date().toLocaleString(), user: '用户1001', action: '访问页面', detail: '访问商品详情页（云端-无线耳机）' }
-      ];
-      return res.json(mockLogs);
-    }
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: '获取日志失败' });
-  }
-});
+            <!-- 4. 热门商品TOP5（横向柱状图） -->
+            <div class="chart-card full-width">
+                <div class="chart-title">热门商品浏览量TOP5</div>
+                <div class="chart-container">
+                    <canvas id="hot-products-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
 
-// 4. 数据驾驶舱核心接口：清空日志
-app.post('/clear', async (req, res) => {
-  try {
-    const { error } = await supabase.from('logs').delete().neq('id', 0); // 删除所有日志
-    if (error) throw error;
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: '清空日志失败' });
-  }
-});
+    <script>
+        // 后端接口地址（部署后替换为你的Render域名）
+        const API_BASE = 'https://你的Render域名.onrender.com'; 
+        // 本地测试用：const API_BASE = 'http://localhost:3000';
 
-// 配置端口（Render自动分配）
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+        // 初始化所有图表
+        let charts = {};
+        let autoRefreshTimer = setInterval(fetchBrowseStats, 5000); // 默认5秒自动刷新
+        let isAutoRefresh = true;
 
+        // 页面加载时初始化图表+获取数据
+        window.onload = () => {
+            initCharts();
+            fetchBrowseStats();
+        };
+
+        // 1. 初始化图表配置
+        function initCharts() {
+            // 1.1 24小时浏览趋势（折线图）
+            const hourlyCtx = document.getElementById('hourly-trend-chart').getContext('2d');
+            charts.hourly = new Chart(hourlyCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '浏览量',
+                        data: [],
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // 1.2 商品浏览占比（饼图）
+            const productRatioCtx = document.getElementById('product-ratio-chart').getContext('2d');
+            charts.productRatio = new Chart(productRatioCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: ['#2563eb', '#f97316', '#10b981', '#8b5cf6', '#ef4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+
+            // 1.3 近7天浏览量（柱状图）
+            const dailyCtx = document.getElementById('daily-trend-chart').getContext('2d');
+            charts.daily = new Chart(dailyCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '浏览量',
+                        data: [],
+                        backgroundColor: 'rgba(37, 99, 235, 0.7)',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // 1.4 热门商品TOP5（横向柱状图）
+            const hotProductsCtx = document.getElementById('hot-products-chart').getContext('2d');
+            charts.hotProducts = new Chart(hotProductsCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '浏览量',
+                        data: [],
+                        backgroundColor: (context) => {
+                            const value = context.dataset.data[context.dataIndex];
+                            const alpha = Math.min(0.9, 0.2 + (value / Math.max(...context.dataset.data)));
+                            return `rgba(37, 99, 235, ${alpha})`;
+                        },
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y', // 横向柱状图
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { x: { beginAtZero: true } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        // 2. 获取浏览统计数据
+        async function fetchBrowseStats() {
+            try {
+                const response = await fetch(`${API_BASE}/api/browse-stats`);
+                if (!response.ok) throw new Error(`请求失败：${response.status}`);
+                
+                const data = await response.json();
+                updateKPIs(data.kpis);    // 更新KPI指标
+                updateCharts(data.charts); // 更新图表数据
+                console.log('浏览数据刷新成功：', new Date().toLocaleString());
+            } catch (error) {
+                console.error('获取浏览数据失败：', error);
+                // 失败时使用模拟数据
+                const mockData = getMockBrowseStats();
+                updateKPIs(mockData.kpis);
+                updateCharts(mockData.charts);
+                alert('连接后端失败，已加载模拟数据');
+            }
+        }
+
+        // 3. 更新KPI指标
+        function updateKPIs(kpiData) {
+            document.getElementById('total-browse').innerText = kpiData.totalBrowse;
+            document.getElementById('today-browse').innerText = kpiData.todayBrowse;
+            document.getElementById('hot-product').innerText = kpiData.hotProduct;
+            document.getElementById('avg-stay-time').innerText = kpiData.avgStayTime;
+        }
+
+        // 4. 更新所有图表数据
+        function updateCharts(chartData) {
+            // 4.1 24小时趋势
+            charts.hourly.data.labels = chartData.hourlyTrend.labels;
+            charts.hourly.data.datasets[0].data = chartData.hourlyTrend.data;
+            charts.hourly.update();
+
+            // 4.2 商品占比
+            charts.productRatio.data.labels = chartData.productRatio.labels;
+            charts.productRatio.data.datasets[0].data = chartData.productRatio.data;
+            charts.productRatio.update();
+
+            // 4.3 近7天趋势
+            charts.daily.data.labels = chartData.dailyTrend.labels;
+            charts.daily.data.datasets[0].data = chartData.dailyTrend.data;
+            charts.daily.update();
+
+            // 4.4 热门商品
+            charts.hotProducts.data.labels = chartData.hotProducts.labels;
+            charts.hotProducts.data.datasets[0].data = chartData.hotProducts.data;
+            charts.hotProducts.update();
+        }
+
+        // 5. 切换自动刷新
+        function toggleAutoRefresh() {
+            const btn = document.getElementById('auto-refresh-btn');
+            if (isAutoRefresh) {
+                clearInterval(autoRefreshTimer);
+                btn.innerText = '⚡ 自动刷新（关）';
+                btn.classList.add('stop');
+            } else {
+                autoRefreshTimer = setInterval(fetchBrowseStats, 5000);
+                btn.innerText = '⚡ 自动刷新（开）';
+                btn.classList.remove('stop');
+            }
+            isAutoRefresh = !isAutoRefresh;
+        }
+
+        // 6. 模拟数据（兜底用）
+        function getMockBrowseStats() {
+            return {
+                kpis: { totalBrowse: 2580, todayBrowse: 326, hotProduct: '云端-高性能键盘', avgStayTime: 28 },
+                charts: {
+                    hourlyTrend: {
+                        labels: Array.from({ length: 24 }, (_, i) => `${i}时`),
+                        data: Array.from({ length: 24 }, (_, i) => i >= 8 && i <= 22 ? Math.floor(Math.random() * 50 + 10) : Math.floor(Math.random() * 10))
+                    },
+                    productRatio: {
+                        labels: ['云端-高性能键盘', '云端-无线耳机', '云端-电竞椅', '云端-4K显示器'],
+                        data: [850, 620, 580, 530]
+                    },
+                    dailyTrend: {
+                        labels: ['1月7日', '1月8日', '1月9日', '1月10日', '1月11日', '1月12日', '1月13日'],
+                        data: [280, 320, 290, 350, 410, 380, 326]
+                    },
+                    hotProducts: {
+                        labels: ['云端-高性能键盘', '云端-无线耳机', '云端-电竞椅', '云端-4K显示器'],
+                        data: [850, 620, 580, 530]
+                    }
+                }
+            };
+        }
+    </script>
+</body>
+</html>
