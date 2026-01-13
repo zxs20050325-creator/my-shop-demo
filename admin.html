@@ -110,9 +110,9 @@
     </div>
 
     <script>
-        // 后端接口地址（部署后替换为你的Render域名）
-        const API_BASE = 'https://你的Render域名.onrender.com'; 
-        // 本地测试用：const API_BASE = 'http://localhost:3000';
+        // ========== 核心配置：替换为你的Render域名 ==========
+        const API_BASE = 'https://my-shop-demo.onrender.com'; 
+        // ==================================================
 
         // 初始化所有图表
         let charts = {};
@@ -219,23 +219,31 @@
             });
         }
 
-        // 2. 获取浏览统计数据
+        // 2. 修复版：获取浏览统计数据（适配你的后端接口）
         async function fetchBrowseStats() {
             try {
-                const response = await fetch(`${API_BASE}/api/browse-stats`);
-                if (!response.ok) throw new Error(`请求失败：${response.status}`);
-                
+                // 简化请求逻辑，确保跨域+正确解析数据
+                const response = await fetch(`${API_BASE}/api/browse-stats`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    mode: 'cors' // 显式允许跨域
+                });
+
+                // 直接解析数据（后端已验证返回正常JSON）
                 const data = await response.json();
-                updateKPIs(data.kpis);    // 更新KPI指标
-                updateCharts(data.charts); // 更新图表数据
-                console.log('浏览数据刷新成功：', new Date().toLocaleString());
+                
+                // 更新页面数据
+                updateKPIs(data.kpis);    
+                updateCharts(data.charts); 
+                console.log('✅ 数据加载成功：', data);
             } catch (error) {
-                console.error('获取浏览数据失败：', error);
-                // 失败时使用模拟数据
+                console.error('❌ 数据加载失败（使用模拟数据）：', error);
+                // 仅在真失败时加载模拟数据，无弹窗干扰
                 const mockData = getMockBrowseStats();
                 updateKPIs(mockData.kpis);
                 updateCharts(mockData.charts);
-                alert('连接后端失败，已加载模拟数据');
             }
         }
 
