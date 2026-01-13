@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的购物车 - 极简数码商店</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: #f8f9fa; color: #333; }
+
+        nav { background-color: #2c3e50; color: white; padding: 1rem 2rem; display: flex; align-items: center; }
+        .back-btn { color: white; text-decoration: none; margin-right: 15px; font-size: 1.2rem; }
+
+        .cart-container { max-width: 900px; margin: 2rem auto; background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+        h1 { margin-bottom: 1.5rem; border-bottom: 1px solid #eee; padding-bottom: 1rem; }
+
+        .cart-item { display: flex; align-items: center; padding: 1rem 0; border-bottom: 1px solid #eee; }
+        .item-img { width: 80px; height: 80px; object-fit: cover; border-radius: 5px; margin-right: 1rem; background: #eee; }
+        .item-info { flex-grow: 1; }
+        .item-title { font-weight: bold; font-size: 1.1rem; }
+        .item-price { color: #666; margin-top: 5px; }
+
+        .qty-control { display: flex; align-items: center; gap: 10px; margin-right: 2rem; }
+        .qty-btn { width: 30px; height: 30px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 3px; }
+        .qty-btn:hover { background: #f0f0f0; }
+
+        .remove-btn { color: #e74c3c; background: none; border: none; cursor: pointer; text-decoration: underline; }
+        
+        .cart-footer { margin-top: 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .total-price { font-size: 1.5rem; font-weight: bold; color: #e74c3c; }
+        
+        .checkout-btn { background-color: #27ae60; color: white; border: none; padding: 12px 30px; font-size: 1.1rem; border-radius: 5px; cursor: pointer; transition: 0.3s; }
+        .checkout-btn:hover { background-color: #219150; }
+        
+        .empty-cart { text-align: center; padding: 3rem; color: #999; }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html" class="back-btn">← 继续购物</a>
+        <span>购物车详情</span>
+    </nav>
+
+    <div class="cart-container">
+        <h1>购物清单</h1>
+        <div id="cart-list"></div>
+        <div class="cart-footer" id="cart-footer">
+            <div>总计金额: <span class="total-price" id="total-amount">¥0</span></div>
+            <button class="checkout-btn" onclick="checkout()">立即支付</button>
+        </div>
+    </div>
+
+    <script>
+        // 1. 读取购物车
+        let cartList = JSON.parse(localStorage.getItem('myCart')) || [];
+
+        // 2. 渲染列表
+        function renderCart() {
+            const listContainer = document.getElementById('cart-list');
+            const footer = document.getElementById('cart-footer');
+            const totalEl = document.getElementById('total-amount');
+
+            if (cartList.length === 0) {
+                listContainer.innerHTML = '<div class="empty-cart"><h3>购物车空空如也...</h3><p>快去首页选购吧！</p></div>';
+                footer.style.display = 'none';
+                return;
+            }
+
+            footer.style.display = 'flex';
+            let html = '';
+            let total = 0;
+
+            cartList.forEach((item, index) => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                html += `
+                    <div class="cart-item">
+                        <img src="${item.img}" class="item-img">
+                        <div class="item-info">
+                            <div class="item-title">${item.name}</div>
+                            <div class="item-price">单价: ¥${item.price}</div>
+                        </div>
+                        <div class="qty-control">
+                            <button class="qty-btn" onclick="changeQty(${index}, -1)">-</button>
+                            <span>${item.quantity}</span>
+                            <button class="qty-btn" onclick="changeQty(${index}, 1)">+</button>
+                        </div>
+                        <div style="margin-right: 2rem; font-weight:bold;">¥${itemTotal}</div>
+                        <button class="remove-btn" onclick="removeItem(${index})">删除</button>
+                    </div>
+                `;
+            });
+
+            listContainer.innerHTML = html;
+            totalEl.innerText = '¥' + total;
+        }
+
+        // 3. 修改数量
+        function changeQty(index, delta) {
+            cartList[index].quantity += delta;
+            if (cartList[index].quantity < 1) {
+                if(confirm("确定移除此商品吗？")) cartList.splice(index, 1);
+                else cartList[index].quantity = 1;
+            }
+            saveAndRender();
+        }
+
+        // 4. 删除
+        function removeItem(index) {
+            if(confirm("确定不要了吗？")) {
+                cartList.splice(index, 1);
+                saveAndRender();
+            }
+        }
+
+        // 5. 保存状态
+        function saveAndRender() {
+            localStorage.setItem('myCart', JSON.stringify(cartList));
+            renderCart();
+        }
+
+        // 6. 结算
+        function checkout() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) {
+                alert("请先登录再支付！");
+                window.location.href = "login.html";
+                return;
+            }
+            
+            const amount = document.getElementById('total-amount').innerText;
+            if(confirm(`用户: ${currentUser.username}\n需支付: ${amount}\n\n确认支付吗？`)) {
+                alert("支付成功！包裹正在准备中...");
+                cartList = []; // 清空
+                saveAndRender();
+                setTimeout(() => window.location.href = 'index.html', 1000);
+            }
+        }
+
+        renderCart();
+    </script>
+</body>
+</html>
