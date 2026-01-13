@@ -15,7 +15,7 @@ app.use(express.static(path.join(__dirname, '.'))); // 托管前端文件
 // ====================== 替换为你的Supabase真实信息 ======================
 const SUPABASE_URL = 'https://fulyzmmwivpwrvfoifdy.supabase.co'; // 你的URL
 // ❗ 必须替换为Supabase控制台的「anon public」完整密钥（eyJhbGci开头）
-const SUPABASE_KEY = '替换成你的完整anon public密钥'; 
+const SUPABASE_KEY = 'sb_publishable_miLBqFe78ez-ZTruWfF1Mw_C_fCC2Ui'; 
 // =====================================================================
 
 // 初始化Supabase客户端
@@ -251,3 +251,4 @@ app.listen(PORT, () => {
   console.log(`🔗 监控页面：http://localhost:${PORT}`);
   console.log(`📊 统计接口：http://localhost:${PORT}/api/browse-stats`);
 });
+
