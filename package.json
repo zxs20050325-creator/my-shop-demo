@@ -2,9 +2,9 @@
   "name": "shop-server",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js", 
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",
@@ -13,6 +13,6 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.90.1",
     "cors": "^2.8.5",
-    "express": "^5.2.1"
+    "express": "^4.21.1"
   }
 }
