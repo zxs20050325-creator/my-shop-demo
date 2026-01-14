@@ -1,4 +1,4 @@
-// server.js - 完整版 (已修正云端北京时间时区问题)
+// server.js - 冀遗筑梦特别版 (已配置图片路径 + 6图分页)
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
@@ -9,16 +9,95 @@ app.use(express.json());
 app.use(cors());
 app.use(express.static(path.join(__dirname, '.')));
 
-// ====================== 1. 数据存储 (保持不变) ======================
+// ====================== 1. 数据存储 (冀遗筑梦主题商品) ======================
 const MOCK_PRODUCTS = [
-    { id: 1, name: "云端-高性能键盘", price: 599, desc: "全键无冲，手感极佳", img: "https://placehold.co/300x200/2c3e50/FFF?text=Keyboard" },
-    { id: 2, name: "云端-无线耳机", price: 1299, desc: "降噪黑科技", img: "https://placehold.co/300x200/e74c3c/FFF?text=Headset" },
-    { id: 3, name: "云端-电竞椅", price: 899, desc: "保护你的老腰", img: "https://placehold.co/300x200/3498db/FFF?text=Chair" },
-    { id: 4, name: "云端-4K显示器", price: 2499, desc: "视网膜级清晰度", img: "https://placehold.co/300x200/9b59b6/FFF?text=Monitor" },
-    { id: 5, name: "云端-智能手表", price: 1999, desc: "健康监测助手", img: "https://placehold.co/300x200/1abc9c/FFF?text=Watch" },
-    { id: 6, name: "云端-机械鼠标", price: 399, desc: "指哪打哪", img: "https://placehold.co/300x200/f1c40f/FFF?text=Mouse" },
-    { id: 7, name: "云端-VR眼镜", price: 3499, desc: "进入虚拟世界", img: "https://placehold.co/300x200/d35400/FFF?text=VR" },
-    { id: 8, name: "云端-游戏手柄", price: 299, desc: "震动反馈细腻", img: "https://placehold.co/300x200/7f8c8d/FFF?text=Gamepad" }
+    // --- 第一页商品 (001-006) ---
+    { 
+        id: 1, 
+        name: "【镇店之宝】冀州古韵·微缩避暑山庄", 
+        price: 399, 
+        desc: "皇家园林典范，缩尺还原山水之间，承载千年古建智慧。", 
+        img: "images/001.jpg" 
+    },
+    { 
+        id: 2, 
+        name: "【非遗国礼】蔚县剪纸·百鸟朝凤", 
+        price: 168, 
+        desc: "世界非遗技艺，刀刻彩染，色彩明艳，寓意吉祥如意。", 
+        img: "images/002.jpg" 
+    },
+    { 
+        id: 3, 
+        name: "【镇宅神兽】沧州铁狮·铸铁摆件", 
+        price: 299, 
+        desc: "威武雄壮，镇海吼缩影，象征力量与守护，燕赵雄风。", 
+        img: "images/003.jpg" 
+    },
+    { 
+        id: 4, 
+        name: "【白如玉】曲阳定窑·刻花梅瓶", 
+        price: 899, 
+        desc: "千年定瓷，白如玉薄如纸，手工刻花，尽显宋韵素雅。", 
+        img: "images/004.jpg" 
+    },
+    { 
+        id: 5, 
+        name: "【光影传奇】唐山皮影·传统礼盒", 
+        price: 128, 
+        desc: "一口叙说千古事，双手对舞百万兵，光影间的民间艺术。", 
+        img: "images/005.jpg" 
+    },
+    { 
+        id: 6, 
+        name: "【古城印记】正定记忆·浮雕砖刻", 
+        price: 268, 
+        desc: "复刻古城墙纹理，抚摸历史的痕迹，自在正定，文化传承。", 
+        img: "images/006.jpg" 
+    },
+
+    // --- 第二页商品 (101-106) ---
+    { 
+        id: 7, 
+        name: "【文房至宝】易水古砚·雕龙画凤", 
+        price: 688, 
+        desc: "南有端砚，北有易水。石质细腻，发墨如油，文人雅士首选。", 
+        img: "images/101.jpg" 
+    },
+    { 
+        id: 8, 
+        name: "【新春纳福】武强年画·连年有余", 
+        price: 88, 
+        desc: "中国木版年画之乡，色彩浓烈，线条粗犷，不仅是画，更是福气。", 
+        img: "images/102.jpg" 
+    },
+    { 
+        id: 9, 
+        name: "【皇家工艺】花丝镶嵌·鎏金首饰盒", 
+        price: 1299, 
+        desc: "燕京八绝之一，细如发丝，堆垒编织，尽显宫廷奢华技艺。", 
+        img: "images/103.jpg" 
+    },
+    { 
+        id: 10, 
+        name: "【掌中乾坤】衡水内画·水晶鼻烟壶", 
+        price: 568, 
+        desc: "鬼斧神工，寸幅之地具千里之势，集诗书画印于一壶。", 
+        img: "images/104.jpg" 
+    },
+    { 
+        id: 11, 
+        name: "【民间艺术】玉田泥塑·萌趣生肖", 
+        price: 68, 
+        desc: "乡土气息浓郁，造型夸张可爱，唤醒儿时的快乐记忆。", 
+        img: "images/105.jpg" 
+    },
+    { 
+        id: 12, 
+        name: "【民间绝响】抚宁吹歌·乐器模型", 
+        price: 328, 
+        desc: "唢呐一响，黄金万两。非遗吹歌文化，传承民族之音。", 
+        img: "images/106.jpg" 
+    }
 ];
 
 const users = [];
@@ -27,11 +106,12 @@ let browseLogs = [];
 let totalRevenue = 0; 
 let totalOrders = 0;
 
-// ====================== 2. 核心接口 (保持不变) ======================
+// ====================== 2. 核心接口 ======================
 
 app.get('/api/products', (req, res) => {
     const page = parseInt(req.query.page) || 1;
-    const limit = 4;
+    // 【重要修改】将 limit 从 4 改为 6，确保第一页刚好展示 001-006
+    const limit = 6; 
     res.json({
         items: MOCK_PRODUCTS.slice((page - 1) * limit, page * limit),
         total: MOCK_PRODUCTS.length,
@@ -54,7 +134,7 @@ app.post('/api/login', (req, res) => {
     else res.status(401).json({ success: false, message: '账号或密码错误' });
 });
 
-// --- 购物车相关 (保持不变) ---
+// --- 购物车相关 ---
 app.post('/api/cart/add', (req, res) => {
     const { username, product } = req.body;
     if (!userCarts[username]) userCarts[username] = [];
@@ -85,7 +165,7 @@ app.post('/api/cart/checkout', (req, res) => {
     res.json({ success: true });
 });
 
-// --- 监控与埋点 (保持不变) ---
+// --- 监控与埋点 (包含北京时间修正) ---
 function addLog(username, action, product) {
     const now = new Date();
     const newLog = {
@@ -93,7 +173,7 @@ function addLog(username, action, product) {
         username: username || '游客',
         action: action,
         product: product || '-',
-        time: now.toLocaleString(), // 这个本地时间仅供参考，统计时会用 timestamp 重算
+        time: now.toLocaleString(),
         timestamp: now.getTime(), 
         ip: '10.0.0.1' 
     };
@@ -107,23 +187,17 @@ app.post('/api/track', (req, res) => {
     res.json({ success: true });
 });
 
-// ====================== 【仅修改此处】图表统计专用接口 ======================
-// 增加了 +8 小时偏移量，强制云端显示为北京时间
+// 图表接口
 app.get('/api/admin/stats', (req, res) => {
-    // 1. 24小时流量趋势 (修正为北京时间)
     const trafficData = new Array(24).fill(0);
-    const now = new Date(); // 服务器时间 (UTC)
-
+    
     browseLogs.forEach(log => {
-        // 将日志时间戳 + 8小时
+        // 北京时间修正
         const cnTime = new Date(log.timestamp + 8 * 3600000);
-        
-        // 简单逻辑：直接取修正后的小时数落位
         const hour = cnTime.getUTCHours(); 
         trafficData[hour]++;
     });
 
-    // 2. 热门商品 (逻辑不变)
     const productCount = {};
     browseLogs.forEach(log => {
         if (log.product !== '-' && !log.product.includes('总额')) {
@@ -134,7 +208,6 @@ app.get('/api/admin/stats', (req, res) => {
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5);
 
-    // 3. 用户行为分布 (逻辑不变)
     const actionStats = { '浏览': 0, '加购': 0, '支付': 0, '其他': 0 };
     browseLogs.forEach(log => {
         if (log.action.includes('浏览')) actionStats['浏览']++;
@@ -143,15 +216,10 @@ app.get('/api/admin/stats', (req, res) => {
         else actionStats['其他']++;
     });
 
-    // 4. 处理日志显示时间 (修正为北京时间字符串)
     const formattedLogs = browseLogs.slice(0, 10).map(log => {
         const cnTime = new Date(log.timestamp + 8 * 3600000);
-        // 手动拼接成 YYYY-MM-DD HH:mm:ss 格式，确保表格显示对的时间
         const timeStr = cnTime.toISOString().replace('T', ' ').substring(0, 19);
-        return {
-            ...log,
-            time: timeStr // 覆盖原本的 time 字段
-        };
+        return { ...log, time: timeStr };
     });
 
     res.json({
