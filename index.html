@@ -1,153 +1,182 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>云端商城 - 客户端</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: '微软雅黑'; }
-        body { background: #f5f5f5; padding-top: 80px; }
-        .navbar {
-            position: fixed; top: 0; left: 0; width: 100%;
-            background: #333; color: white; padding: 15px 30px;
-            display: flex; justify-content: space-between; align-items: center; z-index: 1000;
+// server.js - 最终完整版 (含数据过滤 + 冀遗筑梦商品 + 北京时间)
+const express = require('express');
+const path = require('path');
+const cors = require('cors');
+
+const app = express();
+
+app.use(express.json());
+app.use(cors());
+app.use(express.static(path.join(__dirname, '.')));
+
+// ====================== 1. 数据存储 ======================
+const MOCK_PRODUCTS = [
+    // 第一页
+    { id: 1, name: "【镇店之宝】冀州古韵·微缩避暑山庄", price: 399, desc: "皇家园林典范，缩尺还原山水之间，承载千年古建智慧。", img: "images/001.jpg" },
+    { id: 2, name: "【非遗国礼】蔚县剪纸·百鸟朝凤", price: 168, desc: "世界非遗技艺，刀刻彩染，色彩明艳，寓意吉祥如意。", img: "images/002.jpg" },
+    { id: 3, name: "【镇宅神兽】沧州铁狮·铸铁摆件", price: 299, desc: "威武雄壮，镇海吼缩影，象征力量与守护，燕赵雄风。", img: "images/003.jpg" },
+    { id: 4, name: "【白如玉】曲阳定窑·刻花梅瓶", price: 899, desc: "千年定瓷，白如玉薄如纸，手工刻花，尽显宋韵素雅。", img: "images/004.jpg" },
+    { id: 5, name: "【光影传奇】唐山皮影·传统礼盒", price: 128, desc: "一口叙说千古事，双手对舞百万兵，光影间的民间艺术。", img: "images/005.jpg" },
+    { id: 6, name: "【古城印记】正定记忆·浮雕砖刻", price: 268, desc: "复刻古城墙纹理，抚摸历史的痕迹，自在正定，文化传承。", img: "images/006.jpg" },
+    // 第二页
+    { id: 7, name: "【文房至宝】易水古砚·雕龙画凤", price: 688, desc: "南有端砚，北有易水。石质细腻，发墨如油，文人雅士首选。", img: "images/101.jpg" },
+    { id: 8, name: "【新春纳福】武强年画·连年有余", price: 88, desc: "中国木版年画之乡，色彩浓烈，线条粗犷，不仅是画，更是福气。", img: "images/102.jpg" },
+    { id: 9, name: "【皇家工艺】花丝镶嵌·鎏金首饰盒", price: 1299, desc: "燕京八绝之一，细如发丝，堆垒编织，尽显宫廷奢华技艺。", img: "images/103.jpg" },
+    { id: 10, name: "【掌中乾坤】衡水内画·水晶鼻烟壶", price: 568, desc: "鬼斧神工，寸幅之地具千里之势，集诗书画印于一壶。", img: "images/104.jpg" },
+    { id: 11, name: "【民间艺术】玉田泥塑·萌趣生肖", price: 68, desc: "乡土气息浓郁，造型夸张可爱，唤醒儿时的快乐记忆。", img: "images/105.jpg" },
+    { id: 12, name: "【民间绝响】抚宁吹歌·乐器模型", price: 328, desc: "唢呐一响，黄金万两。非遗吹歌文化，传承民族之音。", img: "images/106.jpg" }
+];
+
+const users = [];
+let userCarts = {}; 
+let browseLogs = []; 
+let totalRevenue = 0; 
+let totalOrders = 0;
+
+// ====================== 2. 核心接口 ======================
+
+app.get('/api/products', (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = 6; 
+    res.json({
+        items: MOCK_PRODUCTS.slice((page - 1) * limit, page * limit),
+        total: MOCK_PRODUCTS.length,
+        page: page,
+        totalPages: Math.ceil(MOCK_PRODUCTS.length / limit)
+    });
+});
+
+app.post('/api/register', (req, res) => {
+    const { username, password } = req.body;
+    if (users.find(u => u.username === username)) return res.status(400).json({ success: false, message: '用户已存在' });
+    users.push({ username, password });
+    res.json({ success: true });
+});
+
+app.post('/api/login', (req, res) => {
+    const { username, password } = req.body;
+    const user = users.find(u => u.username === username && u.password === password);
+    if (user) res.json({ success: true, username: user.username });
+    else res.status(401).json({ success: false, message: '账号或密码错误' });
+});
+
+// --- 购物车 ---
+app.post('/api/cart/add', (req, res) => {
+    const { username, product } = req.body;
+    if (!userCarts[username]) userCarts[username] = [];
+    userCarts[username].push(product);
+    addLog(username, '加入购物车', product.name);
+    res.json({ success: true, count: userCarts[username].length });
+});
+
+app.get('/api/cart', (req, res) => {
+    const { username } = req.query;
+    res.json(userCarts[username] || []);
+});
+
+app.post('/api/cart/remove', (req, res) => {
+    const { username, index } = req.body;
+    if (userCarts[username]) {
+        userCarts[username].splice(index, 1);
+    }
+    res.json({ success: true });
+});
+
+app.post('/api/cart/checkout', (req, res) => {
+    const { username, totalPrice } = req.body;
+    totalRevenue += parseFloat(totalPrice);
+    totalOrders += 1;
+    if (userCarts[username]) userCarts[username] = [];
+    addLog(username, '完成支付', `总额 ¥${totalPrice}`);
+    res.json({ success: true });
+});
+
+// --- 监控 ---
+function addLog(username, action, product) {
+    const now = new Date();
+    const newLog = {
+        id: Date.now(),
+        username: username || '游客',
+        action: action,
+        product: product || '-',
+        time: now.toLocaleString(),
+        timestamp: now.getTime(), 
+        ip: '10.0.0.1' 
+    };
+    browseLogs.unshift(newLog);
+    if (browseLogs.length > 500) browseLogs = browseLogs.slice(0, 500);
+}
+
+app.post('/api/track', (req, res) => {
+    const { username, action, product } = req.body;
+    addLog(username, action, product);
+    res.json({ success: true });
+});
+
+// --- 图表接口 (改动重点：数据过滤) ---
+app.get('/api/admin/stats', (req, res) => {
+    // 1. 流量趋势
+    const trafficData = new Array(24).fill(0);
+    browseLogs.forEach(log => {
+        const cnTime = new Date(log.timestamp + 8 * 3600000);
+        const hour = cnTime.getUTCHours(); 
+        trafficData[hour]++;
+    });
+
+    // 2. 热门商品 (过滤非商品的操作)
+    const productCount = {};
+    browseLogs.forEach(log => {
+        // 排除掉：没名字的、包含"总额"的、包含"第x页"的、包含"列表"的
+        if (log.product !== '-' 
+            && !log.product.includes('总额')
+            && !log.product.includes('页')
+            && !log.product.includes('列表')
+            && !log.product.includes('首页')
+        ) {
+            productCount[log.product] = (productCount[log.product] || 0) + 1;
         }
-        .nav-links a { color: white; text-decoration: none; margin-left: 20px; cursor: pointer; }
-        .nav-links a:hover { color: #ddd; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
-        .product-card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center; }
-        .product-img { width: 100%; height: 180px; object-fit: contain; margin-bottom: 15px; }
-        .product-name { font-size: 18px; font-weight: 600; margin-bottom: 10px; }
-        .product-price { color: #e63946; font-size: 20px; margin-bottom: 10px; }
-        .pagination { text-align: center; margin-top: 30px; }
-        .page-btn { padding: 10px 20px; margin: 0 5px; cursor: pointer; }
-    </style>
-</head>
-<body>
+    });
+    const topProducts = Object.entries(productCount)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
 
-    <nav class="navbar">
-        <div style="font-size: 20px; font-weight: bold;">🛍️ 云端商城</div>
-        <div class="nav-links" id="auth-section">
-            <!-- JS填充 -->
-        </div>
-    </nav>
+    // 3. 行为分布
+    const actionStats = { '浏览': 0, '加购': 0, '支付': 0, '其他': 0 };
+    browseLogs.forEach(log => {
+        if (log.action.includes('浏览')) actionStats['浏览']++;
+        else if (log.action.includes('加入')) actionStats['加购']++;
+        else if (log.action.includes('支付')) actionStats['支付']++;
+        else actionStats['其他']++;
+    });
 
-    <div class="container">
-        <h2 style="text-align:center; margin-bottom:20px;">热门商品</h2>
-        <div class="product-grid" id="product-list"></div>
-        <div class="pagination">
-            <button class="page-btn" id="prev-btn" onclick="changePage(-1)">上一页</button>
-            <span id="page-info" style="margin: 0 10px;">1</span>
-            <button class="page-btn" id="next-btn" onclick="changePage(1)">下一页</button>
-        </div>
-    </div>
+    const formattedLogs = browseLogs.slice(0, 10).map(log => {
+        const cnTime = new Date(log.timestamp + 8 * 3600000);
+        const timeStr = cnTime.toISOString().replace('T', ' ').substring(0, 19);
+        return { ...log, time: timeStr };
+    });
 
-    <script>
-        const API_BASE = ''; 
-        let currentPage = 1;
-        let productsCache = []; // 缓存当前页商品数据，方便加入购物车
+    res.json({
+        kpi: {
+            revenue: totalRevenue,
+            orders: totalOrders,
+            visits: browseLogs.length,
+            activeUsers: new Set(browseLogs.map(l => l.username)).size
+        },
+        charts: {
+            hourlyTraffic: trafficData, 
+            topProducts: topProducts,   
+            actionDistribution: Object.values(actionStats) 
+        },
+        logs: formattedLogs
+    });
+});
 
-        window.onload = function() {
-            checkLoginStatus();
-            loadProducts(currentPage);
-            trackUserAction('访问首页', '浏览商品列表');
-        };
+app.post('/api/admin/clear', (req, res) => {
+    browseLogs = [];
+    totalRevenue = 0;
+    totalOrders = 0;
+    res.json({ success: true });
+});
 
-        function checkLoginStatus() {
-            const user = localStorage.getItem('currentUser');
-            const authSection = document.getElementById('auth-section');
-            if (user) {
-                authSection.innerHTML = `
-                    <span>欢迎, ${user}</span>
-                    <a href="cart.html" style="color: #f1c40f;">🛒 购物车</a>
-                    <a onclick="logout()">退出</a>
-                `;
-            } else {
-                authSection.innerHTML = `
-                    <a href="login.html">登录</a>
-                    <a href="register.html">注册</a>
-                `;
-            }
-        }
-
-        function logout() {
-            trackUserAction('用户登出', '-');
-            localStorage.removeItem('currentUser');
-            window.location.reload();
-        }
-
-        async function loadProducts(page) {
-            try {
-                const res = await fetch(`${API_BASE}/api/products?page=${page}`);
-                const data = await res.json();
-                productsCache = data.items; // 缓存下来
-                
-                const productList = document.getElementById('product-list');
-                productList.innerHTML = ''; 
-
-                data.items.forEach((product, index) => {
-                    productList.innerHTML += `
-                        <div class="product-card">
-                            <img src="${product.img}" class="product-img">
-                            <div class="product-name">${product.name}</div>
-                            <div class="product-price">¥${product.price}</div>
-                            <button onclick="addToCart(${index})" style="margin-top:10px; padding:8px 20px; background:#28a745; color:white; border:none; border-radius:5px; cursor:pointer;">加入购物车</button>
-                        </div>
-                    `;
-                });
-
-                document.getElementById('page-info').innerText = `第 ${data.page} 页`;
-                document.getElementById('prev-btn').disabled = data.page <= 1;
-                document.getElementById('next-btn').disabled = data.page >= data.totalPages;
-                currentPage = data.page;
-            } catch (err) { console.error(err); }
-        }
-
-        function changePage(step) {
-            loadProducts(currentPage + step);
-            trackUserAction('翻页浏览', `第 ${currentPage + step} 页`);
-        }
-
-        // ================= 🛒 加入购物车逻辑 =================
-        async function addToCart(index) {
-            const user = localStorage.getItem('currentUser');
-            if(!user) {
-                alert('请先登录后再购买！');
-                window.location.href = 'login.html';
-                return;
-            }
-
-            const product = productsCache[index];
-            try {
-                const res = await fetch('/api/cart/add', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: user, product: product })
-                });
-                const data = await res.json();
-                if(data.success) {
-                    alert(`✅ 已加入购物车！当前共有 ${data.count} 件商品`);
-                }
-            } catch(e) {
-                alert('添加失败');
-            }
-        }
-
-        async function trackUserAction(action, product) {
-            const currentUser = localStorage.getItem('currentUser') || '未登录游客';
-            try {
-                await fetch('/api/track', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        username: currentUser,
-                        action: action,
-                        product: product
-                    })
-                });
-            } catch (e) {}
-        }
-    </script>
-</body>
-</html>
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => { console.log(`Server running on port ${PORT}`); });
