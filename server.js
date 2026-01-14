@@ -1,6 +1,5 @@
 // server.js
 const express = require('express');
-const { createClient } = require('@supabase/supabase-js');
 const path = require('path');
 const cors = require('cors');
 
@@ -8,11 +7,11 @@ const app = express();
 
 app.use(express.json());
 app.use(cors());
-// 托管静态文件 (HTML, CSS)
 app.use(express.static(path.join(__dirname, '.')));
 
-// ====================== 模拟数据 (当Supabase没配置时使用) ======================
-// 为了演示分页，我们需要至少8个商品
+// ====================== 1. 模拟数据库数据 ======================
+
+// 商品数据
 const MOCK_PRODUCTS = [
     { id: 1, name: "云端-高性能键盘", price: 599, desc: "全键无冲，手感极佳", img: "https://placehold.co/300x200/2c3e50/FFF?text=Keyboard" },
     { id: 2, name: "云端-无线耳机", price: 1299, desc: "降噪黑科技", img: "https://placehold.co/300x200/e74c3c/FFF?text=Headset" },
@@ -24,74 +23,79 @@ const MOCK_PRODUCTS = [
     { id: 8, name: "云端-游戏手柄", price: 299, desc: "震动反馈细腻", img: "https://placehold.co/300x200/7f8c8d/FFF?text=Gamepad" }
 ];
 
-// 简易内存用户库 (重启服务器后会清空，演示用)
+// 用户数据 (内存版)
 const users = [];
 
-// ====================== Supabase 配置 (可选) ======================
-const SUPABASE_URL = 'https://fulyzmmwivpwrvfoifdy.supabase.co';
-const SUPABASE_KEY = 'YOUR_SUPABASE_KEY_HERE'; // 请填入你的Key，如果不填则使用Mock数据
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+// 【新增】浏览日志 (内存版，只保留最近100条)
+let browseLogs = [];
 
-// ====================== 接口 API ======================
+// ====================== 2. 接口 API ======================
 
-// 1. 获取商品列表 (支持分页 ?page=1)
-app.get('/api/products', async (req, res) => {
+// --- 商品接口 ---
+app.get('/api/products', (req, res) => {
     const page = parseInt(req.query.page) || 1;
-    const limit = 4; // 每页显示4个
-
-    try {
-        let allProducts = MOCK_PRODUCTS;
-        
-        // 尝试从Supabase获取 (如果配置了Key)
-        if (SUPABASE_KEY !== 'YOUR_SUPABASE_KEY_HERE') {
-            const { data, error } = await supabase.from('products').select('*');
-            if (!error && data && data.length > 0) {
-                allProducts = data;
-            }
-        }
-
-        // 计算分页
-        const startIndex = (page - 1) * limit;
-        const endIndex = startIndex + limit;
-        const paginatedItems = allProducts.slice(startIndex, endIndex);
-
-        res.json({
-            items: paginatedItems,
-            total: allProducts.length,
-            page: page,
-            totalPages: Math.ceil(allProducts.length / limit)
-        });
-
-    } catch (err) {
-        res.status(500).json({ error: 'Server Error' });
-    }
+    const limit = 4;
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    
+    res.json({
+        items: MOCK_PRODUCTS.slice(startIndex, endIndex),
+        total: MOCK_PRODUCTS.length,
+        page: page,
+        totalPages: Math.ceil(MOCK_PRODUCTS.length / limit)
+    });
 });
 
-// 2. 注册接口
+// --- 用户接口 ---
 app.post('/api/register', (req, res) => {
     const { username, password } = req.body;
-    if (users.find(u => u.username === username)) {
-        return res.status(400).json({ success: false, message: '用户已存在' });
-    }
+    if (users.find(u => u.username === username)) return res.status(400).json({ success: false, message: '用户已存在' });
     users.push({ username, password });
     res.json({ success: true, message: '注册成功' });
 });
 
-// 3. 登录接口
 app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
     const user = users.find(u => u.username === username && u.password === password);
-    if (user) {
-        res.json({ success: true, username: user.username });
-    } else {
-        res.status(401).json({ success: false, message: '账号或密码错误' });
-    }
+    if (user) res.json({ success: true, username: user.username });
+    else res.status(401).json({ success: false, message: '账号或密码错误' });
 });
 
-// 4. 记录浏览行为
-app.post('/api/record-browse', async (req, res) => {
-    // 这里保持你原来的逻辑，简单返回成功，防止前端报错
-    console.log("记录浏览:", req.body);
+// --- 【新增】埋点与监控接口 ---
+
+// 接收前端发来的浏览记录
+app.post('/api/track', (req, res) => {
+    const { username, action, product, time } = req.body;
+    
+    const newLog = {
+        id: Date.now(),
+        username: username || '游客',
+        action: action, // 例如 "浏览首页", "点击购买"
+        product: product || '-',
+        time: time || new Date().toLocaleString(),
+        ip: req.ip
+    };
+
+    // 把新记录插到最前面
+    browseLogs.unshift(newLog);
+    
+    // 限制只存最近50条，防止内存爆了
+    if (browseLogs.length > 50) {
+        browseLogs = browseLogs.slice(0, 50);
+    }
+
+    console.log(`[监控] ${newLog.username} - ${newLog.action}`);
+    res.json({ success: true });
+});
+
+// 后台获取日志列表
+app.get('/api/admin/logs', (req, res) => {
+    res.json(browseLogs);
+});
+
+// 清空日志 (可选功能)
+app.post('/api/admin/clear', (req, res) => {
+    browseLogs = [];
     res.json({ success: true });
 });
 
