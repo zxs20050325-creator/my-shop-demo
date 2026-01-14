@@ -9,7 +9,7 @@
         body { background: #f5f5f5; padding-top: 80px; }
         .navbar {
             position: fixed; top: 0; left: 0; width: 100%;
-            background: #8b2a2a; /* 改成故宫红/砖红色，符合主题 */
+            background: #8b2a2a; 
             color: white; padding: 15px 30px;
             display: flex; justify-content: space-between; align-items: center; z-index: 1000;
             box-shadow: 0 2px 10px rgba(0,0,0,0.2);
@@ -19,7 +19,6 @@
         
         .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
         
-        /* 标题样式 */
         .page-title { text-align: center; margin-bottom: 30px; color: #333; }
         .page-title h2 { font-size: 32px; font-weight: bold; margin-bottom: 10px; }
         .page-title p { color: #666; font-size: 16px; }
@@ -33,7 +32,15 @@
         }
         .product-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
         
-        .product-img { width: 100%; height: 220px; object-fit: cover; }
+        /* ============== 修改重点 ============== */
+        .product-img { 
+            width: 100%; 
+            height: 250px; /* 稍微加高了一点高度，让竖着的商品更好看 */
+            object-fit: contain; /* 【关键修改】改为 contain，图片会完整显示，不会被裁剪 */
+            background-color: #fff; /* 背景设为白色，防止图片比例不同时出现灰边 */
+            padding: 10px; /* 给图片一点留白，看起来更精致 */
+        }
+        /* ==================================== */
         
         .card-body { padding: 20px; }
         .product-name { font-size: 18px; font-weight: bold; margin-bottom: 8px; color: #333; }
