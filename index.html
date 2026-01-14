@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>云端商城 - 客户端</title>
     <style>
-        /* 保持原有样式 */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: '微软雅黑'; }
         body { background: #f5f5f5; padding-top: 80px; }
         .navbar {
@@ -14,6 +13,7 @@
             display: flex; justify-content: space-between; align-items: center; z-index: 1000;
         }
         .nav-links a { color: white; text-decoration: none; margin-left: 20px; cursor: pointer; }
+        .nav-links a:hover { color: #ddd; }
         .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
         .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
         .product-card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center; }
@@ -29,8 +29,7 @@
     <nav class="navbar">
         <div style="font-size: 20px; font-weight: bold;">🛍️ 云端商城</div>
         <div class="nav-links" id="auth-section">
-            <a href="login.html">登录</a>
-            <a href="register.html">注册</a>
+            <!-- JS填充 -->
         </div>
     </nav>
 
@@ -47,12 +46,11 @@
     <script>
         const API_BASE = ''; 
         let currentPage = 1;
-        
-        // 1. 页面加载完成
+        let productsCache = []; // 缓存当前页商品数据，方便加入购物车
+
         window.onload = function() {
             checkLoginStatus();
             loadProducts(currentPage);
-            // 【埋点】记录访问首页
             trackUserAction('访问首页', '浏览商品列表');
         };
 
@@ -60,12 +58,21 @@
             const user = localStorage.getItem('currentUser');
             const authSection = document.getElementById('auth-section');
             if (user) {
-                authSection.innerHTML = `<span>欢迎, ${user}</span> <a onclick="logout()">退出</a>`;
+                authSection.innerHTML = `
+                    <span>欢迎, ${user}</span>
+                    <a href="cart.html" style="color: #f1c40f;">🛒 购物车</a>
+                    <a onclick="logout()">退出</a>
+                `;
+            } else {
+                authSection.innerHTML = `
+                    <a href="login.html">登录</a>
+                    <a href="register.html">注册</a>
+                `;
             }
         }
 
         function logout() {
-            trackUserAction('用户登出', '-'); // 【埋点】记录登出
+            trackUserAction('用户登出', '-');
             localStorage.removeItem('currentUser');
             window.location.reload();
         }
@@ -74,16 +81,18 @@
             try {
                 const res = await fetch(`${API_BASE}/api/products?page=${page}`);
                 const data = await res.json();
+                productsCache = data.items; // 缓存下来
+                
                 const productList = document.getElementById('product-list');
                 productList.innerHTML = ''; 
 
-                data.items.forEach(product => {
+                data.items.forEach((product, index) => {
                     productList.innerHTML += `
                         <div class="product-card">
                             <img src="${product.img}" class="product-img">
                             <div class="product-name">${product.name}</div>
                             <div class="product-price">¥${product.price}</div>
-                            <button onclick="buyProduct('${product.name}')" style="margin-top:10px; padding:5px 15px; background:#28a745; color:white; border:none; border-radius:3px; cursor:pointer;">购买</button>
+                            <button onclick="addToCart(${index})" style="margin-top:10px; padding:8px 20px; background:#28a745; color:white; border:none; border-radius:5px; cursor:pointer;">加入购物车</button>
                         </div>
                     `;
                 });
@@ -97,17 +106,34 @@
 
         function changePage(step) {
             loadProducts(currentPage + step);
-            // 【埋点】记录翻页
             trackUserAction('翻页浏览', `第 ${currentPage + step} 页`);
         }
 
-        function buyProduct(name) {
-            alert(`已将 [${name}] 加入购物车`);
-            // 【埋点】记录购买点击
-            trackUserAction('点击购买', name);
+        // ================= 🛒 加入购物车逻辑 =================
+        async function addToCart(index) {
+            const user = localStorage.getItem('currentUser');
+            if(!user) {
+                alert('请先登录后再购买！');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const product = productsCache[index];
+            try {
+                const res = await fetch('/api/cart/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user, product: product })
+                });
+                const data = await res.json();
+                if(data.success) {
+                    alert(`✅ 已加入购物车！当前共有 ${data.count} 件商品`);
+                }
+            } catch(e) {
+                alert('添加失败');
+            }
         }
 
-        // ================= 【核心功能】上报用户行为 =================
         async function trackUserAction(action, product) {
             const currentUser = localStorage.getItem('currentUser') || '未登录游客';
             try {
@@ -117,13 +143,10 @@
                     body: JSON.stringify({
                         username: currentUser,
                         action: action,
-                        product: product,
-                        time: new Date().toLocaleString()
+                        product: product
                     })
                 });
-            } catch (e) {
-                console.log('埋点上报失败');
-            }
+            } catch (e) {}
         }
     </script>
 </body>
