@@ -3,42 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>云端商城</title>
+    <title>云端商城 - 客户端</title>
     <style>
+        /* 保持原有样式 */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: '微软雅黑'; }
-        body { background: #f5f5f5; padding-top: 80px; } /* 给导航栏留空 */
-        
-        /* 导航栏样式 */
+        body { background: #f5f5f5; padding-top: 80px; }
         .navbar {
             position: fixed; top: 0; left: 0; width: 100%;
             background: #333; color: white; padding: 15px 30px;
-            display: flex; justify-content: space-between; align-items: center;
-            z-index: 1000;
+            display: flex; justify-content: space-between; align-items: center; z-index: 1000;
         }
         .nav-links a { color: white; text-decoration: none; margin-left: 20px; cursor: pointer; }
-        .nav-links a:hover { color: #ddd; }
-        
         .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
         .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
-        .product-card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center; transition: transform 0.2s; }
-        .product-card:hover { transform: translateY(-5px); }
+        .product-card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center; }
         .product-img { width: 100%; height: 180px; object-fit: contain; margin-bottom: 15px; }
         .product-name { font-size: 18px; font-weight: 600; margin-bottom: 10px; }
         .product-price { color: #e63946; font-size: 20px; margin-bottom: 10px; }
-
-        /* 分页按钮样式 */
         .pagination { text-align: center; margin-top: 30px; }
-        .page-btn { padding: 10px 20px; margin: 0 5px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        .page-btn:disabled { background: #ccc; cursor: not-allowed; }
+        .page-btn { padding: 10px 20px; margin: 0 5px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <!-- 顶部导航栏 -->
     <nav class="navbar">
         <div style="font-size: 20px; font-weight: bold;">🛍️ 云端商城</div>
         <div class="nav-links" id="auth-section">
-            <!-- 这里会根据登录状态显示不同内容 -->
             <a href="login.html">登录</a>
             <a href="register.html">注册</a>
         </div>
@@ -46,61 +36,46 @@
 
     <div class="container">
         <h2 style="text-align:center; margin-bottom:20px;">热门商品</h2>
-        
-        <!-- 商品列表 -->
         <div class="product-grid" id="product-list"></div>
-
-        <!-- 分页控制 -->
         <div class="pagination">
             <button class="page-btn" id="prev-btn" onclick="changePage(-1)">上一页</button>
-            <span id="page-info" style="margin: 0 10px;">第 1 页</span>
+            <span id="page-info" style="margin: 0 10px;">1</span>
             <button class="page-btn" id="next-btn" onclick="changePage(1)">下一页</button>
         </div>
     </div>
 
     <script>
-        // 重要：使用相对路径，自动适配 localhost 和 Render
         const API_BASE = ''; 
         let currentPage = 1;
-
-        // 页面加载
+        
+        // 1. 页面加载完成
         window.onload = function() {
             checkLoginStatus();
             loadProducts(currentPage);
+            // 【埋点】记录访问首页
+            trackUserAction('访问首页', '浏览商品列表');
         };
 
-        // 检查是否登录
         function checkLoginStatus() {
             const user = localStorage.getItem('currentUser');
             const authSection = document.getElementById('auth-section');
             if (user) {
-                authSection.innerHTML = `
-                    <span>欢迎, ${user}</span>
-                    <a onclick="logout()">退出</a>
-                `;
-            } else {
-                authSection.innerHTML = `
-                    <a href="login.html">登录</a>
-                    <a href="register.html">注册</a>
-                `;
+                authSection.innerHTML = `<span>欢迎, ${user}</span> <a onclick="logout()">退出</a>`;
             }
         }
 
-        // 退出登录
         function logout() {
+            trackUserAction('用户登出', '-'); // 【埋点】记录登出
             localStorage.removeItem('currentUser');
             window.location.reload();
         }
 
-        // 加载商品
         async function loadProducts(page) {
             try {
-                // 发送 page 参数给后端
                 const res = await fetch(`${API_BASE}/api/products?page=${page}`);
                 const data = await res.json();
-                
                 const productList = document.getElementById('product-list');
-                productList.innerHTML = ''; // 清空当前列表
+                productList.innerHTML = ''; 
 
                 data.items.forEach(product => {
                     productList.innerHTML += `
@@ -108,26 +83,47 @@
                             <img src="${product.img}" class="product-img">
                             <div class="product-name">${product.name}</div>
                             <div class="product-price">¥${product.price}</div>
-                            <div style="color:#666; font-size:12px;">${product.desc}</div>
-                            <button style="margin-top:10px; padding:5px 15px; background:#28a745; color:white; border:none; border-radius:3px;">购买</button>
+                            <button onclick="buyProduct('${product.name}')" style="margin-top:10px; padding:5px 15px; background:#28a745; color:white; border:none; border-radius:3px; cursor:pointer;">购买</button>
                         </div>
                     `;
                 });
 
-                // 更新分页按钮状态
-                document.getElementById('page-info').innerText = `第 ${data.page} 页 / 共 ${data.totalPages} 页`;
+                document.getElementById('page-info').innerText = `第 ${data.page} 页`;
                 document.getElementById('prev-btn').disabled = data.page <= 1;
                 document.getElementById('next-btn').disabled = data.page >= data.totalPages;
-                
                 currentPage = data.page;
-
-            } catch (err) {
-                console.error('加载失败', err);
-            }
+            } catch (err) { console.error(err); }
         }
 
         function changePage(step) {
             loadProducts(currentPage + step);
+            // 【埋点】记录翻页
+            trackUserAction('翻页浏览', `第 ${currentPage + step} 页`);
+        }
+
+        function buyProduct(name) {
+            alert(`已将 [${name}] 加入购物车`);
+            // 【埋点】记录购买点击
+            trackUserAction('点击购买', name);
+        }
+
+        // ================= 【核心功能】上报用户行为 =================
+        async function trackUserAction(action, product) {
+            const currentUser = localStorage.getItem('currentUser') || '未登录游客';
+            try {
+                await fetch('/api/track', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: currentUser,
+                        action: action,
+                        product: product,
+                        time: new Date().toLocaleString()
+                    })
+                });
+            } catch (e) {
+                console.log('埋点上报失败');
+            }
         }
     </script>
 </body>
