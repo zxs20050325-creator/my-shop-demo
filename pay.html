@@ -20,7 +20,10 @@
         .qrcode-box { 
             background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px dashed #ccc;
         }
-        .qrcode-img { width: 150px; height: 150px; }
+        
+        /* 这里的 object-fit: contain 保证你的二维码不管长宽比是多少，都能完整显示 */
+        .qrcode-img { width: 200px; height: 200px; object-fit: contain; }
+        
         .tips { font-size: 12px; color: #888; margin-top: 10px; }
         
         .btn-group { display: flex; gap: 10px; }
@@ -40,10 +43,10 @@
         </div>
 
         <div class="qrcode-box">
-            <!-- 这里使用公开API生成一个假的支付二维码 -->
+            <!-- 这里会自动加载你上传的 wx-pay.jpg -->
             <img src="" id="qr-code" class="qrcode-img" alt="支付二维码">
-            <div class="tips">请使用 微信 或 支付宝 扫码支付</div>
-            <div style="font-size:12px; color:#8b2a2a; margin-top:5px;">(模拟支付，不会真的扣款)</div>
+            <div class="tips">请使用 微信 扫码支付</div>
+            <div style="font-size:12px; color:#8b2a2a; margin-top:5px;">(扫码后请输入对应金额转账)</div>
         </div>
 
         <div class="btn-group">
@@ -69,8 +72,10 @@
             // 显示金额
             document.getElementById('display-amount').innerText = `¥${money}`;
             
-            // 生成二维码图片 (这是一个免费生成二维码的接口)
-            document.getElementById('qr-code').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=Pay${money}to${user}`;
+            // ================= 关键修改在这里 =================
+            // 指向你在 images 文件夹里上传的 wx-pay.jpg
+            document.getElementById('qr-code').src = 'images/wx-pay.jpg'; 
+            // ================================================
         };
 
         // 3. 点击“我已支付”
