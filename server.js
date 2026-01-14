@@ -1,4 +1,4 @@
-// server.js - 商务图表版
+// server.js - 完整版 (已修正云端北京时间时区问题)
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
@@ -9,7 +9,7 @@ app.use(express.json());
 app.use(cors());
 app.use(express.static(path.join(__dirname, '.')));
 
-// ====================== 1. 数据存储 ======================
+// ====================== 1. 数据存储 (保持不变) ======================
 const MOCK_PRODUCTS = [
     { id: 1, name: "云端-高性能键盘", price: 599, desc: "全键无冲，手感极佳", img: "https://placehold.co/300x200/2c3e50/FFF?text=Keyboard" },
     { id: 2, name: "云端-无线耳机", price: 1299, desc: "降噪黑科技", img: "https://placehold.co/300x200/e74c3c/FFF?text=Headset" },
@@ -23,13 +23,11 @@ const MOCK_PRODUCTS = [
 
 const users = [];
 let userCarts = {}; 
-// 增加日志上限到 500 条，以便图表更好看
 let browseLogs = []; 
-// 全局统计变量
 let totalRevenue = 0; 
 let totalOrders = 0;
 
-// ====================== 2. 核心接口 ======================
+// ====================== 2. 核心接口 (保持不变) ======================
 
 app.get('/api/products', (req, res) => {
     const page = parseInt(req.query.page) || 1;
@@ -56,7 +54,7 @@ app.post('/api/login', (req, res) => {
     else res.status(401).json({ success: false, message: '账号或密码错误' });
 });
 
-// --- 购物车相关 ---
+// --- 购物车相关 (保持不变) ---
 app.post('/api/cart/add', (req, res) => {
     const { username, product } = req.body;
     if (!userCarts[username]) userCarts[username] = [];
@@ -80,16 +78,14 @@ app.post('/api/cart/remove', (req, res) => {
 
 app.post('/api/cart/checkout', (req, res) => {
     const { username, totalPrice } = req.body;
-    // 累加销售额
     totalRevenue += parseFloat(totalPrice);
     totalOrders += 1;
-    
     if (userCarts[username]) userCarts[username] = [];
     addLog(username, '完成支付', `总额 ¥${totalPrice}`);
     res.json({ success: true });
 });
 
-// --- 监控与埋点 ---
+// --- 监控与埋点 (保持不变) ---
 function addLog(username, action, product) {
     const now = new Date();
     const newLog = {
@@ -97,9 +93,9 @@ function addLog(username, action, product) {
         username: username || '游客',
         action: action,
         product: product || '-',
-        time: now.toLocaleString(),
-        timestamp: now.getTime(), // 用于时间排序
-        ip: '10.0.0.1' // 模拟IP
+        time: now.toLocaleString(), // 这个本地时间仅供参考，统计时会用 timestamp 重算
+        timestamp: now.getTime(), 
+        ip: '10.0.0.1' 
     };
     browseLogs.unshift(newLog);
     if (browseLogs.length > 500) browseLogs = browseLogs.slice(0, 500);
@@ -111,38 +107,51 @@ app.post('/api/track', (req, res) => {
     res.json({ success: true });
 });
 
-// 【重点新增】图表统计专用接口
+// ====================== 【仅修改此处】图表统计专用接口 ======================
+// 增加了 +8 小时偏移量，强制云端显示为北京时间
 app.get('/api/admin/stats', (req, res) => {
-    // 1. 24小时流量趋势 (按小时分组)
+    // 1. 24小时流量趋势 (修正为北京时间)
     const trafficData = new Array(24).fill(0);
-    const now = new Date();
+    const now = new Date(); // 服务器时间 (UTC)
+
     browseLogs.forEach(log => {
-        const logTime = new Date(log.timestamp);
-        // 如果是24小时内的日志
-        if (now - logTime < 24 * 60 * 60 * 1000) {
-            trafficData[logTime.getHours()]++;
-        }
+        // 将日志时间戳 + 8小时
+        const cnTime = new Date(log.timestamp + 8 * 3600000);
+        
+        // 简单逻辑：直接取修正后的小时数落位
+        const hour = cnTime.getUTCHours(); 
+        trafficData[hour]++;
     });
 
-    // 2. 热门商品 (统计加入购物车和浏览次数)
+    // 2. 热门商品 (逻辑不变)
     const productCount = {};
     browseLogs.forEach(log => {
         if (log.product !== '-' && !log.product.includes('总额')) {
             productCount[log.product] = (productCount[log.product] || 0) + 1;
         }
     });
-    // 排序取前5
     const topProducts = Object.entries(productCount)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5);
 
-    // 3. 用户行为分布
+    // 3. 用户行为分布 (逻辑不变)
     const actionStats = { '浏览': 0, '加购': 0, '支付': 0, '其他': 0 };
     browseLogs.forEach(log => {
         if (log.action.includes('浏览')) actionStats['浏览']++;
         else if (log.action.includes('加入')) actionStats['加购']++;
         else if (log.action.includes('支付')) actionStats['支付']++;
         else actionStats['其他']++;
+    });
+
+    // 4. 处理日志显示时间 (修正为北京时间字符串)
+    const formattedLogs = browseLogs.slice(0, 10).map(log => {
+        const cnTime = new Date(log.timestamp + 8 * 3600000);
+        // 手动拼接成 YYYY-MM-DD HH:mm:ss 格式，确保表格显示对的时间
+        const timeStr = cnTime.toISOString().replace('T', ' ').substring(0, 19);
+        return {
+            ...log,
+            time: timeStr // 覆盖原本的 time 字段
+        };
     });
 
     res.json({
@@ -153,11 +162,11 @@ app.get('/api/admin/stats', (req, res) => {
             activeUsers: new Set(browseLogs.map(l => l.username)).size
         },
         charts: {
-            hourlyTraffic: trafficData, // 数组 [0,0,5,10...]
-            topProducts: topProducts,   // [['键盘', 10], ['鼠标', 5]]
-            actionDistribution: Object.values(actionStats) // [100, 20, 5, 2]
+            hourlyTraffic: trafficData, 
+            topProducts: topProducts,   
+            actionDistribution: Object.values(actionStats) 
         },
-        logs: browseLogs.slice(0, 10) // 只返回最近10条给表格
+        logs: formattedLogs
     });
 });
 
