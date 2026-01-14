@@ -9,7 +9,7 @@ app.use(express.json());
 app.use(cors());
 app.use(express.static(path.join(__dirname, '.')));
 
-// ====================== 1. 模拟数据库数据 ======================
+// ====================== 数据存储 ======================
 
 // 商品数据
 const MOCK_PRODUCTS = [
@@ -23,21 +23,19 @@ const MOCK_PRODUCTS = [
     { id: 8, name: "云端-游戏手柄", price: 299, desc: "震动反馈细腻", img: "https://placehold.co/300x200/7f8c8d/FFF?text=Gamepad" }
 ];
 
-// 用户数据 (内存版)
 const users = [];
-
-// 【新增】浏览日志 (内存版，只保留最近100条)
 let browseLogs = [];
 
-// ====================== 2. 接口 API ======================
+// 【新增】购物车存储结构: { "username1": [商品A, 商品B], "username2": [] }
+let userCarts = {}; 
 
-// --- 商品接口 ---
+// ====================== 接口 API ======================
+
 app.get('/api/products', (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = 4;
     const startIndex = (page - 1) * limit;
     const endIndex = startIndex + limit;
-    
     res.json({
         items: MOCK_PRODUCTS.slice(startIndex, endIndex),
         total: MOCK_PRODUCTS.length,
@@ -46,7 +44,6 @@ app.get('/api/products', (req, res) => {
     });
 });
 
-// --- 用户接口 ---
 app.post('/api/register', (req, res) => {
     const { username, password } = req.body;
     if (users.find(u => u.username === username)) return res.status(400).json({ success: false, message: '用户已存在' });
@@ -61,45 +58,71 @@ app.post('/api/login', (req, res) => {
     else res.status(401).json({ success: false, message: '账号或密码错误' });
 });
 
-// --- 【新增】埋点与监控接口 ---
+// --- 【新增】购物车接口 ---
 
-// 接收前端发来的浏览记录
-app.post('/api/track', (req, res) => {
-    const { username, action, product, time } = req.body;
+// 1. 添加到购物车
+app.post('/api/cart/add', (req, res) => {
+    const { username, product } = req.body;
+    if (!username) return res.status(401).json({ error: '未登录' });
     
+    if (!userCarts[username]) userCarts[username] = [];
+    userCarts[username].push(product);
+    
+    // 顺便记录一下监控日志
+    addLog(username, '加入购物车', product.name);
+    
+    res.json({ success: true, count: userCarts[username].length });
+});
+
+// 2. 获取购物车列表
+app.get('/api/cart', (req, res) => {
+    const { username } = req.query;
+    const list = userCarts[username] || [];
+    res.json(list);
+});
+
+// 3. 移除商品（简单版：根据索引移除）
+app.post('/api/cart/remove', (req, res) => {
+    const { username, index } = req.body;
+    if (userCarts[username]) {
+        const removed = userCarts[username].splice(index, 1);
+        addLog(username, '移除商品', removed[0]?.name || '-');
+    }
+    res.json({ success: true });
+});
+
+// 4. 结账（清空购物车）
+app.post('/api/cart/checkout', (req, res) => {
+    const { username, totalPrice } = req.body;
+    if (userCarts[username]) {
+        userCarts[username] = []; // 清空
+        addLog(username, '完成支付', `总额 ¥${totalPrice}`);
+    }
+    res.json({ success: true });
+});
+
+// --- 监控相关 ---
+function addLog(username, action, product) {
     const newLog = {
         id: Date.now(),
         username: username || '游客',
-        action: action, // 例如 "浏览首页", "点击购买"
+        action: action,
         product: product || '-',
-        time: time || new Date().toLocaleString(),
-        ip: req.ip
+        time: new Date().toLocaleString(),
+        ip: '127.0.0.1'
     };
-
-    // 把新记录插到最前面
     browseLogs.unshift(newLog);
-    
-    // 限制只存最近50条，防止内存爆了
-    if (browseLogs.length > 50) {
-        browseLogs = browseLogs.slice(0, 50);
-    }
+    if (browseLogs.length > 50) browseLogs = browseLogs.slice(0, 50);
+}
 
-    console.log(`[监控] ${newLog.username} - ${newLog.action}`);
+app.post('/api/track', (req, res) => {
+    const { username, action, product } = req.body;
+    addLog(username, action, product);
     res.json({ success: true });
 });
 
-// 后台获取日志列表
-app.get('/api/admin/logs', (req, res) => {
-    res.json(browseLogs);
-});
-
-// 清空日志 (可选功能)
-app.post('/api/admin/clear', (req, res) => {
-    browseLogs = [];
-    res.json({ success: true });
-});
+app.get('/api/admin/logs', (req, res) => res.json(browseLogs));
+app.post('/api/admin/clear', (req, res) => { browseLogs = []; res.json({ success: true }); });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+app.listen(PORT, () => { console.log(`Server running on port ${PORT}`); });
