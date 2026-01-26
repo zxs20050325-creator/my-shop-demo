@@ -180,3 +180,167 @@ app.post('/api/admin/clear', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => { console.log(`Server running on port ${PORT}`); });
+// ... existing code ...
+app.get('/api/admin/stats', (req, res) => {
+    // 1. 流量趋势
+    const trafficData = new Array(24).fill(0);
+    browseLogs.forEach(log => {
+        const cnTime = new Date(log.timestamp + 8 * 3600000);
+        const hour = cnTime.getUTCHours(); 
+        trafficData[hour]++;
+    });
+
+    // 2. 热门商品 (过滤非商品的操作)
+    const productCount = {};
+    browseLogs.forEach(log => {
+        // 排除掉：没名字的、包含"总额"的、包含"第x页"的、包含"列表"的
+        if (log.product !== '-' 
+            && !log.product.includes('总额')
+            && !log.product.includes('页')
+            && !log.product.includes('列表')
+            && !log.product.includes('首页')
+        ) {
+            productCount[log.product] = (productCount[log.product] || 0) + 1;
+        }
+    });
+    const topProducts = Object.entries(productCount)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+
+    // 3. 行为分布
+    const actionStats = { '浏览': 0, '加购': 0, '支付': 0, '其他': 0 };
+    browseLogs.forEach(log => {
+        if (log.action.includes('浏览')) actionStats['浏览']++;
+        else if (log.action.includes('加入')) actionStats['加购']++;
+        else if (log.action.includes('支付')) actionStats['支付']++;
+        else actionStats['其他']++;
+    });
+
+    const formattedLogs = browseLogs.slice(0, 10).map(log => {
+        const cnTime = new Date(log.timestamp + 8 * 3600000);
+        const timeStr = cnTime.toISOString().replace('T', ' ').substring(0, 19);
+        return { ...log, time: timeStr };
+    });
+
+    res.json({
+        kpi: {
+            revenue: totalRevenue,
+            orders: totalOrders,
+            visits: browseLogs.length,
+            activeUsers: new Set(browseLogs.map(l => l.username)).size
+        },
+        charts: {
+            hourlyTraffic: trafficData, 
+            topProducts: topProducts,   
+            actionDistribution: Object.values(actionStats) 
+        },
+        logs: formattedLogs
+    });
+});
+
+// 新增：搜索日志API
+app.get('/api/admin/search', (req, res) => {
+    const { q } = req.query;
+    if (!q) {
+        return res.json(browseLogs.slice(0, 10));
+    }
+    
+    const filteredLogs = browseLogs.filter(log => 
+        log.username.toLowerCase().includes(q.toLowerCase()) ||
+        log.product.toLowerCase().includes(q.toLowerCase()) ||
+        log.action.toLowerCase().includes(q.toLowerCase())
+    ).slice(0, 10);
+    
+    res.json(filteredLogs);
+});
+
+// 新增：完整数据导出API
+app.get('/api/admin/export', (req, res) => {
+    const csvData = [
+        ['时间戳', '北京时间', '用户名', '行为类型', '商品名称', 'IP地址'],
+        ...browseLogs.map(log => {
+            const cnTime = new Date(log.timestamp + 8 * 3600000);
+            return [
+                log.timestamp,
+                cnTime.toISOString().replace('T', ' ').substring(0, 19),
+                log.username,
+                log.action,
+                log.product,
+                log.ip
+            ];
+        })
+    ].map(row => row.join(',')).join('\n');
+    
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename=冀遗筑梦完整数据_${new Date().toISOString().split('T')[0]}.csv`);
+    res.send(csvData);
+});
+
+// 新增：用户管理API
+app.get('/api/admin/users', (req, res) => {
+    // 模拟用户数据，实际应用中可以从数据库获取
+    const userList = users.map(user => ({
+        username: user.username,
+        registerTime: new Date().toLocaleDateString('zh-CN'),
+        lastActive: new Date().toLocaleTimeString('zh-CN'),
+        status: 'active'
+    }));
+    
+    res.json(userList);
+});
+
+// 新增：商品管理API
+app.get('/api/admin/products', (req, res) => {
+    const productStats = {};
+    
+    // 统计每个商品的浏览量、加购量、购买量
+    browseLogs.forEach(log => {
+        if (log.product !== '-' && !log.product.includes('总额')) {
+            if (!productStats[log.product]) {
+                productStats[log.product] = { views: 0, carts: 0, purchases: 0 };
+            }
+            
+            if (log.action.includes('浏览')) productStats[log.product].views++;
+            else if (log.action.includes('加入')) productStats[log.product].carts++;
+            else if (log.action.includes('支付')) productStats[log.product].purchases++;
+        }
+    });
+    
+    const productsWithStats = MOCK_PRODUCTS.map(product => {
+        const stats = productStats[product.name] || { views: 0, carts: 0, purchases: 0 };
+        return {
+            ...product,
+            stats: stats,
+            conversionRate: stats.views > 0 ? ((stats.purchases / stats.views) * 100).toFixed(2) : '0.00'
+        };
+    });
+    
+    res.json(productsWithStats);
+});
+
+// 新增：系统状态API
+app.get('/api/admin/system', (req, res) => {
+    const systemInfo = {
+        serverUptime: Math.floor(process.uptime()),
+        memoryUsage: process.memoryUsage(),
+        nodeVersion: process.version,
+        platform: process.platform,
+        currentTime: new Date().toLocaleString('zh-CN'),
+        totalUsers: users.length,
+        totalProducts: MOCK_PRODUCTS.length,
+        totalLogs: browseLogs.length
+    };
+    
+    res.json(systemInfo);
+});
+
+app.post('/api/admin/clear', (req, res) => {
+    browseLogs = [];
+    totalRevenue = 0;
+    totalOrders = 0;
+    res.json({ success: true });
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => { console.log(`Server running on port ${PORT}`); });
+
