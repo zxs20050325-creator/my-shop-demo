@@ -78,7 +78,7 @@
         .bg-cart { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
         .bg-view { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
 
-        /* 控制按钮样式 */
+        /* 新增：控制按钮样式 */
         .controls { display: flex; gap: 10px; align-items: center; }
         .controls button { 
             background: #ef4444; color: white; border: none; padding: 10px 20px; 
@@ -86,7 +86,7 @@
         }
         .controls button:hover { background: #dc2626; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
         
-        /* 搜索框样式 */
+        /* 新增：搜索框样式 */
         #search-input {
             background: #1e293b; border: 1px solid #334155; color: white; 
             padding: 8px 12px; border-radius: 6px; width: 200px; transition: all 0.3s;
@@ -94,11 +94,11 @@
         #search-input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
         #search-input::placeholder { color: #64748b; }
         
-        /* 导出按钮样式 */
+        /* 新增：导出按钮样式 */
         .export-btn { background: #10b981 !important; }
         .export-btn:hover { background: #059669 !important; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4) !important; }
         
-        /* 管理区域样式 */
+        /* 新增：用户管理区域 */
         .user-management {
             grid-column: 1 / -1;
             background: var(--card-bg); padding: 25px; border-radius: 15px;
@@ -113,7 +113,7 @@
         .user-info { display: flex; align-items: center; gap: 10px; }
         .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: #3b82f6; display: flex; align-items: center; justify-content: center; }
         
-        /* 通知区域 */
+        /* 新增：通知区域 */
         .notification {
             position: fixed; top: 20px; right: 20px; padding: 15px 20px;
             background: var(--accent-green); color: white; border-radius: 8px;
@@ -121,7 +121,6 @@
             transform: translateX(120%); transition: transform 0.3s;
         }
         .notification.show { transform: translateX(0); }
-
         /* 系统监控样式 */
         .system-monitor {
             display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;
@@ -184,7 +183,6 @@
                     <input type="text" id="search-input" placeholder="🔍 搜索商品或用户...">
                     <button onclick="exportData()" class="export-btn">📊 导出数据</button>
                     <button onclick="clearData()">🗑️ 清空数据</button>
-                    <button onclick="batchOperation()" style="background: #8b5cf6;">⚡ 批量操作</button>
                 </div>
             </div>
             <table>
@@ -200,72 +198,32 @@
             </table>
         </div>
 
-        <!-- 用户管理区域 -->
+        <!-- 新增：用户管理区域 -->
         <div class="user-management">
             <h3 style="color:#cbd5e1; margin-bottom:15px;">👥 用户管理</h3>
             <div class="controls">
                 <button onclick="refreshUsers()">🔄 刷新用户列表</button>
                 <button onclick="sendBroadcast()" style="background: #8b5cf6;">📢 发送公告</button>
-                <button onclick="exportUsers()" style="background: #10b981;">📋 导出用户数据</button>
             </div>
             <div class="user-list" id="user-list">
                 <!-- 用户列表将通过JavaScript动态生成 -->
             </div>
         </div>
 
-        <!-- 商品管理区域 -->
+        <!-- 新增：系统监控区域 -->
         <div class="user-management">
-            <h3 style="color:#cbd5e1; margin-bottom:15px;">📦 商品管理</h3>
+            <h3 style="color:#cbd5e1; margin-bottom:15px;">🖥️ 系统监控</h3>
             <div class="controls">
-                <button onclick="loadProducts()" style="background: #f59e0b;">🔄 刷新商品列表</button>
-                <button onclick="addProduct()" style="background: #10b981;">➕ 添加商品</button>
-                <button onclick="exportProducts()" style="background: #3b82f6;">📋 导出商品数据</button>
-            </div>
-            <div class="user-list" id="product-list">
-                <!-- 商品列表将通过JavaScript动态生成 -->
-            </div>
-        </div>
-
-        <!-- 系统监控面板 -->
-        <div class="user-management">
-            <h3 style="color:#cbd5e1; margin-bottom:15px;">⚙️ 系统监控</h3>
-            <div class="system-monitor">
-                <div class="monitor-item">
-                    <div class="monitor-label">服务器状态</div>
-                    <div id="server-status" class="monitor-value">🟢 运行中</div>
-                </div>
-                <div class="monitor-item">
-                    <div class="monitor-label">内存使用</div>
-                    <div id="memory-usage" class="monitor-value">--</div>
-                </div>
-                <div class="monitor-item">
-                    <div class="monitor-label">在线用户</div>
-                    <div id="online-users" class="monitor-value">--</div>
-                </div>
-            </div>
-            <div class="controls" style="margin-top: 15px;">
-                <button onclick="checkSystemStatus()" style="background: #64748b;">🔄 检查系统状态</button>
+                <button onclick="refreshSystemStatus()" style="background: #3b82f6;">🔄 刷新系统状态</button>
                 <button onclick="restartServer()" style="background: #ef4444;">🔄 重启服务</button>
-                <button onclick="showLogs()" style="background: #8b5cf6;">📋 查看日志</button>
             </div>
-        </div>
-
-        <!-- 数据备份区域 -->
-        <div class="user-management">
-            <h3 style="color:#cbd5e1; margin-bottom:15px;">💾 数据备份</h3>
-            <div class="controls">
-                <button onclick="createBackup()" style="background: #8b5cf6;">💾 创建备份</button>
-                <button onclick="showBackupHistory()" style="background: #f59e0b;">📜 备份历史</button>
-                <button onclick="importData()" style="background: #10b981;">📥 导入数据</button>
-                <button onclick="autoBackup()" style="background: #3b82f6;">⏰ 自动备份设置</button>
-            </div>
-            <div id="backup-info" style="margin-top: 15px; font-size: 14px; color: #94a3b8;">
-                上次备份: <span id="last-backup-time">暂无</span> | 备份大小: <span id="backup-size">--</span>
+            <div class="system-monitor" id="system-monitor">
+                <!-- 系统状态将通过JavaScript动态生成 -->
             </div>
         </div>
     </div>
 
-    <!-- 通知组件 -->
+    <!-- 新增：通知组件 -->
     <div class="notification" id="notification"></div>
 
     <script>
@@ -397,7 +355,7 @@
             } catch (err) { console.error("Error:", err); }
         }
 
-        // 搜索功能
+        // 新增：搜索功能
         function searchLogs() {
             const searchTerm = document.getElementById('search-input').value.toLowerCase();
             const rows = document.querySelectorAll('#log-table-body tr');
@@ -408,7 +366,7 @@
             });
         }
 
-        // 数据导出功能
+        // 新增：数据导出功能
         async function exportData() {
             try {
                 const res = await fetch('/api/admin/stats');
@@ -432,7 +390,7 @@
             }
         }
 
-        // 清空数据
+        // 新增：清空数据
         async function clearData() {
             if(confirm('⚠ 确定清空所有数据吗？')) {
                 await fetch('/api/admin/clear', { method: 'POST' });
@@ -441,7 +399,7 @@
             }
         }
 
-        // 用户管理功能
+        // 新增：用户管理功能
         async function refreshUsers() {
             try {
                 const res = await fetch('/api/admin/users');
@@ -473,183 +431,23 @@
             }
         }
 
-        function exportUsers() {
-            showNotification('用户数据导出功能开发中...', 'info');
-        }
-
-        // 发送公告功能
+        // 新增：发送公告功能
         function sendBroadcast() {
             const message = prompt('请输入要发送的公告内容:');
             if (message) {
+                // 模拟发送公告
                 showNotification(`公告已发送: ${message}`, 'info');
+                // 在实际应用中，这里可以调用后端API发送公告
             }
         }
 
-        // 商品管理功能
-        async function loadProducts() {
-            try {
-                const res = await fetch('/api/admin/products');
-                const products = await res.json();
-                
-                const productList = document.getElementById('product-list');
-                productList.innerHTML = '';
-                
-                products.forEach(product => {
-                    const productItem = document.createElement('div');
-                    productItem.className = 'user-item';
-                    productItem.innerHTML = `
-                        <div class="user-info">
-                            <img src="${product.img}" style="width: 40px; height: 40px; border-radius: 5px; object-fit: cover;" onerror="this.src='https://placehold.co/40x40?text=Img'">
-                            <div>
-                                <div style="font-weight:600">${product.name}</div>
-                                <div style="font-size:12px; color:#94a3b8">
-                                    价格: ¥${product.price} | 浏览量: ${product.views} | 销量: ${product.sales}
-                                </div>
-                            </div>
-                        </div>
-                        <div style="display: flex; gap: 5px;">
-                            <button onclick="editProduct(${product.id})" style="background: #3b82f6; border: none; color: white; padding: 5px 10px; border-radius: 4px; font-size: 12px;">编辑</button>
-                            <button onclick="deleteProduct(${product.id})" style="background: #ef4444; border: none; color: white; padding: 5px 10px; border-radius: 4px; font-size: 12px;">删除</button>
-                        </div>
-                    `;
-                    productList.appendChild(productItem);
-                });
-                
-                showNotification(`已加载 ${products.length} 个商品`, 'success');
-            } catch (err) {
-                console.error('获取商品列表失败:', err);
-                showNotification('获取商品列表失败', 'error');
-            }
-        }
-
-        function addProduct() {
-            const name = prompt('请输入商品名称:');
-            const price = prompt('请输入商品价格:');
-            if (name && price) {
-                showNotification(`商品 "${name}" 添加成功!`, 'success');
-            }
-        }
-
-        function editProduct(id) {
-            const newPrice = prompt('请输入新的价格:');
-            if (newPrice) {
-                showNotification(`商品ID ${id} 价格已更新为 ¥${newPrice}`, 'info');
-            }
-        }
-
-        function deleteProduct(id) {
-            if (confirm('确定要删除这个商品吗？此操作不可恢复！')) {
-                showNotification(`商品ID ${id} 已删除`, 'error');
-            }
-        }
-
-        function exportProducts() {
-            showNotification('商品数据导出功能开发中...', 'info');
-        }
-
-        // 系统监控功能
-        async function checkSystemStatus() {
-            try {
-                const res = await fetch('/api/admin/system');
-                const systemInfo = await res.json();
-                
-                document.getElementById('server-status').innerHTML = systemInfo.status === 'running' ? 
-                    '🟢 运行中' : '🔴 停止';
-                document.getElementById('memory-usage').textContent = systemInfo.memoryUsage;
-                document.getElementById('online-users').textContent = systemInfo.onlineUsers;
-                
-                showNotification('系统状态检查完成', 'success');
-            } catch (err) {
-                document.getElementById('server-status').innerHTML = '🔴 连接失败';
-                showNotification('系统状态检查失败', 'error');
-            }
-        }
-
-        function restartServer() {
-            if (confirm('确定要重启服务器吗？重启期间服务将不可用！')) {
-                showNotification('服务器重启指令已发送...', 'info');
-                setTimeout(() => {
-                    showNotification('服务器重启完成', 'success');
-                    checkSystemStatus();
-                }, 3000);
-            }
-        }
-
-        function showLogs() {
-            showNotification('系统日志查看功能开发中...', 'info');
-        }
-
-        // 数据备份功能
-        function createBackup() {
-            const backupName = prompt('请输入备份名称（可选）:') || `backup_${new Date().toISOString().split('T')[0]}`;
-            
-            showNotification(`正在创建备份: ${backupName}...`, 'info');
-            
-            setTimeout(() => {
-                document.getElementById('last-backup-time').textContent = new Date().toLocaleString();
-                document.getElementById('backup-size').textContent = '2.5MB';
-                showNotification(`备份 "${backupName}" 创建成功!`, 'success');
-            }, 2000);
-        }
-
-        function showBackupHistory() {
-            const backups = [
-                { name: 'backup_2024_01_15', size: '2.3MB', time: '2024-01-15 14:30:22' },
-                { name: 'backup_2024_01_14', size: '2.1MB', time: '2024-01-14 14:30:15' },
-                { name: 'backup_2024_01_13', size: '1.9MB', time: '2024-01-13 14:30:10' }
-            ];
-            
-            const backupList = backups.map(b => 
-                `${b.name} (${b.size}) - ${b.time}`
-            ).join('\n');
-            
-            alert('备份历史:\n\n' + backupList);
-        }
-
-        function importData() {
-            showNotification('数据导入功能开发中...', 'info');
-        }
-
-        function autoBackup() {
-            showNotification('自动备份设置功能开发中...', 'info');
-        }
-
-        // 批量操作功能
-        function batchOperation() {
-            const operation = prompt('选择批量操作:\n1. 批量删除用户\n2. 批量发送消息\n3. 批量更新价格\n4. 批量导出数据');
-            
-            switch(operation) {
-                case '1':
-                    if (confirm('确定要批量删除用户吗？')) {
-                        showNotification('批量删除操作已执行', 'error');
-                    }
-                    break;
-                case '2':
-                    const message = prompt('请输入要发送的消息:');
-                    if (message) {
-                        showNotification(`批量消息发送成功: ${message}`, 'success');
-                    }
-                    break;
-                case '3':
-                    const discount = prompt('请输入折扣比例（如: 0.9 表示9折）:');
-                    if (discount) {
-                        showNotification(`批量价格更新完成，折扣: ${discount}`, 'info');
-                    }
-                    break;
-                case '4':
-                    showNotification('批量数据导出开始...', 'info');
-                    break;
-                default:
-                    showNotification('操作已取消', 'info');
-            }
-        }
-
-        // 通知功能
+        // 新增：通知功能
         function showNotification(message, type = 'info') {
             const notification = document.getElementById('notification');
             notification.textContent = message;
             notification.className = 'notification';
             
+            // 设置不同通知类型的颜色
             if (type === 'success') notification.style.background = '#10b981';
             else if (type === 'error') notification.style.background = '#ef4444';
             else if (type === 'info') notification.style.background = '#3b82f6';
@@ -660,6 +458,59 @@
                 notification.classList.remove('show');
             }, 3000);
         }
+
+        // 新增：系统状态功能
+        async function refreshSystemStatus() {
+            try {
+                const res = await fetch('/api/admin/system');
+                const systemData = await res.json();
+                
+                const systemMonitor = document.getElementById('system-monitor');
+                systemMonitor.innerHTML = `
+                    <div class="monitor-item">
+                        <div class="monitor-label">服务器状态</div>
+                        <div class="monitor-value" style="color: #10b981;">${systemData.status.toUpperCase()}</div>
+                    </div>
+                    <div class="monitor-item">
+                        <div class="monitor-label">运行时间</div>
+                        <div class="monitor-value">${systemData.uptime.humanReadable}</div>
+                    </div>
+                    <div class="monitor-item">
+                        <div class="monitor-label">内存使用</div>
+                        <div class="monitor-value">${systemData.memory.heapUsed} MB</div>
+                    </div>
+                    <div class="monitor-item">
+                        <div class="monitor-label">在线用户</div>
+                        <div class="monitor-value">${systemData.users.online}</div>
+                    </div>
+                    <div class="monitor-item">
+                        <div class="monitor-label">总用户数</div>
+                        <div class="monitor-value">${systemData.users.total}</div>
+                    </div>
+                    <div class="monitor-item">
+                        <div class="monitor-label">Node版本</div>
+                        <div class="monitor-value">${systemData.server.nodeVersion}</div>
+                    </div>
+                `;
+                
+                showNotification('系统状态已刷新', 'success');
+            } catch (err) {
+                console.error('获取系统状态失败:', err);
+                showNotification('获取系统状态失败', 'error');
+            }
+        }
+
+        // 新增：重启服务功能
+        function restartServer() {
+            if(confirm('⚠ 确定要重启服务器吗？重启期间服务将暂时不可用。')) {
+                showNotification('服务器重启中...', 'info');
+                // 在实际应用中，这里可以调用后端API重启服务
+                setTimeout(() => {
+                    showNotification('服务器重启完成', 'success');
+                }, 2000);
+            }
+        }
+
 
         // 初始化
         document.addEventListener('DOMContentLoaded', function() {
@@ -673,8 +524,6 @@
             initCharts();
             updateDashboard();
             setInterval(updateDashboard, 3000);
-            checkSystemStatus();
-            setInterval(checkSystemStatus, 60000);
         };
     </script>
 </body>
