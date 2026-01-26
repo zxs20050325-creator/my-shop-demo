@@ -99,6 +99,30 @@
             color: #999;
             font-size: 18px;
         }
+        
+        /* 新增：分类筛选样式 */
+        .filter-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 8px 16px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .filter-btn.active, .filter-btn:hover {
+            background: #8b2a2a;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -121,6 +145,23 @@
         <div class="page-title">
             <h2>传承非遗 · 筑梦河北</h2>
             <p>精选燕赵大地文化瑰宝</p>
+        </div>
+
+        <!-- 新增：分类筛选 -->
+        <div class="filter-container" id="filter-container">
+            <button class="filter-btn active" data-category="all">全部</button>
+            <button class="filter-btn" data-category="工艺品">工艺品</button>
+            <button class="filter-btn" data-category="剪纸">剪纸</button>
+            <button class="filter-btn" data-category="雕塑">雕塑</button>
+            <button class="filter-btn" data-category="陶瓷">陶瓷</button>
+            <button class="filter-btn" data-category="皮影">皮影</button>
+            <button class="filter-btn" data-category="雕刻">雕刻</button>
+            <button class="filter-btn" data-category="文房四宝">文房四宝</button>
+            <button class="filter-btn" data-category="年画">年画</button>
+            <button class="filter-btn" data-category="金银器">金银器</button>
+            <button class="filter-btn" data-category="内画">内画</button>
+            <button class="filter-btn" data-category="泥塑">泥塑</button>
+            <button class="filter-btn" data-category="乐器">乐器</button>
         </div>
 
         <!-- 新增：搜索结果提示 -->
@@ -147,11 +188,21 @@
         let allProducts = []; // 新增：存储所有商品用于搜索
         let isSearchMode = false; // 新增：搜索模式标志
         let currentSearchTerm = ''; // 新增：当前搜索关键词
+        let filteredProducts = []; // 新增：分类筛选后的商品
+        let currentCategory = 'all'; // 新增：当前分类
 
         window.onload = function() {
             checkLoginStatus();
             loadAllProducts(); // 新增：加载所有商品用于搜索
             trackUserAction('访问首页', '浏览商品列表');
+            
+            // 添加事件监听器到筛选按钮
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    filterProducts(this.getAttribute('data-category'));
+                });
+            });
         };
 
         function checkLoginStatus() {
@@ -161,6 +212,7 @@
                 authSection.innerHTML = `
                     <span>欢迎, ${user}</span>
                     <a href="cart.html">🛒 购物车</a>
+                    <a href="favorites.html">❤️ 收藏</a>
                     <a onclick="logout()">退出</a>
                 `;
             } else {
@@ -214,9 +266,15 @@
                 // 重置搜索状态
                 isSearchMode = false;
                 currentSearchTerm = '';
+                currentCategory = 'all';
                 document.getElementById('search-results').innerHTML = '';
                 document.getElementById('no-results').style.display = 'none';
-                document.getElementById('pagination').style.display = 'block';
+                document.getElementById('pagination').style.display = 'flex';
+                
+                // 重置分类按钮状态
+                const buttons = document.querySelectorAll('.filter-btn');
+                buttons.forEach(btn => btn.classList.remove('active'));
+                document.querySelector('.filter-btn[data-category="all"]').classList.add('active');
             } catch (err) { console.error(err); }
         }
 
@@ -234,9 +292,9 @@
             products.forEach((product, index) => {
                 productList.innerHTML += `
                     <div class="product-card">
-                        <img src="${product.img}" class="product-img" onerror="this.src='https://placehold.co/300x200?text=No+Image'">
+                        <img src="${product.img}" class="product-img" onerror="this.src='https://placehold.co/300x200?text=No+Image'" onclick="viewProductDetail(${product.id})">
                         <div class="card-body">
-                            <div class="product-name">${product.name}</div>
+                            <div class="product-name" onclick="viewProductDetail(${product.id})" style="cursor: pointer;">${product.name}</div>
                             <div class="product-price">¥${product.price}</div>
                             <div class="product-desc">${product.desc}</div>
                             <button class="btn-buy" onclick="addToCart(${index})">加入购物车</button>
@@ -261,6 +319,9 @@
                     document.getElementById('next-btn').disabled = newPage >= Math.ceil(searchResults.length / 6);
                     currentPage = newPage;
                 }
+            } else if (currentCategory !== 'all') {
+                // 分类筛选模式下的翻页（暂不支持）
+                alert('分类筛选模式下不支持翻页');
             } else {
                 // 正常模式下的翻页
                 loadProducts(currentPage + step);
@@ -315,7 +376,7 @@
                 document.getElementById('page-info').innerText = `第 1 页 / 共 ${Math.ceil(results.length / 6)} 页`;
                 document.getElementById('prev-btn').disabled = true;
                 document.getElementById('next-btn').disabled = results.length <= 6;
-                document.getElementById('pagination').style.display = 'block';
+                document.getElementById('pagination').style.display = 'flex';
             } else {
                 document.getElementById('pagination').style.display = 'none';
             }
@@ -336,6 +397,32 @@
             loadProducts(1);
         }
 
+        // 新增：商品详情页跳转
+        function viewProductDetail(productId) {
+            window.location.href = `product-detail.html?id=${productId}`;
+        }
+
+        // 新增：分类筛选功能
+        function filterProducts(category) {
+            currentCategory = category;
+            const buttons = document.querySelectorAll('.filter-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (category === 'all') {
+                displayProducts(allProducts);
+                document.getElementById('pagination').style.display = 'flex';
+            } else {
+                filteredProducts = allProducts.filter(product => product.category === category);
+                displayProducts(filteredProducts);
+                document.getElementById('pagination').style.display = 'none';
+                
+                // 更新搜索结果提示
+                document.getElementById('search-results').innerHTML = 
+                    `显示分类 "<strong>${category}</strong>" 的 ${filteredProducts.length} 个商品`;
+            }
+        }
+
         async function addToCart(index) {
             const user = localStorage.getItem('currentUser');
             if(!user) {
@@ -344,7 +431,10 @@
                 return;
             }
 
-            const product = isSearchMode ? searchResults[index] : productsCache[index];
+            const product = currentCategory !== 'all' ? 
+                filteredProducts[index] : 
+                (isSearchMode ? searchResults[index] : productsCache[index]);
+                
             try {
                 const res = await fetch('/api/cart/add', {
                     method: 'POST',
