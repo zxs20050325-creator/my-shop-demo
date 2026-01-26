@@ -17,6 +17,35 @@
         .nav-links a { color: white; text-decoration: none; margin-left: 20px; cursor: pointer; }
         .nav-links a:hover { color: #ffeb3b; }
         
+        /* 新增：搜索框样式 */
+        .search-container {
+            display: flex;
+            align-items: center;
+            margin: 0 20px;
+            flex: 1;
+            max-width: 400px;
+        }
+        .search-input {
+            width: 100%;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 20px 0 0 20px;
+            outline: none;
+            font-size: 14px;
+        }
+        .search-btn {
+            padding: 8px 15px;
+            background: #ffeb3b;
+            color: #8b2a2a;
+            border: none;
+            border-radius: 0 20px 20px 0;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .search-btn:hover {
+            background: #ffd600;
+        }
+        
         .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
         
         .page-title { text-align: center; margin-bottom: 30px; color: #333; }
@@ -32,15 +61,13 @@
         }
         .product-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
         
-        /* ============== 修改重点 ============== */
         .product-img { 
             width: 100%; 
-            height: 250px; /* 稍微加高了一点高度，让竖着的商品更好看 */
-            object-fit: contain; /* 【关键修改】改为 contain，图片会完整显示，不会被裁剪 */
-            background-color: #fff; /* 背景设为白色，防止图片比例不同时出现灰边 */
-            padding: 10px; /* 给图片一点留白，看起来更精致 */
+            height: 250px;
+            object-fit: contain;
+            background-color: #fff;
+            padding: 10px;
         }
-        /* ==================================== */
         
         .card-body { padding: 20px; }
         .product-name { font-size: 18px; font-weight: bold; margin-bottom: 8px; color: #333; }
@@ -58,12 +85,33 @@
         .page-btn { padding: 8px 20px; margin: 0 5px; background: white; border: 1px solid #ddd; cursor: pointer; }
         .page-btn:disabled { background: #eee; cursor: not-allowed; }
         .page-info { margin: 0 15px; color: #666; }
+        
+        /* 新增：搜索结果提示 */
+        .search-results {
+            text-align: center;
+            margin: 20px 0;
+            color: #666;
+            font-size: 16px;
+        }
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 18px;
+        }
     </style>
 </head>
 <body>
 
     <nav class="navbar">
         <div style="font-size: 22px; font-weight: bold; font-family: '楷体';">🏛️ 冀遗筑梦</div>
+        
+        <!-- 新增：搜索框 -->
+        <div class="search-container">
+            <input type="text" class="search-input" id="search-input" placeholder="搜索商品名称或描述..." onkeypress="handleSearchKeypress(event)">
+            <button class="search-btn" onclick="performSearch()">🔍 搜索</button>
+        </div>
+        
         <div class="nav-links" id="auth-section">
             <!-- JS填充 -->
         </div>
@@ -75,9 +123,17 @@
             <p>精选燕赵大地文化瑰宝</p>
         </div>
 
+        <!-- 新增：搜索结果提示 -->
+        <div class="search-results" id="search-results"></div>
+
         <div class="product-grid" id="product-list"></div>
 
-        <div class="pagination">
+        <!-- 新增：无结果提示 -->
+        <div class="no-results" id="no-results" style="display: none;">
+            没有找到相关商品，请尝试其他关键词
+        </div>
+
+        <div class="pagination" id="pagination">
             <button class="page-btn" id="prev-btn" onclick="changePage(-1)">上一页</button>
             <span class="page-info" id="page-info">第 1 页</span>
             <button class="page-btn" id="next-btn" onclick="changePage(1)">下一页</button>
@@ -88,10 +144,13 @@
         const API_BASE = ''; 
         let currentPage = 1;
         let productsCache = []; 
+        let allProducts = []; // 新增：存储所有商品用于搜索
+        let isSearchMode = false; // 新增：搜索模式标志
+        let currentSearchTerm = ''; // 新增：当前搜索关键词
 
         window.onload = function() {
             checkLoginStatus();
-            loadProducts(currentPage);
+            loadAllProducts(); // 新增：加载所有商品用于搜索
             trackUserAction('访问首页', '浏览商品列表');
         };
 
@@ -118,39 +177,163 @@
             window.location.reload();
         }
 
+        // 新增：加载所有商品
+        async function loadAllProducts() {
+            try {
+                const res = await fetch(`${API_BASE}/api/products?page=1`);
+                const data = await res.json();
+                allProducts = data.items;
+                
+                // 如果有第二页，加载第二页商品
+                if (data.totalPages > 1) {
+                    const res2 = await fetch(`${API_BASE}/api/products?page=2`);
+                    const data2 = await res2.json();
+                    allProducts = allProducts.concat(data2.items);
+                }
+                
+                loadProducts(currentPage);
+            } catch (err) { 
+                console.error('加载商品失败:', err);
+                loadProducts(currentPage);
+            }
+        }
+
         async function loadProducts(page) {
             try {
                 const res = await fetch(`${API_BASE}/api/products?page=${page}`);
                 const data = await res.json();
                 productsCache = data.items; 
                 
-                const productList = document.getElementById('product-list');
-                productList.innerHTML = ''; 
-
-                data.items.forEach((product, index) => {
-                    productList.innerHTML += `
-                        <div class="product-card">
-                            <img src="${product.img}" class="product-img" onerror="this.src='https://placehold.co/300x200?text=No+Image'">
-                            <div class="card-body">
-                                <div class="product-name">${product.name}</div>
-                                <div class="product-price">¥${product.price}</div>
-                                <div class="product-desc">${product.desc}</div>
-                                <button class="btn-buy" onclick="addToCart(${index})">加入购物车</button>
-                            </div>
-                        </div>
-                    `;
-                });
-
+                displayProducts(data.items);
+                
                 document.getElementById('page-info').innerText = `第 ${data.page} 页 / 共 ${data.totalPages} 页`;
                 document.getElementById('prev-btn').disabled = data.page <= 1;
                 document.getElementById('next-btn').disabled = data.page >= data.totalPages;
                 currentPage = data.page;
+                
+                // 重置搜索状态
+                isSearchMode = false;
+                currentSearchTerm = '';
+                document.getElementById('search-results').innerHTML = '';
+                document.getElementById('no-results').style.display = 'none';
+                document.getElementById('pagination').style.display = 'block';
             } catch (err) { console.error(err); }
         }
 
+        // 新增：显示商品列表
+        function displayProducts(products) {
+            const productList = document.getElementById('product-list');
+            productList.innerHTML = ''; 
+
+            if (products.length === 0) {
+                document.getElementById('no-results').style.display = 'block';
+                document.getElementById('pagination').style.display = 'none';
+                return;
+            }
+
+            products.forEach((product, index) => {
+                productList.innerHTML += `
+                    <div class="product-card">
+                        <img src="${product.img}" class="product-img" onerror="this.src='https://placehold.co/300x200?text=No+Image'">
+                        <div class="card-body">
+                            <div class="product-name">${product.name}</div>
+                            <div class="product-price">¥${product.price}</div>
+                            <div class="product-desc">${product.desc}</div>
+                            <button class="btn-buy" onclick="addToCart(${index})">加入购物车</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
         function changePage(step) {
-            loadProducts(currentPage + step);
+            if (isSearchMode) {
+                // 搜索模式下的翻页
+                const newPage = currentPage + step;
+                const startIndex = (newPage - 1) * 6;
+                const endIndex = startIndex + 6;
+                const pageProducts = searchResults.slice(startIndex, endIndex);
+                
+                if (pageProducts.length > 0) {
+                    displayProducts(pageProducts);
+                    document.getElementById('page-info').innerText = `第 ${newPage} 页 / 共 ${Math.ceil(searchResults.length / 6)} 页`;
+                    document.getElementById('prev-btn').disabled = newPage <= 1;
+                    document.getElementById('next-btn').disabled = newPage >= Math.ceil(searchResults.length / 6);
+                    currentPage = newPage;
+                }
+            } else {
+                // 正常模式下的翻页
+                loadProducts(currentPage + step);
+            }
             trackUserAction('翻页浏览', `第 ${currentPage + step} 页`);
+        }
+
+        // 新增：搜索功能
+        function performSearch() {
+            const searchTerm = document.getElementById('search-input').value.trim();
+            if (!searchTerm) {
+                loadProducts(1);
+                return;
+            }
+            
+            currentSearchTerm = searchTerm;
+            isSearchMode = true;
+            
+            // 执行搜索
+            const searchResults = allProducts.filter(product => 
+                product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                product.desc.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            
+            // 显示搜索结果
+            displaySearchResults(searchResults, searchTerm);
+            trackUserAction('搜索商品', `关键词: ${searchTerm}`);
+        }
+
+        // 新增：显示搜索结果
+        function displaySearchResults(results, searchTerm) {
+            searchResults = results; // 存储搜索结果用于翻页
+            
+            if (results.length === 0) {
+                document.getElementById('product-list').innerHTML = '';
+                document.getElementById('no-results').style.display = 'block';
+                document.getElementById('search-results').innerHTML = `搜索 "<strong>${searchTerm}</strong>" 没有找到相关商品`;
+                document.getElementById('pagination').style.display = 'none';
+                return;
+            }
+            
+            // 显示第一页结果
+            const pageProducts = results.slice(0, 6);
+            displayProducts(pageProducts);
+            
+            // 更新搜索提示
+            document.getElementById('search-results').innerHTML = 
+                `搜索 "<strong>${searchTerm}</strong>" 找到 ${results.length} 个相关商品`;
+            
+            // 更新分页
+            if (results.length > 6) {
+                document.getElementById('page-info').innerText = `第 1 页 / 共 ${Math.ceil(results.length / 6)} 页`;
+                document.getElementById('prev-btn').disabled = true;
+                document.getElementById('next-btn').disabled = results.length <= 6;
+                document.getElementById('pagination').style.display = 'block';
+            } else {
+                document.getElementById('pagination').style.display = 'none';
+            }
+            
+            currentPage = 1;
+        }
+
+        // 新增：回车键搜索
+        function handleSearchKeypress(event) {
+            if (event.key === 'Enter') {
+                performSearch();
+            }
+        }
+
+        // 新增：清除搜索
+        function clearSearch() {
+            document.getElementById('search-input').value = '';
+            loadProducts(1);
         }
 
         async function addToCart(index) {
@@ -161,7 +344,7 @@
                 return;
             }
 
-            const product = productsCache[index];
+            const product = isSearchMode ? searchResults[index] : productsCache[index];
             try {
                 const res = await fetch('/api/cart/add', {
                     method: 'POST',
@@ -194,4 +377,3 @@
     </script>
 </body>
 </html>
-
