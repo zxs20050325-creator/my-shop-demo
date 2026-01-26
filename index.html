@@ -2,195 +2,125 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>冀遗筑梦 - 云端商城</title>
+    <title>冀遗筑梦————云端盲盒商城</title>
+
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: '微软雅黑'; }
-        body { background: #f5f5f5; padding-top: 80px; }
+        /* ================== 全局基础样式 ================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "微软雅黑", sans-serif;
+        }
+
+        body {
+            background: #f5f5f5;
+            padding-top: 80px; /* 给固定导航栏留空间 */
+        }
+
+        /* ================== 顶部导航栏 ================== */
         .navbar {
-            position: fixed; top: 0; left: 0; width: 100%;
-            background: #8b2a2a; 
-            color: white; padding: 15px 30px;
-            display: flex; justify-content: space-between; align-items: center; z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        }
-        .nav-links a { color: white; text-decoration: none; margin-left: 20px; cursor: pointer; }
-        .nav-links a:hover { color: #ffeb3b; }
-        
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        
-        .page-title { text-align: center; margin-bottom: 30px; color: #333; }
-        .page-title h2 { font-size: 32px; font-weight: bold; margin-bottom: 10px; }
-        .page-title p { color: #666; font-size: 16px; }
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 70px;
 
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; }
-        
-        .product-card { 
-            background: white; border-radius: 8px; overflow: hidden; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
-            transition: transform 0.3s; 
-        }
-        .product-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
-        
-        /* ============== 修改重点 ============== */
-        .product-img { 
-            width: 100%; 
-            height: 250px; /* 稍微加高了一点高度，让竖着的商品更好看 */
-            object-fit: contain; /* 【关键修改】改为 contain，图片会完整显示，不会被裁剪 */
-            background-color: #fff; /* 背景设为白色，防止图片比例不同时出现灰边 */
-            padding: 10px; /* 给图片一点留白，看起来更精致 */
-        }
-        /* ==================================== */
-        
-        .card-body { padding: 20px; }
-        .product-name { font-size: 18px; font-weight: bold; margin-bottom: 8px; color: #333; }
-        .product-price { color: #8b2a2a; font-size: 22px; font-weight: bold; margin-bottom: 10px; }
-        .product-desc { color: #666; font-size: 14px; line-height: 1.5; margin-bottom: 15px; height: 42px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-        
-        .btn-buy { 
-            width: 100%; padding: 10px; 
-            background: #8b2a2a; color: white; 
-            border: none; border-radius: 5px; cursor: pointer; font-size: 16px; 
-        }
-        .btn-buy:hover { background: #a53f3f; }
+            background: #8b2a2a;
+            color: white;
 
-        .pagination { text-align: center; margin-top: 40px; }
-        .page-btn { padding: 8px 20px; margin: 0 5px; background: white; border: 1px solid #ddd; cursor: pointer; }
-        .page-btn:disabled { background: #eee; cursor: not-allowed; }
-        .page-info { margin: 0 15px; color: #666; }
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            padding: 0 30px;
+            z-index: 1000;
+
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: bold;
+            font-family: "楷体";
+        }
+
+        /* ================== 导航链接区域 ================== */
+        .nav-links a {
+            position: relative;              /* 为下划线动画做准备 */
+            margin-left: 24px;
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+
+            /* 过渡动画（非常关键） */
+            transition: 
+                color 0.3s ease,
+                transform 0.3s ease;
+        }
+
+        /* ===== 下划线（默认隐藏） ===== */
+        .nav-links a::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: -6px;
+
+            width: 0;
+            height: 2px;
+            background: #ffeb3b;
+
+            transition: width 0.3s ease;
+        }
+
+        /* ================== hover 交互效果 ================== */
+        .nav-links a:hover {
+            color: #ffeb3b;          /* 文字高亮 */
+            transform: translateY(-2px); /* 轻微上浮 */
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;             /* 下划线从左到右展开 */
+        }
+
+        /* ================== 页面内容示例 ================== */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .container h2 {
+            font-size: 32px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .container p {
+            color: #666;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
 
+    <!-- ================== 导航栏 ================== -->
     <nav class="navbar">
-        <div style="font-size: 22px; font-weight: bold; font-family: '楷体';">🏛️ 冀遗筑梦</div>
-        <div class="nav-links" id="auth-section">
-            <!-- JS填充 -->
+        <div class="logo">🏛️ 冀遗筑梦</div>
+        <div class="nav-links">
+            <a href="#">首页</a>
+            <a href="#">非遗商品</a>
+            <a href="#">购物车</a>
+            <a href="#">登录</a>
+            <a href="#">注册</a>
         </div>
     </nav>
 
+    <!-- ================== 页面主体 ================== -->
     <div class="container">
-        <div class="page-title">
-            <h2>传承非遗 · 筑梦河北</h2>
-            <p>精选燕赵大地文化瑰宝</p>
-        </div>
-
-        <div class="product-grid" id="product-list"></div>
-
-        <div class="pagination">
-            <button class="page-btn" id="prev-btn" onclick="changePage(-1)">上一页</button>
-            <span class="page-info" id="page-info">第 1 页</span>
-            <button class="page-btn" id="next-btn" onclick="changePage(1)">下一页</button>
-        </div>
+        <h2>传承非遗 · 筑梦河北</h2>
+        <p>这是一个用于展示导航 hover 交互效果的完整示例页面。</p>
     </div>
 
-    <script>
-        const API_BASE = ''; 
-        let currentPage = 1;
-        let productsCache = []; 
-
-        window.onload = function() {
-            checkLoginStatus();
-            loadProducts(currentPage);
-            trackUserAction('访问首页', '浏览商品列表');
-        };
-
-        function checkLoginStatus() {
-            const user = localStorage.getItem('currentUser');
-            const authSection = document.getElementById('auth-section');
-            if (user) {
-                authSection.innerHTML = `
-                    <span>欢迎, ${user}</span>
-                    <a href="cart.html">🛒 购物车</a>
-                    <a onclick="logout()">退出</a>
-                `;
-            } else {
-                authSection.innerHTML = `
-                    <a href="login.html">登录</a>
-                    <a href="register.html">注册</a>
-                `;
-            }
-        }
-
-        function logout() {
-            trackUserAction('用户登出', '-');
-            localStorage.removeItem('currentUser');
-            window.location.reload();
-        }
-
-        async function loadProducts(page) {
-            try {
-                const res = await fetch(`${API_BASE}/api/products?page=${page}`);
-                const data = await res.json();
-                productsCache = data.items; 
-                
-                const productList = document.getElementById('product-list');
-                productList.innerHTML = ''; 
-
-                data.items.forEach((product, index) => {
-                    productList.innerHTML += `
-                        <div class="product-card">
-                            <img src="${product.img}" class="product-img" onerror="this.src='https://placehold.co/300x200?text=No+Image'">
-                            <div class="card-body">
-                                <div class="product-name">${product.name}</div>
-                                <div class="product-price">¥${product.price}</div>
-                                <div class="product-desc">${product.desc}</div>
-                                <button class="btn-buy" onclick="addToCart(${index})">加入购物车</button>
-                            </div>
-                        </div>
-                    `;
-                });
-
-                document.getElementById('page-info').innerText = `第 ${data.page} 页 / 共 ${data.totalPages} 页`;
-                document.getElementById('prev-btn').disabled = data.page <= 1;
-                document.getElementById('next-btn').disabled = data.page >= data.totalPages;
-                currentPage = data.page;
-            } catch (err) { console.error(err); }
-        }
-
-        function changePage(step) {
-            loadProducts(currentPage + step);
-            trackUserAction('翻页浏览', `第 ${currentPage + step} 页`);
-        }
-
-        async function addToCart(index) {
-            const user = localStorage.getItem('currentUser');
-            if(!user) {
-                alert('请先登录后再购买！');
-                window.location.href = 'login.html';
-                return;
-            }
-
-            const product = productsCache[index];
-            try {
-                const res = await fetch('/api/cart/add', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: user, product: product })
-                });
-                const data = await res.json();
-                if(data.success) {
-                    alert(`✅ [${product.name}] 已加入购物车！`);
-                }
-            } catch(e) {
-                alert('添加失败');
-            }
-        }
-
-        async function trackUserAction(action, product) {
-            const currentUser = localStorage.getItem('currentUser') || '未登录游客';
-            try {
-                await fetch('/api/track', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        username: currentUser,
-                        action: action,
-                        product: product
-                    })
-                });
-            } catch (e) {}
-        }
-    </script>
 </body>
 </html>
