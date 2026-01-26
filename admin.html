@@ -1,294 +1,224 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+    <!-- 页面字符集，保证中文正常显示 -->
     <meta charset="UTF-8">
+
+    <!-- 视口设置，保证在手机/平板上自适应 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- 页面标题 -->
     <title>云端商城 - 核心数据监控台</title>
+
+    <!-- 引入 Chart.js 图表库（CDN） -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
+        /* =======================
+           CSS 变量（统一主题色）
+           ======================= */
         :root {
-            --bg-color: #0b1120;       /* 更深邃的背景 */
-            --card-bg: #151e32;        /* 卡片背景 */
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
+            --bg-color: #0b1120;       /* 页面整体背景色 */
+            --card-bg: #151e32;        /* 卡片背景色 */
+            --text-primary: #f8fafc;   /* 主文字颜色 */
+            --text-secondary: #94a3b8; /* 次级文字颜色 */
             --accent-blue: #3b82f6;
             --accent-purple: #8b5cf6;
             --accent-green: #10b981;
             --accent-gold: #f59e0b;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        
-        body { background-color: var(--bg-color); color: var(--text-primary); padding: 20px; }
+        /* 全局样式重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
 
+        /* 页面主体样式 */
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            padding: 20px;
+        }
+
+        /* =======================
+           主仪表盘布局（Grid）
+           ======================= */
         .dashboard-container {
-            max-width: 1400px; margin: 0 auto;
-            display: grid; 
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
             grid-template-columns: repeat(4, 1fr);
             grid-template-rows: auto auto auto;
             gap: 20px;
         }
 
+        /* 顶部标题栏 */
         .header {
-            grid-column: 1 / -1;
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid #334155; padding-bottom: 15px; margin-bottom: 10px;
+            grid-column: 1 / -1; /* 横跨整行 */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 15px;
+            margin-bottom: 10px;
         }
-        .header h1 { font-size: 26px; letter-spacing: 1px; background: linear-gradient(to right, #3b82f6, #8b5cf6); -webkit-background-clip: text; color: transparent; font-weight: 800; }
-        .status { font-size: 14px; color: var(--accent-green); display: flex; align-items: center; gap: 8px; }
-        .dot { width: 8px; height: 8px; background: var(--accent-green); border-radius: 50%; box-shadow: 0 0 10px var(--accent-green); animation: pulse 2s infinite; }
 
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        /* 标题渐变文字 */
+        .header h1 {
+            font-size: 26px;
+            letter-spacing: 1px;
+            background: linear-gradient(to right, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            color: transparent;
+            font-weight: 800;
+        }
 
+        /* 系统状态指示 */
+        .status {
+            font-size: 14px;
+            color: var(--accent-green);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* 在线状态小圆点 */
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent-green);
+            animation: pulse 2s infinite;
+        }
+
+        /* 呼吸动画 */
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* =======================
+           KPI 指标卡片
+           ======================= */
         .kpi-card {
-            background: var(--card-bg); padding: 25px; border-radius: 15px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 15px;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
-            display: flex; flex-direction: column; justify-content: space-between;
-            height: 140px; border-left: 5px solid var(--accent-blue);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 140px;
+            border-left: 5px solid var(--accent-blue);
             transition: transform 0.3s;
         }
-        .kpi-card:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); }
-        .kpi-title { font-size: 13px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; }
-        .kpi-value { font-size: 36px; font-weight: bold; margin-top: 10px; }
-        .kpi-sub { font-size: 12px; color: var(--accent-green); margin-top: 5px; }
 
+        /* 卡片悬停抬升效果 */
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);
+        }
+
+        .kpi-title {
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .kpi-value {
+            font-size: 36px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .kpi-sub {
+            font-size: 12px;
+            color: var(--accent-green);
+            margin-top: 5px;
+        }
+
+        /* =======================
+           图表容器
+           ======================= */
         .chart-container {
-            background: var(--card-bg); padding: 20px; border-radius: 15px;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 15px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
             position: relative;
         }
-        
-        .chart-main { grid-column: 1 / 3; grid-row: 2 / 3; height: 380px; }
-        .chart-side { grid-column: 3 / 4; grid-row: 2 / 3; height: 380px; }
-        .chart-bar  { grid-column: 4 / 5; grid-row: 2 / 3; height: 380px; }
-        
+
+        /* 不同图表占据的网格位置 */
+        .chart-main { grid-column: 1 / 3; height: 380px; }
+        .chart-side { grid-column: 3 / 4; height: 380px; }
+        .chart-bar  { grid-column: 4 / 5; height: 380px; }
+
+        /* =======================
+           表格区域
+           ======================= */
         .table-section {
             grid-column: 1 / -1;
-            background: var(--card-bg); padding: 25px; border-radius: 15px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 15px;
             min-height: 300px;
         }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th { text-align: left; color: var(--text-secondary); font-size: 13px; padding: 15px; border-bottom: 1px solid #334155; }
-        td { padding: 15px; border-bottom: 1px solid #334155; font-size: 14px; }
-        tr:hover { background: #1e293b; cursor: default; }
-        
-        .badge { padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-        .bg-pay { background: rgba(16, 185, 129, 0.2); color: #34d399; }
-        .bg-cart { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
-        .bg-view { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
 
-        .controls button { background: #ef4444; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; transition: 0.2s; font-weight: bold; }
-        .controls button:hover { background: #dc2626; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
+        th {
+            text-align: left;
+            color: var(--text-secondary);
+            font-size: 13px;
+            padding: 15px;
+            border-bottom: 1px solid #334155;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #334155;
+            font-size: 14px;
+        }
+
+        tr:hover {
+            background: #1e293b;
+        }
+
+        /* 行为徽章样式 */
+        .badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .bg-pay  { background: rgba(16,185,129,.2); color:#34d399; }
+        .bg-cart { background: rgba(245,158,11,.2); color:#fbbf24; }
+        .bg-view { background: rgba(59,130,246,.2); color:#60a5fa; }
+
+        /* 清空按钮 */
+        .controls button {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .controls button:hover {
+            background: #dc2626;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+        }
     </style>
 </head>
-<body>
-
-    <div class="dashboard-container">
-        <div class="header">
-            <h1>🛍️ 冀遗筑梦 | 数据监控中心</h1>
-            <div class="status"><div class="dot"></div> System Online (Beijing Time)</div>
-        </div>
-
-        <div class="kpi-card" style="border-left-color: var(--accent-gold);">
-            <div class="kpi-title">总销售额 (Revenue)</div>
-            <div class="kpi-value" id="kpi-revenue">¥0</div>
-            <div class="kpi-sub">↑ 实时更新</div>
-        </div>
-        <div class="kpi-card" style="border-left-color: var(--accent-blue);">
-            <div class="kpi-title">总访问量 (Visits)</div>
-            <div class="kpi-value" id="kpi-visits">0</div>
-            <div class="kpi-sub">全平台统计</div>
-        </div>
-        <div class="kpi-card" style="border-left-color: var(--accent-green);">
-            <div class="kpi-title">成交订单 (Orders)</div>
-            <div class="kpi-value" id="kpi-orders">0</div>
-            <div class="kpi-sub">转化率监控</div>
-        </div>
-        <div class="kpi-card" style="border-left-color: #8b5cf6;">
-            <div class="kpi-title">活跃用户 (Active)</div>
-            <div class="kpi-value" id="kpi-users">0</div>
-            <div class="kpi-sub">当前在线估算</div>
-        </div>
-
-        <div class="chart-container chart-main">
-            <h3 style="margin-bottom:15px; font-size:16px; color:#cbd5e1;">24小时流量趋势 (Traffic)</h3>
-            <canvas id="trafficChart"></canvas>
-        </div>
-        <div class="chart-container chart-side">
-            <h3 style="margin-bottom:15px; font-size:16px; color:#cbd5e1;">用户行为分布 (Actions)</h3>
-            <canvas id="actionChart"></canvas>
-        </div>
-        <div class="chart-container chart-bar">
-            <h3 style="margin-bottom:15px; font-size:16px; color:#cbd5e1;">热门商品 TOP5</h3>
-            <canvas id="productChart"></canvas>
-        </div>
-
-        <div class="table-section">
-            <div style="display:flex; justify-content:space-between; align-items: center;">
-                <h3 style="color:#cbd5e1;">实时交互日志 (Recent Logs)</h3>
-                <div class="controls"><button onclick="clearData()">🗑️ 清空数据</button></div>
-            </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th width="20%">时间 (北京时间)</th>
-                        <th width="20%">用户</th>
-                        <th width="15%">行为类型</th>
-                        <th>交互对象/详情</th>
-                    </tr>
-                </thead>
-                <tbody id="log-table-body"></tbody>
-            </table>
-        </div>
-    </div>
-
-    <script>
-        Chart.defaults.color = '#94a3b8';
-        Chart.defaults.borderColor = '#334155';
-        
-        let trafficChart, actionChart, productChart;
-
-        function initCharts() {
-            // 1. 流量图 - 增加渐变填充效果
-            const ctx1 = document.getElementById('trafficChart').getContext('2d');
-            const gradient1 = ctx1.createLinearGradient(0, 0, 0, 400);
-            gradient1.addColorStop(0, 'rgba(59, 130, 246, 0.5)');
-            gradient1.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
-
-            trafficChart = new Chart(ctx1, {
-                type: 'line',
-                data: {
-                    labels: Array.from({length: 24}, (_, i) => `${i}:00`),
-                    datasets: [{
-                        label: '访问量',
-                        data: Array(24).fill(0),
-                        borderColor: '#3b82f6',
-                        backgroundColor: gradient1,
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: '#fff',
-                        pointBorderColor: '#3b82f6',
-                        pointRadius: 4,
-                        pointHoverRadius: 8 // 鼠标靠近变大
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    animation: {
-                        y: { duration: 2000, from: 500 } // 初始加载动画
-                    },
-                    scales: { y: { beginAtZero: true } }
-                }
-            });
-
-            // 2. 行为图 - 增加悬停放大效果
-            const ctx2 = document.getElementById('actionChart').getContext('2d');
-            actionChart = new Chart(ctx2, {
-                type: 'doughnut',
-                data: {
-                    labels: ['浏览', '加购', '支付', '其他'],
-                    datasets: [{
-                        data: [0, 0, 0, 0],
-                        backgroundColor: ['#3b82f6', '#f59e0b', '#10b981', '#64748b'],
-                        borderWidth: 0,
-                        hoverOffset: 15 // 鼠标悬停时偏移距离变大
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '65%',
-                    animation: { animateScale: true, animateRotate: true }
-                }
-            });
-
-            // 3. 商品图 - 炫酷条形图
-            const ctx3 = document.getElementById('productChart').getContext('2d');
-            productChart = new Chart(ctx3, {
-                type: 'bar',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: '热度',
-                        data: [],
-                        backgroundColor: '#8b5cf6',
-                        hoverBackgroundColor: '#a78bfa', // 悬停变亮
-                        borderRadius: 6,
-                        barThickness: 20
-                    }]
-                },
-                options: {
-                    indexAxis: 'y', // 横向
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { x: { grid: { display: false } } },
-                    animation: {
-                        duration: 1000,
-                        easing: 'easeOutQuart'
-                    }
-                }
-            });
-        }
-
-        async function updateDashboard() {
-            try {
-                const res = await fetch('/api/admin/stats');
-                const data = await res.json();
-
-                // 更新数字
-                document.getElementById('kpi-revenue').innerText = `¥${data.kpi.revenue}`;
-                document.getElementById('kpi-visits').innerText = data.kpi.visits;
-                document.getElementById('kpi-orders').innerText = data.kpi.orders;
-                document.getElementById('kpi-users').innerText = data.kpi.activeUsers;
-
-                // 更新图表
-                trafficChart.data.datasets[0].data = data.charts.hourlyTraffic;
-                trafficChart.update('none'); // none模式避免每次都重播动画
-
-                actionChart.data.datasets[0].data = data.charts.actionDistribution;
-                actionChart.update('none');
-
-                productChart.data.labels = data.charts.topProducts.map(p => p[0].substring(0, 8) + '...'); // 截断太长的名字
-                productChart.data.datasets[0].data = data.charts.topProducts.map(p => p[1]);
-                productChart.update(); // 条形图允许动画更新
-
-                // 更新表格
-                const tbody = document.getElementById('log-table-body');
-                tbody.innerHTML = '';
-                data.logs.forEach(log => {
-                    let badgeClass = 'bg-view';
-                    if(log.action.includes('支付')) badgeClass = 'bg-pay';
-                    if(log.action.includes('加入')) badgeClass = 'bg-cart';
-                    
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${log.time.split(' ')[1]}</td>
-                            <td>${log.username}</td>
-                            <td><span class="badge ${badgeClass}">${log.action}</span></td>
-                            <td style="color:#cbd5e1">${log.product}</td>
-                        </tr>
-                    `;
-                });
-            } catch (err) { console.error("Error:", err); }
-        }
-
-        async function clearData() {
-            if(confirm('⚠ 确定清空所有数据吗？')) {
-                await fetch('/api/admin/clear', { method: 'POST' });
-                updateDashboard();
-            }
-        }
-
-        window.onload = function() {
-            initCharts();
-            updateDashboard();
-            setInterval(updateDashboard, 3000);
-        };
-    </script>
-</body>
-</html>
