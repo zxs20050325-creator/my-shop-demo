@@ -2,125 +2,138 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>冀遗筑梦————云端盲盒商城</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的购物车</title>
     <style>
-        /* ================== 全局基础样式 ================== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: "微软雅黑", sans-serif;
-        }
-
-        body {
-            background: #f5f5f5;
-            padding-top: 80px; /* 给固定导航栏留空间 */
-        }
-
-        /* ================== 顶部导航栏 ================== */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: '微软雅黑'; }
+        body { background: #f5f5f5; padding-top: 80px; }
         .navbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 70px;
-
-            background: #8b2a2a;
-            color: white;
-
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-
-            padding: 0 30px;
-            z-index: 1000;
-
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            position: fixed; top: 0; left: 0; width: 100%;
+            background: #333; color: white; padding: 15px 30px;
+            display: flex; justify-content: space-between; align-items: center; z-index: 1000;
         }
+        .nav-links a { color: white; text-decoration: none; margin-left: 20px; }
+        
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+        .cart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        
+        .cart-item { background: white; border-radius: 8px; padding: 20px; margin-bottom: 15px; display: flex; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .cart-img { width: 80px; height: 80px; object-fit: cover; border-radius: 5px; margin-right: 20px; }
+        .cart-info { flex: 1; }
+        .cart-title { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
+        .cart-price { color: #e63946; font-size: 18px; }
+        .btn-remove { padding: 5px 15px; background: #ff4757; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        
+        .checkout-bar { background: white; padding: 20px; border-radius: 10px; text-align: right; margin-top: 20px; font-size: 20px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
+        .total-price { color: #e63946; font-weight: bold; font-size: 24px; margin: 0 10px; }
+        .btn-checkout { padding: 10px 30px; background: #2ecc71; color: white; border: none; border-radius: 5px; font-size: 18px; cursor: pointer; }
+        .btn-checkout:hover { background: #27ae60; }
 
-        .logo {
-            font-size: 22px;
-            font-weight: bold;
-            font-family: "楷体";
-        }
-
-        /* ================== 导航链接区域 ================== */
-        .nav-links a {
-            position: relative;              /* 为下划线动画做准备 */
-            margin-left: 24px;
-            color: white;
-            text-decoration: none;
-            font-size: 16px;
-
-            /* 过渡动画（非常关键） */
-            transition: 
-                color 0.3s ease,
-                transform 0.3s ease;
-        }
-
-        /* ===== 下划线（默认隐藏） ===== */
-        .nav-links a::after {
-            content: "";
-            position: absolute;
-            left: 0;
-            bottom: -6px;
-
-            width: 0;
-            height: 2px;
-            background: #ffeb3b;
-
-            transition: width 0.3s ease;
-        }
-
-        /* ================== hover 交互效果 ================== */
-        .nav-links a:hover {
-            color: #ffeb3b;          /* 文字高亮 */
-            transform: translateY(-2px); /* 轻微上浮 */
-        }
-
-        .nav-links a:hover::after {
-            width: 100%;             /* 下划线从左到右展开 */
-        }
-
-        /* ================== 页面内容示例 ================== */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 40px 20px;
-        }
-
-        .container h2 {
-            font-size: 32px;
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        .container p {
-            color: #666;
-            font-size: 16px;
-        }
+        .empty-cart { text-align: center; margin-top: 50px; color: #7f8c8d; }
     </style>
 </head>
 <body>
-
-    <!-- ================== 导航栏 ================== -->
     <nav class="navbar">
-        <div class="logo">🏛️ 冀遗筑梦</div>
+        <div style="font-size: 20px; font-weight: bold;">🛒 购物车</div>
         <div class="nav-links">
-            <a href="#">首页</a>
-            <a href="#">非遗商品</a>
-            <a href="#">购物车</a>
-            <a href="#">登录</a>
-            <a href="#">注册</a>
+            <a href="index.html">继续购物</a>
         </div>
     </nav>
 
-    <!-- ================== 页面主体 ================== -->
     <div class="container">
-        <h2>传承非遗 · 筑梦河北</h2>
-        <p>这是一个用于展示导航 hover 交互效果的完整示例页面。</p>
+        <div class="cart-header">
+            <h2>购物清单</h2>
+            <span id="user-display"></span>
+        </div>
+
+        <div id="cart-list">
+            <!-- 购物车列表 JS 填充 -->
+        </div>
+
+        <div class="checkout-bar" id="checkout-bar" style="display:none;">
+            总计: <span class="total-price" id="total-price">¥0</span>
+            <button class="btn-checkout" onclick="checkout()">立即结算</button>
+        </div>
     </div>
 
+    <script>
+        const user = localStorage.getItem('currentUser');
+        let currentCart = [];
+
+        window.onload = function() {
+            if(!user) {
+                alert('请先登录');
+                window.location.href = 'login.html';
+                return;
+            }
+            document.getElementById('user-display').innerText = `用户: ${user}`;
+            loadCart();
+        }
+
+        async function loadCart() {
+            try {
+                const res = await fetch(`/api/cart?username=${user}`);
+                currentCart = await res.json();
+                renderCart();
+            } catch(e) { console.error(e); }
+        }
+
+        function renderCart() {
+            const listDiv = document.getElementById('cart-list');
+            const checkoutBar = document.getElementById('checkout-bar');
+            
+            if(currentCart.length === 0) {
+                listDiv.innerHTML = '<div class="empty-cart"><h3>购物车空空如也 💨</h3><p>快去首页选购喜欢的商品吧！</p></div>';
+                checkoutBar.style.display = 'none';
+                return;
+            }
+
+            listDiv.innerHTML = '';
+            let total = 0;
+
+            currentCart.forEach((item, index) => {
+                total += item.price;
+                listDiv.innerHTML += `
+                    <div class="cart-item">
+                        <img src="${item.img}" class="cart-img">
+                        <div class="cart-info">
+                            <div class="cart-title">${item.name}</div>
+                            <div class="cart-price">¥${item.price}</div>
+                        </div>
+                        <button class="btn-remove" onclick="removeItem(${index})">删除</button>
+                    </div>
+                `;
+            });
+
+            document.getElementById('total-price').innerText = `¥${total}`;
+            checkoutBar.style.display = 'block';
+        }
+
+        async function removeItem(index) {
+            if(!confirm('确定移除这个商品吗？')) return;
+            
+            await fetch('/api/cart/remove', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: user, index: index })
+            });
+            loadCart(); // 刷新列表
+        }
+
+        async function checkout() {
+            const total = document.getElementById('total-price').innerText;
+            if(!confirm(`确认支付 ${total} 吗？`)) return;
+
+            // 调用结账接口
+            await fetch('/api/cart/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: user, totalPrice: total.replace('¥', '') })
+            });
+
+            alert('🎉 支付成功！感谢您的购买！');
+            loadCart(); // 刷新（清空）
+        }
+    </script>
 </body>
 </html>
