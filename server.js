@@ -1,4 +1,4 @@
-// server.js - 最终完整版 (含数据过滤+冀遗筑梦商品+北京时间+本地文件存储+分类收藏)
+// server.js - Render部署版 (含数据过滤+冀遗筑梦商品+北京时间+本地文件存储+分类收藏)
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
@@ -8,27 +8,33 @@ const app = express();
 
 app.use(express.json());
 app.use(cors());
-app.use(express.static(path.join(__dirname, '.')));
+
+// Render环境处理静态文件
+if (process.env.NODE_ENV === 'production') {
+    app.use(express.static(path.join(__dirname, 'dist')));
+} else {
+    app.use(express.static(path.join(__dirname, '.')));
+}
 
 // ====================== 1. 数据存储 ======================
 const MOCK_PRODUCTS = [
     // 第一页
-    { id: 1, name: "【镇店之宝】冀州古韵·微缩避暑山庄", price: 399, desc: "皇家园林典范，缩尺还原山水之间，承载千年古建智慧。", img: "images/001.jpg", category: "工艺品" },
-    { id: 2, name: "【非遗国礼】蔚县剪纸·百鸟朝凤", price: 168, desc: "世界非遗技艺，刀刻彩染，色彩明艳，寓意吉祥如意。", img: "images/002.jpg", category: "剪纸" },
-    { id: 3, name: "【镇宅神兽】沧州铁狮·铸铁摆件", price: 299, desc: "威武雄壮，镇海吼缩影，象征力量与守护，燕赵雄风。", img: "images/003.jpg", category: "雕塑" },
-    { id: 4, name: "【白如玉】曲阳定窑·刻花梅瓶", price: 899, desc: "千年定瓷，白如玉薄如纸，手工刻花，尽显宋韵素雅。", img: "images/004.jpg", category: "陶瓷" },
-    { id: 5, name: "【光影传奇】唐山皮影·传统礼盒", price: 128, desc: "一口叙说千古事，双手对舞百万兵，光影间的民间艺术。", img: "images/005.jpg", category: "皮影" },
-    { id: 6, name: "【古城印记】正定记忆·浮雕砖刻", price: 268, desc: "复刻古城墙纹理，抚摸历史的痕迹，自在正定，文化传承。", img: "images/006.jpg", category: "雕刻" },
+    { id: 1, name: "【镇店之宝】冀州古韵·微缩避暑山庄", price: 399, desc: "皇家园林典范，缩尺还原山水之间，承载千年古建智慧。", img: "/images/001.jpg", category: "工艺品" },
+    { id: 2, name: "【非遗国礼】蔚县剪纸·百鸟朝凤", price: 168, desc: "世界非遗技艺，刀刻彩染，色彩明艳，寓意吉祥如意。", img: "/images/002.jpg", category: "剪纸" },
+    { id: 3, name: "【镇宅神兽】沧州铁狮·铸铁摆件", price: 299, desc: "威武雄壮，镇海吼缩影，象征力量与守护，燕赵雄风。", img: "/images/003.jpg", category: "雕塑" },
+    { id: 4, name: "【白如玉】曲阳定窑·刻花梅瓶", price: 899, desc: "千年定瓷，白如玉薄如纸，手工刻花，尽显宋韵素雅。", img: "/images/004.jpg", category: "陶瓷" },
+    { id: 5, name: "【光影传奇】唐山皮影·传统礼盒", price: 128, desc: "一口叙说千古事，双手对舞百万兵，光影间的民间艺术。", img: "/images/005.jpg", category: "皮影" },
+    { id: 6, name: "【古城印记】正定记忆·浮雕砖刻", price: 268, desc: "复刻古城墙纹理，抚摸历史的痕迹，自在正定，文化传承。", img: "/images/006.jpg", category: "雕刻" },
     // 第二页
-    { id: 7, name: "【文房至宝】易水古砚·雕龙画凤", price: 688, desc: "南有端砚，北有易水。石质细腻，发墨如油，文人雅士首选。", img: "images/101.jpg", category: "文房四宝" },
-    { id: 8, name: "【新春纳福】武强年画·连年有余", price: 88, desc: "中国木版年画之乡，色彩浓烈，线条粗犷，不仅是画，更是福气。", img: "images/102.jpg", category: "年画" },
-    { id: 9, name: "【皇家工艺】花丝镶嵌·鎏金首饰盒", price: 1299, desc: "燕京八绝之一，细如发丝，堆垒编织，尽显宫廷奢华技艺。", img: "images/103.jpg", category: "金银器" },
-    { id: 10, name: "【掌中乾坤】衡水内画·水晶鼻烟壶", price: 568, desc: "鬼斧神工，寸幅之地具千里之势，集诗书画印于一壶。", img: "images/104.jpg", category: "内画" },
-    { id: 11, name: "【民间艺术】玉田泥塑·萌趣生肖", price: 68, desc: "乡土气息浓郁，造型夸张可爱，唤醒儿时的快乐记忆。", img: "images/105.jpg", category: "泥塑" },
-    { id: 12, name: "【民间绝响】抚宁吹歌·乐器模型", price: 328, desc: "唢呐一响，黄金万两。非遗吹歌文化，传承民族之音。", img: "images/106.jpg", category: "乐器" }
+    { id: 7, name: "【文房至宝】易水古砚·雕龙画凤", price: 688, desc: "南有端砚，北有易水。石质细腻，发墨如油，文人雅士首选。", img: "/images/101.jpg", category: "文房四宝" },
+    { id: 8, name: "【新春纳福】武强年画·连年有余", price: 88, desc: "中国木版年画之乡，色彩浓烈，线条粗犷，不仅是画，更是福气。", img: "/images/102.jpg", category: "年画" },
+    { id: 9, name: "【皇家工艺】花丝镶嵌·鎏金首饰盒", price: 1299, desc: "燕京八绝之一，细如发丝，堆垒编织，尽显宫廷奢华技艺。", img: "/images/103.jpg", category: "金银器" },
+    { id: 10, name: "【掌中乾坤】衡水内画·水晶鼻烟壶", price: 568, desc: "鬼斧神工，寸幅之地具千里之势，集诗书画印于一壶。", img: "/images/104.jpg", category: "内画" },
+    { id: 11, name: "【民间艺术】玉田泥塑·萌趣生肖", price: 68, desc: "乡土气息浓郁，造型夸张可爱，唤醒儿时的快乐记忆。", img: "/images/105.jpg", category: "泥塑" },
+    { id: 12, name: "【民间绝响】抚宁吹歌·乐器模型", price: 328, desc: "唢呐一响，黄金万两。非遗吹歌文化，传承民族之音。", img: "/images/106.jpg", category: "乐器" }
 ];
 
-// 数据文件路径
+// Render环境数据文件路径
 const DATA_FILE = path.join(__dirname, 'data.json');
 
 // 初始化数据（使用let而不是const）
@@ -96,15 +102,18 @@ app.post('/api/register', (req, res) => {
     const { username, password } = req.body;
     if (users.find(u => u.username === username)) return res.status(400).json({ success: false, message: '用户已存在' });
     users.push({ username, password });
-    saveData(); // 新增：保存数据
+    saveData(); // 确保数据被保存
     res.json({ success: true });
 });
 
 app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
     const user = users.find(u => u.username === username && u.password === password);
-    if (user) res.json({ success: true, username: user.username });
-    else res.status(401).json({ success: false, message: '账号或密码错误' });
+    if (user) {
+        res.json({ success: true, username: user.username });
+    } else {
+        res.status(401).json({ success: false, message: '账号或密码错误' });
+    }
 });
 
 // --- 购物车 ---
@@ -113,7 +122,7 @@ app.post('/api/cart/add', (req, res) => {
     if (!userCarts[username]) userCarts[username] = [];
     userCarts[username].push(product);
     addLog(username, '加入购物车', product.name);
-    saveData(); // 新增：保存数据
+    saveData(); // 确保数据被保存
     res.json({ success: true, count: userCarts[username].length });
 });
 
@@ -126,7 +135,7 @@ app.post('/api/cart/remove', (req, res) => {
     const { username, index } = req.body;
     if (userCarts[username]) {
         userCarts[username].splice(index, 1);
-        saveData(); // 新增：保存数据
+        saveData(); // 确保数据被保存
     }
     res.json({ success: true });
 });
@@ -137,7 +146,7 @@ app.post('/api/cart/checkout', (req, res) => {
     totalOrders += 1;
     if (userCarts[username]) userCarts[username] = [];
     addLog(username, '完成支付', `总额 ¥${totalPrice}`);
-    saveData(); // 新增：保存数据
+    saveData(); // 确保数据被保存
     res.json({ success: true });
 });
 
@@ -185,11 +194,11 @@ function addLog(username, action, product) {
         product: product || '-',
         time: now.toLocaleString(),
         timestamp: now.getTime(), 
-        ip: '10.0.0.1' 
+        ip: req.ip || '10.0.0.1' 
     };
     browseLogs.unshift(newLog);
     if (browseLogs.length > 500) browseLogs = browseLogs.slice(0, 500);
-    saveData(); // 新增：保存数据
+    saveData(); // 确保数据被保存
 }
 
 app.post('/api/track', (req, res) => {
@@ -226,11 +235,13 @@ app.get('/api/admin/stats', (req, res) => {
         .slice(0, 5);
 
     // 3. 行为分布
-    const actionStats = { '浏览': 0, '加购': 0, '支付': 0, '其他': 0 };
+    const actionStats = { '浏览': 0, '加购': 0, '支付': 0, '收藏': 0, '详情浏览': 0, '其他': 0 }; // 扩展行为类型
     browseLogs.forEach(log => {
-        if (log.action.includes('浏览')) actionStats['浏览']++;
+        if (log.action.includes('浏览') && log.action.includes('详情')) actionStats['详情浏览']++;
+        else if (log.action.includes('浏览')) actionStats['浏览']++;
         else if (log.action.includes('加入')) actionStats['加购']++;
         else if (log.action.includes('支付')) actionStats['支付']++;
+        else if (log.action.includes('收藏')) actionStats['收藏']++;
         else actionStats['其他']++;
     });
 
@@ -261,7 +272,7 @@ app.post('/api/admin/clear', (req, res) => {
     totalRevenue = 0;
     totalOrders = 0;
     userFavorites = {}; // 新增：清空收藏数据
-    saveData(); // 新增：保存数据
+    saveData(); // 确保数据被保存
     res.json({ success: true });
 });
 
@@ -393,9 +404,16 @@ app.post('/api/admin/backup', (req, res) => {
     }
 });
 
+// Render环境需要绑定到特定端口
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => { 
     console.log(`服务器启动在 http://localhost:${PORT}`);
     console.log(`当前数据：用户 ${users.length} 个，购物车 ${Object.keys(userCarts).length} 个，收藏 ${Object.keys(userFavorites).length} 个，日志 ${browseLogs.length} 条`);
     console.log(`数据文件：${DATA_FILE}`);
+    console.log(`生产环境: ${process.env.NODE_ENV === 'production' ? '是' : '否'}`);
+});
+
+// 处理渲染静态页面的路由
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, req.path));
 });
