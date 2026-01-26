@@ -15,7 +15,197 @@
         .nav-links a { color: white; text-decoration: none; margin-left: 20px; }
         
         .container { max-width: 900px; margin: 0 auto; padding: 20px; }
-        .cart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .cart-header { display: flex; justify-content: space-between; align-items: center<!DOCTYPE html>
+<HTML lang=“zh-CN">
+<头部>
+    <meta charset=“UTF-8">
+    <Meta name=“viewport” 内容=“width=device-width， initial-scale=1.0">
+    <title>冀遗筑梦 - 云端商城</title>
+    <风格>
+        * { 优势：0;缓冲：0;盒子尺寸：边框盒;font-family： '微软雅黑'; }
+        身体 { 背景：#F5F5f5;垫层顶层：80像素; }
+.导航栏 {
+            位置：固定;顶部：0;左：0;宽度：100%;
+            背景：#8B2A2A;/* 改成故宫红/砖红色，符合主题 */
+            背景：#8B2A2A; 
+            颜色：白色;缓冲：15px 30px;
+            显示：flex;正当化内容：空间之间的;对齐物品：中心;Z指数：1000;
+            盒子-影子：0 2px 10px RGBA（0,0,0,0.2);
+@@ -19,7 +19,6 @@
+
+.容器 { 最大宽度：1200px;净胜率：0 自动;填充物：20px; }
+
+        /* 标题样式 */
+.page-title { text-align： center;边缘-底部：30px;颜色：#333; }
+.页标题 H2 { 字体大小：32px;字体粗大：加粗;利润率底线：10px; }
+.页名 P { 颜色：#666;字体大小：16px; }
+@@ -33,157 +32,165 @@
+        }
+.product-card：hover { transform： translateY（-5px）;盒影：0 8px 20px RGBA（0,0,0,0.15 ); }
+
+.product-img { 宽度： 100%;身高：220px;物体适配：掩护;}
+        /* ============== 修改重点 ============== */
+.product-img { 
+            宽度：100%; 
+            高度：250px;/* 稍微加高了一点高度，让竖着的商品更好看 */
+            对象拟合：包含;/* 【关键修改】改为 contain，图片会完整显示，不会被裁剪 */
+            背景色：#FFF;/* 背景设为白色，防止图片比例不同时出现灰边 */
+            护垫：10px;/* 给图片一点留白，看起来更精致 */
+        }
+        /* ==================================== */
+
+.卡片本体 { 填充：20px; }
+.产品名称 { 字体大小：18px;字体粗大：加粗;边缘-底部：8px;颜色：#333; }
+.产品价格 { 颜色：#8B2A2A;字体大小：22px;字体粗大：加粗;利润率底线：10px; }
+.产品描述 { 颜色：#666;字体大小：14px;线高：1.5;边缘-底部：15px;身高：42英尺;溢出：隐藏;文本溢出：省略号;显示：-webkit-box;-网形套件线夹：2;-webkit-box-orient：垂直;}
+
+.BTN-买 { 
+            宽度：100%;缓冲：10px; 
+            背景：#8B2A2A;颜色：白色;
+            边界：无;边界半径：5px;光标：指针;字体大小：16px; 
+        }
+.BTN-buy：hover { 背景：#A53F3f; }
+
+.页码 { 文本对齐：中心;利润率上限：40px; }
+.page-btn { 填充：8px 20px;边际：0 5px;背景：白人;边框：1px 实心 #ddd;光标：指针;}
+.Page-BTN:已失效 { 背景: #呃; 光标:不允许;}
+.页码信息 { 边距：0 15px;颜色：#666; }
+    </风格>
+</头部>
+<身体>
+
+    <导航类别=“导航栏">
+        <div style=“font-size： 22px; font-weight： borgan;font-family： '楷体';”> 🏛️ 冀遗筑梦</div>
+        <div class=“nav-links” id=“auth-section">
+            <!-- JS填充 -->
+        </分区>
+    </导航>
+
+    <div class=“container">
+        <div class=“页面标题">
+            <h2>传承非遗 ·筑梦河北</h2>
+            <p>精选燕赵大地文化瑰宝</p>
+        </分区>
+
+        <div class=“product-grid” id=“product-list”></div>
+
+        <div 类=“分页”">
+            <button class=“page-btn” id=“prev-btn” onclick=“changePage（-1）”>上一页</button>
+            <span class=“page-info” id=“page-info”>第 1 页</span>
+            <button class=“page-btn” id=“next-btn” onclick=“changePage（1）”>下一页</button>
+        </分区>
+    </分区>
+
+    <剧本>
+        API_BASE  = ''; 
+        令currentPage = 1;
+        让 productsCache = []; 
+
+        窗户。onload = 函数() {
+            checkLogin状态();
+            loadProducts（currentPage）);
+            trackUserAction（'访问首页'， '浏览商品列表');
+        };
+
+        function checkLoginStatus() {
+            const user = localStorage。getItem（'currentUser');
+            const authSection = document.getElementById（'auth-section');
+            如果（用户）) {
+                authSection。innerHTML = `
+<span>欢迎，${user}</span>
+<a href=“cart.html”> 🛒 购物车</a>
+<a onclick=“logout（）”>退出</a>
+                `;
+            } 否则 {
+                authSection。innerHTML = `
+<a href=“login.html”>登录</a>
+<a href=“register.html”>注册</a>
+                `;
+            }
+        }
+
+        功能登出() {
+            trackUserAction（'用户登出'， '-');
+            localStorage。removeItem（'currentUser');
+            窗户。位置。重新装填();
+        }
+
+        async 函数 loadProducts（page) {
+            试试看 {
+                const res = await fetch（'${API_BASE}/API/products？page=${page}');
+                const data = 等待 res.JSON();
+                productsCache = 数据。物品; 
+
+                const productList = document.getElementById('product-list');
+                产品列表。innerHTML = ''; 
+
+                数据。物品。forEach（（product， index）) => {
+                    产品列表。innerHTML += `
+<div class=“product-card”>
+<img src=“${product.img}“ class=”product-img“ onerror=”this.src='https：//placehold.co/300x200？text=No+Image'“>
+<div class=“card-body”>
+<div class=“product-name”>${product.name}</div>
+<div class=“product-price”>¥${product.价格}</分>
+<div class=“product-desc”>${product.desc}</div>
+<button class=“btn-buy” onclick=“addToCart（${index}）”>加入购物车</button>
+</div>
+</div>
+                    `;
+                });
+
+                记录。getElementById（'page-info'））。innerText = '第 ${data.page} 页 / 共 ${data.totalPages} 页';
+                记录。getElementById（'prev-btn'）。disabled = 数据。页面 <= 1;
+                记录。getElementById（'next-btn'）。disabled = 数据。页面>= 数据。totalPages（全页）;
+                currentPage = 数据。页面;
+            } 接（呃）{控制台。错误（err); }
+        }
+
+        function changePage（step）) {
+            loadProducts（currentPage + step);
+            trackUserAction（'翻页浏览'， '第 ${currentPage + step} 页');
+        }
+
+        async 函数 addToCart（index) {
+            const user = localStorage。getItem（'currentUser');
+            如果（！用户) {
+                alert（'请先登录后再购买！');
+                窗户。位置。href = 'login.html';
+                回归;
+            }
+
+            const product = productsCache[index];
+            试试看 {
+                const res = waitit fetch（'/api/cart/add'， {
+                    方法：“POST”，
+                    头部： { 'Content-Type'： 'application/json' }，
+                    正文：JSON。Stringify（{ 用户名：用户，产品：产品 })
+                });
+                const data = 等待 res.JSON();
+                if（data.成功) {
+                    警报（' ✅ [${product.name}] 已加入购物车！');
+                }
+            } 捕捉（e) {
+                alert（'添加失败');
+            }
+        }
+
+        async function trackUserAction(action, product) {
+            const currentUser = localStorage.getItem('currentUser') || '未登录游客';
+            试试看 {
+                await fetch('/api/track', {
+                    方法：“POST”，
+                    头部： { 'Content-Type'： 'application/json' }，
+                    body: JSON.stringify({
+                        用户名：currentUser，
+                        action: action,
+                        product: product
+                    })
+                });
+            } catch (e) {}
+        }
+    </剧本>
+</身体>
+</html>; margin-bottom: 20px; }
         
         .cart-item { background: white; border-radius: 8px; padding: 20px; margin-bottom: 15px; display: flex; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .cart-img { width: 80px; height: 80px; object-fit: cover; border-radius: 5px; margin-right: 20px; }
@@ -137,3 +327,4 @@
     </script>
 </body>
 </html>
+
