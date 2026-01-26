@@ -1,7 +1,8 @@
-// server.js - 最终完整版 (含数据过滤 + 冀遗筑梦商品 + 北京时间)
+// server.js - 最终完整版 (含数据过滤 + 冀遗筑梦商品 + 北京时间 + 本地文件存储)
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
+const fs = require('fs'); // 新增：文件系统模块
 
 const app = express();
 
@@ -27,11 +28,53 @@ const MOCK_PRODUCTS = [
     { id: 12, name: "【民间绝响】抚宁吹歌·乐器模型", price: 328, desc: "唢呐一响，黄金万两。非遗吹歌文化，传承民族之音。", img: "images/106.jpg" }
 ];
 
-const users = [];
+// 数据文件路径
+const DATA_FILE = path.join(__dirname, 'data.json');
+
+// 初始化数据（使用let而不是const）
+let users = [];
 let userCarts = {}; 
 let browseLogs = []; 
 let totalRevenue = 0; 
 let totalOrders = 0;
+
+// 加载保存的数据
+function loadData() {
+    try {
+        if (fs.existsSync(DATA_FILE)) {
+            const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+            users = data.users || [];
+            userCarts = data.userCarts || {};
+            browseLogs = data.browseLogs || [];
+            totalRevenue = data.totalRevenue || 0;
+            totalOrders = data.totalOrders || 0;
+            console.log('数据加载成功');
+        }
+    } catch (error) {
+        console.log('数据文件不存在或格式错误，使用默认数据');
+    }
+}
+
+// 保存数据到文件
+function saveData() {
+    try {
+        const data = {
+            users,
+            userCarts,
+            browseLogs,
+            totalRevenue,
+            totalOrders,
+            lastSave: new Date().toISOString()
+        };
+        fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+        console.log('数据保存成功');
+    } catch (error) {
+        console.error('数据保存失败:', error);
+    }
+}
+
+// 启动时加载数据
+loadData();
 
 // ====================== 2. 核心接口 ======================
 
@@ -50,6 +93,7 @@ app.post('/api/register', (req, res) => {
     const { username, password } = req.body;
     if (users.find(u => u.username === username)) return res.status(400).json({ success: false, message: '用户已存在' });
     users.push({ username, password });
+    saveData(); // 新增：保存数据
     res.json({ success: true });
 });
 
@@ -66,6 +110,7 @@ app.post('/api/cart/add', (req, res) => {
     if (!userCarts[username]) userCarts[username] = [];
     userCarts[username].push(product);
     addLog(username, '加入购物车', product.name);
+    saveData(); // 新增：保存数据
     res.json({ success: true, count: userCarts[username].length });
 });
 
@@ -78,6 +123,7 @@ app.post('/api/cart/remove', (req, res) => {
     const { username, index } = req.body;
     if (userCarts[username]) {
         userCarts[username].splice(index, 1);
+        saveData(); // 新增：保存数据
     }
     res.json({ success: true });
 });
@@ -88,6 +134,7 @@ app.post('/api/cart/checkout', (req, res) => {
     totalOrders += 1;
     if (userCarts[username]) userCarts[username] = [];
     addLog(username, '完成支付', `总额 ¥${totalPrice}`);
+    saveData(); // 新增：保存数据
     res.json({ success: true });
 });
 
@@ -105,6 +152,7 @@ function addLog(username, action, product) {
     };
     browseLogs.unshift(newLog);
     if (browseLogs.length > 500) browseLogs = browseLogs.slice(0, 500);
+    saveData(); // 新增：保存数据
 }
 
 app.post('/api/track', (req, res) => {
@@ -175,8 +223,10 @@ app.post('/api/admin/clear', (req, res) => {
     browseLogs = [];
     totalRevenue = 0;
     totalOrders = 0;
+    saveData(); // 新增：保存数据
     res.json({ success: true });
 });
+
 // ====================== 新增：系统状态API接口 ======================
 app.get('/api/admin/system', (req, res) => {
     // 获取系统运行时间
@@ -281,5 +331,31 @@ app.get('/api/admin/products', (req, res) => {
     res.json(productStats);
 });
 
+// ====================== 新增：数据管理API接口 ======================
+app.get('/api/admin/data', (req, res) => {
+    res.json({
+        users: users.length,
+        carts: Object.keys(userCarts).length,
+        logs: browseLogs.length,
+        revenue: totalRevenue,
+        orders: totalOrders,
+        fileExists: fs.existsSync(DATA_FILE)
+    });
+});
+
+app.post('/api/admin/backup', (req, res) => {
+    const backupFile = path.join(__dirname, `data_backup_${Date.now()}.json`);
+    try {
+        fs.copyFileSync(DATA_FILE, backupFile);
+        res.json({ success: true, message: '备份成功', file: backupFile });
+    } catch (error) {
+        res.status(500).json({ success: false, message: '备份失败' });
+    }
+});
+
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => { console.log(`Server running on port ${PORT}`); });
+app.listen(PORT, () => { 
+    console.log(`服务器启动在 http://localhost:${PORT}`);
+    console.log(`当前数据：用户 ${users.length} 个，购物车 ${Object.keys(userCarts).length} 个，日志 ${browseLogs.length} 条`);
+    console.log(`数据文件：${DATA_FILE}`);
+});
