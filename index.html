@@ -17,33 +17,54 @@
         .nav-links a { color: white; text-decoration: none; margin-left: 20px; cursor: pointer; }
         .nav-links a:hover { color: #ffeb3b; }
         
-        /* 新增：搜索框样式 */
+        /* 新增：现代化搜索框样式 */
         .search-container {
             display: flex;
             align-items: center;
             margin: 0 20px;
             flex: 1;
-            max-width: 400px;
+            max-width: 500px;
+            position: relative;
         }
         .search-input {
             width: 100%;
-            padding: 8px 15px;
+            padding: 12px 20px;
             border: none;
-            border-radius: 20px 0 0 20px;
+            border-radius: 30px;
             outline: none;
-            font-size: 14px;
+            font-size: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+        }
+        .search-input:focus {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            background: white;
         }
         .search-btn {
-            padding: 8px 15px;
-            background: #ffeb3b;
-            color: #8b2a2a;
+            position: absolute;
+            right: 5px;
+            padding: 8px 20px;
+            background: #8b2a2a;
+            color: white;
             border: none;
-            border-radius: 0 20px 20px 0;
+            border-radius: 30px;
             cursor: pointer;
             font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         .search-btn:hover {
-            background: #ffd600;
+            background: #a53f3f;
+            transform: scale(1.05);
+        }
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            color: #aaa;
+            font-size: 16px;
+            z-index: 1;
         }
         
         .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
@@ -130,10 +151,11 @@
     <nav class="navbar">
         <div style="font-size: 22px; font-weight: bold; font-family: '楷体';">🏛️ 冀遗筑梦</div>
         
-        <!-- 新增：搜索框 -->
+        <!-- 新增：现代化搜索框 -->
         <div class="search-container">
+            <span class="search-icon">🔍</span>
             <input type="text" class="search-input" id="search-input" placeholder="搜索商品名称或描述..." onkeypress="handleSearchKeypress(event)">
-            <button class="search-btn" onclick="performSearch()">🔍 搜索</button>
+            <button class="search-btn" onclick="performSearch()">搜索</button>
         </div>
         
         <div class="nav-links" id="auth-section">
