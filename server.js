@@ -179,7 +179,6 @@ app.post('/api/admin/clear', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => { console.log(`Server running on port ${PORT}`); });
 // ... existing code ...
 app.get('/api/admin/stats', (req, res) => {
     // 1. 流量趋势
@@ -343,4 +342,7 @@ app.post('/api/admin/clear', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => { console.log(`Server running on port ${PORT}`); });
+app.listen(PORT, () => { console.log(`Server running on port ${PORT}`); });
+
+
 
