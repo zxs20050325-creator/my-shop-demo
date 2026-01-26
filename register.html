@@ -3,33 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>注册 - 云端商城</title>
+    <title>注册 - 冀遗筑梦</title>
     <style>
         body { background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: '微软雅黑'; }
         .card { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
         input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; }
-        button { width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
-        button:hover { background: #218838; }
+        button { width: 100%; padding: 12px; background: #8b2a2a; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #a53f3f; }
         .link { text-align: center; margin-top: 15px; font-size: 14px; }
+        .error { color: red; font-size: 12px; margin-top: 5px; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h2 style="text-align: center; margin-bottom: 20px;">新用户注册</h2>
-        <input type="text" id="username" placeholder="设置用户名">
-        <input type="password" id="password" placeholder="设置密码">
+        <h2 style="text-align: center; margin-bottom: 20px; color: #8b2a2a;">用户注册</h2>
+        <input type="text" id="username" placeholder="请输入用户名">
+        <input type="password" id="password" placeholder="请输入密码">
+        <input type="password" id="confirmPassword" placeholder="请确认密码">
+        <div id="error-message" class="error" style="display: none;"></div>
         <button onclick="handleRegister()">注册</button>
         <div class="link">
-            已有账号？ <a href="login.html">去登录</a>
+            已有账号？ <a href="login.html">去登录</a> | <a href="index.html">返回首页</a>
         </div>
     </div>
 
     <script>
-        async function handleRegister() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.innerText = message;
+            errorDiv.style.display = 'block';
+        }
 
-            if(!username || !password) return alert('请填写完整');
+        function hideError() {
+            document.getElementById('error-message').style.display = 'none';
+        }
+
+        async function handleRegister() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            hideError();
+
+            // 输入验证
+            if (!username) {
+                showError('请输入用户名');
+                return;
+            }
+            if (!password) {
+                showError('请输入密码');
+                return;
+            }
+            if (password !== confirmPassword) {
+                showError('两次输入的密码不一致');
+                return;
+            }
+            if (password.length < 6) {
+                showError('密码长度至少6位');
+                return;
+            }
 
             try {
                 const res = await fetch('/api/register', {
@@ -40,15 +72,22 @@
                 const data = await res.json();
                 
                 if (data.success) {
-                    alert('注册成功，请登录！');
+                    alert('注册成功！');
                     window.location.href = 'login.html';
                 } else {
-                    alert('注册失败: ' + data.message);
+                    showError('注册失败: ' + data.message);
                 }
             } catch (err) {
-                alert('网络错误');
+                showError('网络错误，请稍后重试');
             }
         }
+
+        // 回车键注册
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                handleRegister();
+            }
+        });
     </script>
 </body>
 </html>
