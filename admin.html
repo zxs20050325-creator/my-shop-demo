@@ -343,7 +343,7 @@
         <!-- 新增：控制面板 -->
         <div class="control-panel">
             <div class="panel-header">
-                <h3 class="panel-title">🎛️ 控制中心</h3>
+                <h3 class="panel-title">LayoutPanel</h3>
             </div>
             <div class="controls">
                 <button onclick="refreshAll()" style="background: #10b581;">🔄 全部刷新</button>
@@ -384,11 +384,11 @@
                         tension: 0.4,
                         pointBackgroundColor: '#fff',
                         pointBorderColor: '#3b82f6',
-                        pointRadius: 4,
-                        pointHoverRadius: 8,
+                        pointRadius: 2, // 修改：减小点半径
+                        pointHoverRadius: 4, // 修改：悬停时点半径
                         // 新增：动画效果
                         animation: {
-                            duration: 2000,
+                            duration: 1000, // 修改：初始渲染动画时间
                             easing: 'easeOutQuart'
                         }
                     }]
@@ -411,7 +411,10 @@
                             borderWidth: 1
                         }
                     },
-                    animation: { y: { duration: 2000, from: 500 } },
+                    animation: { 
+                        duration: 1000, // 修改：缩短动画时间
+                        easing: 'easeOutQuart'
+                    },
                     scales: { 
                         y: { 
                             beginAtZero: true,
@@ -428,6 +431,24 @@
                             },
                             ticks: {
                                 color: '#94a3b8'
+                            }
+                        }
+                    },
+                    // 新增：优化过渡动画
+                    transitions: {
+                        active: {
+                            animation: {
+                                duration: 0
+                            }
+                        },
+                        resize: {
+                            animation: {
+                                duration: 0
+                            }
+                        },
+                        showScaleTransition: {
+                            animation: {
+                                duration: 0
                             }
                         }
                     }
@@ -550,16 +571,26 @@
                 document.getElementById('kpi-orders').innerText = data.kpi.orders;
                 document.getElementById('kpi-users').innerText = data.kpi.activeUsers;
 
-                // 更新图表
-                trafficChart.data.datasets[0].data = data.charts.hourlyTraffic;
-                trafficChart.update('active');
+                // 优化流量图更新方式，使用动画更新而不是直接替换
+                if(trafficChart) {
+                    trafficChart.data.datasets[0].data = data.charts.hourlyTraffic;
+                    // 使用更平滑的更新动画
+                    trafficChart.update('active', {
+                        duration: 500, // 新增：设置更新动画持续时间
+                        easing: 'linear' // 新增：使用线性缓动函数
+                    });
+                }
 
-                actionChart.data.datasets[0].data = data.charts.actionDistribution;
-                actionChart.update('active');
+                if(actionChart) {
+                    actionChart.data.datasets[0].data = data.charts.actionDistribution;
+                    actionChart.update('active');
+                }
 
-                productChart.data.labels = data.charts.topProducts.map(p => p[0].substring(0, 10) + '...');
-                productChart.data.datasets[0].data = data.charts.topProducts.map(p => p[1]);
-                productChart.update('active');
+                if(productChart) {
+                    productChart.data.labels = data.charts.topProducts.map(p => p[0].substring(0, 10) + '...');
+                    productChart.data.datasets[0].data = data.charts.topProducts.map(p => p[1]);
+                    productChart.update('active');
+                }
 
                 // 更新表格
                 const tbody = document.getElementById('log-table-body');
