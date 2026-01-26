@@ -177,6 +177,109 @@ app.post('/api/admin/clear', (req, res) => {
     totalOrders = 0;
     res.json({ success: true });
 });
+// ====================== 新增：系统状态API接口 ======================
+app.get('/api/admin/system', (req, res) => {
+    // 获取系统运行时间
+    const startTime = new Date();
+    const uptime = process.uptime();
+    
+    // 获取内存使用情况
+    const memoryUsage = process.memoryUsage();
+    const memoryUsageMB = {
+        rss: Math.round(memoryUsage.rss / 1024 / 1024 * 100) / 100,
+        heapTotal: Math.round(memoryUsage.heapTotal / 1024 / 1024 * 100) / 100,
+        heapUsed: Math.round(memoryUsage.heapUsed / 1024 / 1024 * 100) / 100,
+        external: Math.round(memoryUsage.external / 1024 / 1024 * 100) / 100
+    };
+    
+    // 计算在线用户（最近5分钟内有活动的用户）
+    const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+    const activeUsers = new Set(
+        browseLogs
+            .filter(log => log.timestamp > fiveMinutesAgo)
+            .map(log => log.username)
+    ).size;
+    
+    // 获取服务器负载信息
+    const loadAvg = process.cpuUsage();
+    
+    res.json({
+        status: 'online',
+        uptime: {
+            seconds: Math.floor(uptime),
+            humanReadable: formatUptime(uptime)
+        },
+        memory: memoryUsageMB,
+        server: {
+            platform: process.platform,
+            nodeVersion: process.version,
+            pid: process.pid
+        },
+        users: {
+            total: users.length,
+            active: activeUsers,
+            online: activeUsers
+        },
+        performance: {
+            cpuUsage: {
+                user: loadAvg.user,
+                system: loadAvg.system
+            },
+            responseTime: '正常'
+        },
+        timestamp: new Date().toISOString()
+    });
+});
+
+// 格式化运行时间
+function formatUptime(seconds) {
+    const days = Math.floor(seconds / (24 * 60 * 60));
+    const hours = Math.floor((seconds % (24 * 60 * 60)) / (60 * 60));
+    const minutes = Math.floor((seconds % (60 * 60)) / 60);
+    const secs = Math.floor(seconds % 60);
+    
+    if (days > 0) return `${days}天 ${hours}小时 ${minutes}分钟`;
+    if (hours > 0) return `${hours}小时 ${minutes}分钟 ${secs}秒`;
+    if (minutes > 0) return `${minutes}分钟 ${secs}秒`;
+    return `${secs}秒`;
+}
+
+// ====================== 新增：用户管理API接口 ======================
+app.get('/api/admin/users', (req, res) => {
+    const userList = users.map(user => ({
+        username: user.username,
+        registerTime: new Date().toLocaleDateString('zh-CN'),
+        status: 'active'
+    }));
+    res.json(userList);
+});
+
+// ====================== 新增：商品管理API接口 ======================
+app.get('/api/admin/products', (req, res) => {
+    const productStats = MOCK_PRODUCTS.map(product => {
+        const productLogs = browseLogs.filter(log => 
+            log.product && log.product.includes(product.name)
+        );
+        
+        const views = productLogs.filter(log => log.action.includes('浏览')).length;
+        const carts = productLogs.filter(log => log.action.includes('加入')).length;
+        const purchases = productLogs.filter(log => log.action.includes('支付')).length;
+        
+        const conversionRate = views > 0 ? ((purchases / views) * 100).toFixed(2) : 0;
+        
+        return {
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            views: views,
+            cartAdds: carts,
+            purchases: purchases,
+            conversionRate: conversionRate + '%'
+        };
+    });
+    
+    res.json(productStats);
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => { console.log(`Server running on port ${PORT}`); });
