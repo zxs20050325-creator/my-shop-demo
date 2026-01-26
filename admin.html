@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>云端商城————数据可视化平台</title>
+    <title>冀遗筑梦云端商城————实时数据可视化平台</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --bg-color: #0b1120;       /* 更深邃的背景 */
-            --card-bg: #151e32;        /* 卡片背景 */
+            --bg-color: #0b1120;
+            --card-bg: #151e32;
             --text-primary: #f8fafc;
             --text-secondary: #94a3b8;
             --accent-blue: #3b82f6;
@@ -25,7 +25,7 @@
             max-width: 1400px; margin: 0 auto;
             display: grid; 
             grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: auto auto auto;
+            grid-template-rows: auto auto auto auto;
             gap: 20px;
         }
 
@@ -78,8 +78,49 @@
         .bg-cart { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
         .bg-view { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
 
-        .controls button { background: #ef4444; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; transition: 0.2s; font-weight: bold; }
+        /* 新增：控制按钮样式 */
+        .controls { display: flex; gap: 10px; align-items: center; }
+        .controls button { 
+            background: #ef4444; color: white; border: none; padding: 10px 20px; 
+            border-radius: 8px; cursor: pointer; transition: 0.2s; font-weight: bold; 
+        }
         .controls button:hover { background: #dc2626; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
+        
+        /* 新增：搜索框样式 */
+        #search-input {
+            background: #1e293b; border: 1px solid #334155; color: white; 
+            padding: 8px 12px; border-radius: 6px; width: 200px; transition: all 0.3s;
+        }
+        #search-input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
+        #search-input::placeholder { color: #64748b; }
+        
+        /* 新增：导出按钮样式 */
+        .export-btn { background: #10b981 !important; }
+        .export-btn:hover { background: #059669 !important; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4) !important; }
+        
+        /* 新增：用户管理区域 */
+        .user-management {
+            grid-column: 1 / -1;
+            background: var(--card-bg); padding: 25px; border-radius: 15px;
+            margin-top: 20px;
+        }
+        
+        .user-list { max-height: 200px; overflow-y: auto; margin-top: 15px; }
+        .user-item { 
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px; border-bottom: 1px solid #334155; 
+        }
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: #3b82f6; display: flex; align-items: center; justify-content: center; }
+        
+        /* 新增：通知区域 */
+        .notification {
+            position: fixed; top: 20px; right: 20px; padding: 15px 20px;
+            background: var(--accent-green); color: white; border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1000;
+            transform: translateX(120%); transition: transform 0.3s;
+        }
+        .notification.show { transform: translateX(0); }
     </style>
 </head>
 <body>
@@ -127,7 +168,11 @@
         <div class="table-section">
             <div style="display:flex; justify-content:space-between; align-items: center;">
                 <h3 style="color:#cbd5e1;">实时交互日志 (Recent Logs)</h3>
-                <div class="controls"><button onclick="clearData()">🗑️ 清空数据</button></div>
+                <div class="controls">
+                    <input type="text" id="search-input" placeholder="🔍 搜索商品或用户...">
+                    <button onclick="exportData()" class="export-btn">📊 导出数据</button>
+                    <button onclick="clearData()">🗑️ 清空数据</button>
+                </div>
             </div>
             <table>
                 <thead>
@@ -141,7 +186,22 @@
                 <tbody id="log-table-body"></tbody>
             </table>
         </div>
+
+        <!-- 新增：用户管理区域 -->
+        <div class="user-management">
+            <h3 style="color:#cbd5e1; margin-bottom:15px;">👥 用户管理</h3>
+            <div class="controls">
+                <button onclick="refreshUsers()">🔄 刷新用户列表</button>
+                <button onclick="sendBroadcast()" style="background: #8b5cf6;">📢 发送公告</button>
+            </div>
+            <div class="user-list" id="user-list">
+                <!-- 用户列表将通过JavaScript动态生成 -->
+            </div>
+        </div>
     </div>
+
+    <!-- 新增：通知组件 -->
+    <div class="notification" id="notification"></div>
 
     <script>
         Chart.defaults.color = '#94a3b8';
@@ -150,7 +210,7 @@
         let trafficChart, actionChart, productChart;
 
         function initCharts() {
-            // 1. 流量图 - 增加渐变填充效果
+            // 1. 流量图
             const ctx1 = document.getElementById('trafficChart').getContext('2d');
             const gradient1 = ctx1.createLinearGradient(0, 0, 0, 400);
             gradient1.addColorStop(0, 'rgba(59, 130, 246, 0.5)');
@@ -171,21 +231,19 @@
                         pointBackgroundColor: '#fff',
                         pointBorderColor: '#3b82f6',
                         pointRadius: 4,
-                        pointHoverRadius: 8 // 鼠标靠近变大
+                        pointHoverRadius: 8
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
-                    animation: {
-                        y: { duration: 2000, from: 500 } // 初始加载动画
-                    },
+                    animation: { y: { duration: 2000, from: 500 } },
                     scales: { y: { beginAtZero: true } }
                 }
             });
 
-            // 2. 行为图 - 增加悬停放大效果
+            // 2. 行为图
             const ctx2 = document.getElementById('actionChart').getContext('2d');
             actionChart = new Chart(ctx2, {
                 type: 'doughnut',
@@ -195,7 +253,7 @@
                         data: [0, 0, 0, 0],
                         backgroundColor: ['#3b82f6', '#f59e0b', '#10b981', '#64748b'],
                         borderWidth: 0,
-                        hoverOffset: 15 // 鼠标悬停时偏移距离变大
+                        hoverOffset: 15
                     }]
                 },
                 options: {
@@ -206,7 +264,7 @@
                 }
             });
 
-            // 3. 商品图 - 炫酷条形图
+            // 3. 商品图
             const ctx3 = document.getElementById('productChart').getContext('2d');
             productChart = new Chart(ctx3, {
                 type: 'bar',
@@ -216,21 +274,18 @@
                         label: '热度',
                         data: [],
                         backgroundColor: '#8b5cf6',
-                        hoverBackgroundColor: '#a78bfa', // 悬停变亮
+                        hoverBackgroundColor: '#a78bfa',
                         borderRadius: 6,
                         barThickness: 20
                     }]
                 },
                 options: {
-                    indexAxis: 'y', // 横向
+                    indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: { x: { grid: { display: false } } },
-                    animation: {
-                        duration: 1000,
-                        easing: 'easeOutQuart'
-                    }
+                    animation: { duration: 1000, easing: 'easeOutQuart' }
                 }
             });
         }
@@ -248,14 +303,14 @@
 
                 // 更新图表
                 trafficChart.data.datasets[0].data = data.charts.hourlyTraffic;
-                trafficChart.update('none'); // none模式避免每次都重播动画
+                trafficChart.update('none');
 
                 actionChart.data.datasets[0].data = data.charts.actionDistribution;
                 actionChart.update('none');
 
-                productChart.data.labels = data.charts.topProducts.map(p => p[0].substring(0, 8) + '...'); // 截断太长的名字
+                productChart.data.labels = data.charts.topProducts.map(p => p[0].substring(0, 8) + '...');
                 productChart.data.datasets[0].data = data.charts.topProducts.map(p => p[1]);
-                productChart.update(); // 条形图允许动画更新
+                productChart.update();
 
                 // 更新表格
                 const tbody = document.getElementById('log-table-body');
@@ -277,12 +332,117 @@
             } catch (err) { console.error("Error:", err); }
         }
 
+        // 新增：搜索功能
+        function searchLogs() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const rows = document.querySelectorAll('#log-table-body tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        }
+
+        // 新增：数据导出功能
+        async function exportData() {
+            try {
+                const res = await fetch('/api/admin/stats');
+                const data = await res.json();
+                
+                const csvContent = [
+                    ['时间', '用户', '行为类型', '商品', '销售额', '订单数', '访问量', '活跃用户'],
+                    [new Date().toLocaleString(), '总计', '-', '-', data.kpi.revenue, data.kpi.orders, data.kpi.visits, data.kpi.activeUsers],
+                    ...data.logs.map(log => [log.time, log.username, log.action, log.product, '', '', '', ''])
+                ].map(row => row.join(',')).join('\n');
+                
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `冀遗筑梦数据_${new Date().toISOString().split('T')[0]}.csv`;
+                link.click();
+                showNotification('数据导出成功！', 'success');
+            } catch (err) {
+                console.error('导出失败:', err);
+                showNotification('数据导出失败，请重试', 'error');
+            }
+        }
+
+        // 新增：清空数据
         async function clearData() {
             if(confirm('⚠ 确定清空所有数据吗？')) {
                 await fetch('/api/admin/clear', { method: 'POST' });
                 updateDashboard();
+                showNotification('数据已清空', 'info');
             }
         }
+
+        // 新增：用户管理功能
+        async function refreshUsers() {
+            try {
+                const res = await fetch('/api/admin/users');
+                const users = await res.json();
+                
+                const userList = document.getElementById('user-list');
+                userList.innerHTML = '';
+                
+                users.forEach(user => {
+                    const userItem = document.createElement('div');
+                    userItem.className = 'user-item';
+                    userItem.innerHTML = `
+                        <div class="user-info">
+                            <div class="user-avatar">${user.username.charAt(0).toUpperCase()}</div>
+                            <div>
+                                <div style="font-weight:600">${user.username}</div>
+                                <div style="font-size:12px; color:#94a3b8">注册时间: ${user.registerTime}</div>
+                            </div>
+                        </div>
+                        <div style="color:#10b981; font-size:12px;">活跃</div>
+                    `;
+                    userList.appendChild(userItem);
+                });
+                
+                showNotification(`已加载 ${users.length} 个用户`, 'success');
+            } catch (err) {
+                console.error('获取用户列表失败:', err);
+                showNotification('获取用户列表失败', 'error');
+            }
+        }
+
+        // 新增：发送公告功能
+        function sendBroadcast() {
+            const message = prompt('请输入要发送的公告内容:');
+            if (message) {
+                // 模拟发送公告
+                showNotification(`公告已发送: ${message}`, 'info');
+                // 在实际应用中，这里可以调用后端API发送公告
+            }
+        }
+
+        // 新增：通知功能
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = 'notification';
+            
+            // 设置不同通知类型的颜色
+            if (type === 'success') notification.style.background = '#10b981';
+            else if (type === 'error') notification.style.background = '#ef4444';
+            else if (type === 'info') notification.style.background = '#3b82f6';
+            else notification.style.background = '#8b5cf6';
+            
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('search-input');
+            if (searchInput) {
+                searchInput.addEventListener('input', searchLogs);
+            }
+        });
 
         window.onload = function() {
             initCharts();
