@@ -3,23 +3,29 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const fs = require('fs'); // 新增：文件系统模块
+const pathModule = require('path');
 
 const app = express();
 
 app.use(express.json());
 app.use(cors());
 
-// 为了支持Vue构建的前端，需要配置静态文件服务
-// 首先尝试提供构建的前端文件，如果找不到则提供静态资源
-app.use(express.static(path.join(__dirname, '../vue-frontend/dist')));
+// 安全地规范化路径，防止路径遍历攻击
+function sanitizePath(filePath) {
+    // 解析路径并获取规范化路径
+    const normalizedPath = pathModule.resolve(filePath);
+    // 确保路径以当前目录开始
+    const basePath = pathModule.resolve(__dirname);
+    if (!normalizedPath.startsWith(basePath)) {
+        throw new Error('Invalid path');
+    }
+    return normalizedPath;
+}
 
+// 修改静态文件服务路径，使其指向frontend目录
+app.use(express.static(path.join(__dirname, '../frontend')));
 // 修正图片资源路径，指向backend/images目录
 app.use('/images', express.static(path.join(__dirname, './images')));
-
-// 对于所有非API请求，返回index.html以支持Vue Router
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../vue-frontend/dist/index.html'));
-});
 
 // ====================== 1. 数据存储 ======================
 const MOCK_PRODUCTS = [
@@ -105,6 +111,26 @@ app.get('/api/products', (req, res) => {
 
 app.post('/api/register', (req, res) => {
     const { username, password } = req.body;
+    
+    // 验证输入参数
+    if (!username || !password) {
+        return res.status(400).json({ success: false, message: '用户名和密码不能为空' });
+    }
+    
+    // 验证用户名和密码长度
+    if (typeof username !== 'string' || username.length < 3 || username.length > 20) {
+        return res.status(400).json({ success: false, message: '用户名长度应在3-20个字符之间' });
+    }
+    
+    if (typeof password !== 'string' || password.length < 6 || password.length > 30) {
+        return res.status(400).json({ success: false, message: '密码长度应在6-30个字符之间' });
+    }
+    
+    // 验证用户名只包含字母、数字和下划线
+    if (!/^[a-zA-Z0-9_\u4e00-\u9fa5]+$/.test(username)) {
+        return res.status(400).json({ success: false, message: '用户名只能包含字母、数字、下划线和中文字符' });
+    }
+    
     if (users.find(u => u.username === username)) return res.status(400).json({ success: false, message: '用户已存在' });
     users.push({ username, password });
     saveData(); // 新增：保存数据
@@ -113,16 +139,33 @@ app.post('/api/register', (req, res) => {
 
 app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
+    
+    // 验证输入参数
+    if (!username || !password) {
+        return res.status(400).json({ success: false, message: '用户名和密码不能为空' });
+    }
+    
     const user = users.find(u => u.username === username && u.password === password);
     if (user) res.json({ success: true, username: user.username });
-    else res.status(401).json({ success: true, message: '账号或密码错误' });
+    else res.status(401).json({ success: false, message: '账号或密码错误' });
 });
 
 // --- 购物车 ---
 app.post('/api/cart/add', (req, res) => {
     const { username, product } = req.body;
+    
+    // 验证输入参数
+    if (!username || !product) {
+        return res.status(400).json({ success: false, message: '用户名和商品信息不能为空' });
+    }
+    
+    // 验证用户名格式
+    if (typeof username !== 'string' || username.trim().length === 0) {
+        return res.status(400).json({ success: false, message: '用户名格式不正确' });
+    }
+    
     if (!userCarts[username]) userCarts[username] = [];
-    userCarts[username].push({...product, quantity: 1}); // 添加数量字段
+    userCarts[username].push(product);
     addLog(username, '加入购物车', product.name);
     saveData(); // 新增：保存数据
     res.json({ success: true, count: userCarts[username].length });
@@ -130,21 +173,50 @@ app.post('/api/cart/add', (req, res) => {
 
 app.get('/api/cart', (req, res) => {
     const { username } = req.query;
+    
+    // 验证用户名参数
+    if (!username) {
+        return res.status(400).json({ success: false, message: '用户名不能为空' });
+    }
+    
     res.json(userCarts[username] || []);
 });
 
 app.post('/api/cart/remove', (req, res) => {
     const { username, index } = req.body;
+    
+    // 验证输入参数
+    if (!username || index === undefined || index === null) {
+        return res.status(400).json({ success: false, message: '用户名和索引不能为空' });
+    }
+    
     if (userCarts[username]) {
-        userCarts[username].splice(index, 1);
-        saveData(); // 新增：保存数据
+        // 验证索引范围
+        if (index >= 0 && index < userCarts[username].length) {
+            userCarts[username].splice(index, 1);
+            saveData(); // 新增：保存数据
+        } else {
+            return res.status(400).json({ success: false, message: '索引超出范围' });
+        }
     }
     res.json({ success: true });
 });
 
 app.post('/api/cart/checkout', (req, res) => {
     const { username, totalPrice } = req.body;
-    totalRevenue += parseFloat(totalPrice);
+    
+    // 验证输入参数
+    if (!username || !totalPrice) {
+        return res.status(400).json({ success: false, message: '用户名和总价不能为空' });
+    }
+    
+    // 验证价格为有效数字
+    const price = parseFloat(totalPrice);
+    if (isNaN(price) || price <= 0) {
+        return res.status(400).json({ success: false, message: '价格格式不正确' });
+    }
+    
+    totalRevenue += price;
     totalOrders += 1;
     if (userCarts[username]) userCarts[username] = [];
     addLog(username, '完成支付', `总额 ¥${totalPrice}`);
@@ -155,6 +227,12 @@ app.post('/api/cart/checkout', (req, res) => {
 // --- 新增：收藏功能 ---
 app.post('/api/favorites/add', (req, res) => {
     const { username, product } = req.body;
+    
+    // 验证输入参数
+    if (!username || !product) {
+        return res.status(400).json({ success: false, message: '用户名和商品信息不能为空' });
+    }
+    
     if (!userFavorites[username]) userFavorites[username] = [];
     
     // 检查是否已经收藏
@@ -173,12 +251,24 @@ app.post('/api/favorites/add', (req, res) => {
 // 获取收藏列表
 app.get('/api/favorites', (req, res) => {
     const { username } = req.query;
+    
+    // 验证用户名参数
+    if (!username) {
+        return res.status(400).json({ success: false, message: '用户名不能为空' });
+    }
+    
     res.json(userFavorites[username] || []);
 });
 
 // 移除收藏
 app.post('/api/favorites/remove', (req, res) => {
     const { username, productId } = req.body;
+    
+    // 验证输入参数
+    if (!username || productId === undefined || productId === null) {
+        return res.status(400).json({ success: false, message: '用户名和商品ID不能为空' });
+    }
+    
     if (userFavorites[username]) {
         userFavorites[username] = userFavorites[username].filter(item => item.id != productId);
         saveData();
@@ -188,6 +278,12 @@ app.post('/api/favorites/remove', (req, res) => {
 
 // --- 监控 ---
 function addLog(username, action, product) {
+    // 验证输入参数
+    if (!action) {
+        console.log('缺少行为参数');
+        return;
+    }
+    
     const now = new Date();
     const newLog = {
         id: Date.now(),
@@ -205,6 +301,21 @@ function addLog(username, action, product) {
 
 app.post('/api/track', (req, res) => {
     const { username, action, product } = req.body;
+    
+    // 验证action参数
+    if (!action) {
+        return res.status(400).json({ success: false, message: '行为参数不能为空' });
+    }
+    
+    // 限制action和product的最大长度，防止恶意输入
+    if (typeof action === 'string' && action.length > 100) {
+        return res.status(400).json({ success: false, message: '行为参数过长' });
+    }
+    
+    if (typeof product === 'string' && product.length > 200) {
+        return res.status(400).json({ success: false, message: '产品参数过长' });
+    }
+    
     addLog(username, action, product);
     res.json({ success: true });
 });

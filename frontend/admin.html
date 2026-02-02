@@ -796,6 +796,9 @@
         async function exportData() {
             try {
                 const res = await fetch('/api/admin/stats');
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
                 const data = await res.json();
                 
                 const csvContent = [
@@ -818,10 +821,18 @@
 
         // 清空数据
         async function clearData() {
-            if(confirm('⚠ 确定清空所有数据吗？')) {
-                await fetch('/api/admin/clear', { method: 'POST' });
-                updateDashboard();
-                showNotification('数据已清空', 'info');
+            if(confirm('⚠ 确定清空所有数据吗？此操作不可恢复！')) {
+                try {
+                    const res = await fetch('/api/admin/clear', { method: 'POST' });
+                    if (!res.ok) {
+                        throw new Error(`HTTP error! status: ${res.status}`);
+                    }
+                    await updateDashboard();
+                    showNotification('数据已清空', 'info');
+                } catch (err) {
+                    console.error('清空数据失败:', err);
+                    showNotification('清空数据失败，请重试', 'error');
+                }
             }
         }
 
