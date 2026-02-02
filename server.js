@@ -9,10 +9,11 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+// 专门配置图片资源路径，符合项目规范 - 优先配置图片路径
+app.use('/images', express.static(path.join(__dirname, 'backend/images')));
+
 // 配置静态文件服务，使前端页面和图片资源都能正确访问
 app.use(express.static(path.join(__dirname, '.')));
-// 专门配置图片资源路径，符合项目规范
-app.use('/images', express.static(path.join(__dirname, 'backend/images')));
 
 // 为了兼容不同部署环境，额外配置一个静态资源路径
 app.use('/static', express.static(path.join(__dirname, 'backend')));
@@ -361,7 +362,7 @@ app.get('/api/admin/system', (req, res) => {
         rss: Math.round(memoryUsage.rss / 1024 / 1024 * 100) / 100,
         heapTotal: Math.round(memoryUsage.heapTotal / 1024 / 1024 * 100) / 100,
         heapUsed: Math.round(memoryUsage.heapUsed / 1024 / 1024 * 100) / 100,
-        external: Math.round(memoryUsage.external / 1024 / 1024 * 100) / 1024
+        external: Math.round(memoryUsage.external / 1024 / 1024 * 1024)
     };
     
     // 计算在线用户（最近5分钟内有活动的用户）
