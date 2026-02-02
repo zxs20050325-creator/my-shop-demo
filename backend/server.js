@@ -10,8 +10,8 @@ app.use(express.json());
 app.use(cors());
 // 修改静态文件服务路径，使其指向frontend目录
 app.use(express.static(path.join(__dirname, '../frontend')));
-// 同时保留对images等公共资源的访问
-app.use('/images', express.static(path.join(__dirname, '../images')));
+// 修正图片资源路径，指向backend/images目录
+app.use('/images', express.static(path.join(__dirname, './images')));
 
 // ====================== 1. 数据存储 ======================
 const MOCK_PRODUCTS = [
@@ -396,7 +396,7 @@ app.post('/api/admin/backup', (req, res) => {
     }
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => { 
     console.log(`服务器启动在 http://localhost:${PORT}`);
     console.log(`当前数据：用户 ${users.length} 个，购物车 ${Object.keys(userCarts).length} 个，收藏 ${Object.keys(userFavorites).length} 个，日志 ${browseLogs.length} 条`);

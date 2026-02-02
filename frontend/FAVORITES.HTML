@@ -134,7 +134,6 @@
                 authSection.innerHTML = `
                     <span>欢迎, ${user}</span>
                     <a href="cart.html">🛒 购物车</a>
-                    <a href="favorites.html">❤️ 收藏</a>
                     <a href="index.html">首页</a>
                     <a onclick="logout()">退出</a>
                 `;
@@ -176,7 +175,7 @@
                     favoritesList.innerHTML += `
                         <div class="product-card">
                             <div class="favorite-icon" onclick="removeFromFavorites(${product.id}, ${index})">❤️</div>
-                            <img src="${product.img}" class="product-img" onerror="this.src='https://placehold.co/300x200?text=No+Image'" onclick="window.location.href='product-detail.html?id=${product.id}'" style="cursor: pointer;">
+                            <img src="/images/${product.img.split('/')[1]}" class="product-img" onerror="this.src='https://placehold.co/300x200?text=No+Image'" onclick="window.location.href='product-detail.html?id=${product.id}'" style="cursor: pointer;">
                             <div class="card-body">
                                 <div class="product-name" onclick="window.location.href='product-detail.html?id=${product.id}'" style="cursor: pointer;">${product.name}</div>
                                 <div class="product-price">¥${product.price}</div>
@@ -192,6 +191,30 @@
             } catch (err) {
                 console.error('加载收藏失败:', err);
             }
+        }
+
+        function renderFavorites() {
+            const favoritesContainer = document.getElementById('favorites-container');
+            favoritesContainer.innerHTML = '';
+
+            if (favorites.length === 0) {
+                favoritesContainer.innerHTML = '<p>收藏夹为空</p>';
+                return;
+            }
+
+            favorites.forEach(fav => {
+                favoritesContainer.innerHTML += `
+                    <div class="product-card">
+                        <img src="/images/${fav.img.split('/')[1]}" class="product-img" onerror="this.src='https://placehold.co/300x200?text=No+Image'" onclick="viewProductDetail(${fav.id})">
+                        <div class="card-body">
+                            <div class="product-name" onclick="viewProductDetail(${fav.id})" style="cursor: pointer;">${fav.name}</div>
+                            <div class="product-price">¥${fav.price}</div>
+                            <div class="product-desc">${fav.desc}</div>
+                            <button class="btn-buy" onclick="removeFromFavorites(${fav.id})">取消收藏</button>
+                        </div>
+                    </div>
+                `;
+            });
         }
 
         async function removeFromFavorites(productId, index) {

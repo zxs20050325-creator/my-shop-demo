@@ -129,6 +129,15 @@
     <script>
         const API_BASE = '';
         let currentProduct = null;
+        
+        // 获取URL中的商品ID
+        const urlParams = new URLSearchParams(window.location.search);
+        const productId = urlParams.get('id');
+        
+        if (!productId) {
+            document.getElementById('product-name').textContent = '缺少商品ID';
+            return;
+        }
 
         window.onload = function() {
             checkLoginStatus();
@@ -160,42 +169,42 @@
             window.location.reload();
         }
 
-        function loadProductDetail() {
+        // 加载商品详情
+        async function loadProductDetail() {
             const urlParams = new URLSearchParams(window.location.search);
             const productId = urlParams.get('id');
-            
-            if (!productId) {
-                alert('未指定商品ID');
-                window.location.href = 'index.html';
-                return;
-            }
-            
-            fetch(`${API_BASE}/api/products`)
-                .then(res => res.json())
-                .then(data => {
-                    // 遍历所有页面的商品找到匹配的
-                    let product = null;
-                    
-                    // 先在第一页找
-                    for (let page = 1; page <= data.totalPages; page++) {
-                        fetch(`${API_BASE}/api/products?page=${page}`)
-                            .then(res => res.json())
-                            .then(pageData => {
-                                product = pageData.items.find(p => p.id == productId);
-                                
-                                if (product) {
-                                    currentProduct = product;
-                                    document.getElementById('product-name').textContent = product.name;
-                                    document.getElementById('product-price').textContent = `¥${product.price}`;
-                                    document.getElementById('product-desc').textContent = product.desc;
-                                    document.getElementById('product-img').src = product.img;
-                                    document.getElementById('product-category').textContent = product.category || '非遗商品';
-                                    document.title = `${product.name} - 冀遗筑梦`;
-                                }
-                            });
+
+            try {
+                const res = await fetch(`${API_BASE}/api/products?page=1`);
+                const data = await res.json();
+                
+                // 合并所有页面的产品
+                let allProducts = [...data.items];
+                if (data.totalPages > 1) {
+                    for (let i = 2; i <= data.totalPages; i++) {
+                        const res = await fetch(`${API_BASE}/api/products?page=${i}`);
+                        const pageData = await res.json();
+                        allProducts = allProducts.concat(pageData.items);
                     }
-                })
-                .catch(err => console.error(err));
+                }
+
+                const product = allProducts.find(p => p.id == productId);
+
+                if (product) {
+                    document.getElementById('product-img').src = `/images/${product.img}`;
+                    document.getElementById('product-name').textContent = product.name;
+                    document.getElementById('product-price').textContent = '¥' + product.price;
+                    document.getElementById('product-desc').textContent = product.desc;
+                    
+                    // 更新页面标题
+                    document.title = `${product.name} - 冀遗筑梦`;
+                } else {
+                    document.getElementById('product-name').textContent = '商品不存在';
+                }
+            } catch (err) {
+                console.error('加载商品详情失败:', err);
+                document.getElementById('product-name').textContent = '加载失败';
+            }
         }
 
         async function addToCart() {
@@ -255,6 +264,3 @@
                 alert('收藏失败');
             }
         }
-    </script>
-</body>
-</html>
