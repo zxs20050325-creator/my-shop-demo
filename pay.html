@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>支付 - 冀遗筑梦</title>
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; 
+        }
+        
+        body { 
+            background: #f9f7f4; 
+            padding-top: 80px; 
+            color: #5a5651;
+        }
+        
+        .navbar {
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%;
+            background: #f9f7f4; 
+            color: #5a5651; 
+            padding: 15px 30px;
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-bottom: 1px solid #d9d2ca;
+        }
+        
+        .nav-title {
+            font-size: 22px; 
+            font-weight: 400; 
+            font-family: 'KaiTi', '楷体', serif;
+            color: #8b4c30;
+        }
+        
+        .nav-links a { 
+            color: #8a8681; 
+            text-decoration: none; 
+            margin-left: 25px; 
+            cursor: pointer;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-links a:hover { 
+            color: #8b4c30; 
+        }
+        
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 30px; 
+        }
+        
+        .page-title { 
+            text-align: center; 
+            margin-bottom: 40px; 
+            color: #5a5651; 
+        }
+        .page-title h2 { 
+            font-size: 32px; 
+            font-weight: 300; 
+            margin-bottom: 10px; 
+            font-family: 'KaiTi', '楷体', serif;
+            color: #8b4c30;
+        }
+        .page-title p { 
+            color: #8a8681; 
+            font-size: 16px; 
+            font-weight: 300;
+        }
+
+        .payment-container {
+            background: white; 
+            border-radius: 12px; 
+            padding: 40px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid #d9d2ca;
+        }
+        
+        .order-summary {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        .summary-title {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #8b4c30;
+        }
+        
+        .order-items {
+            margin: 20px 0;
+        }
+        
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px dashed #f0f0f0;
+        }
+        
+        .payment-methods {
+            margin: 30px 0;
+        }
+        
+        .method-option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 15px;
+            border: 1px solid #d1b5a2;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .method-option:hover,
+        .method-option.selected {
+            background: #f9f7f4;
+            border-color: #8b4c30;
+        }
+        
+        .method-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .payment-btn {
+            width: 100%;
+            padding: 16px;
+            background: transparent;
+            color: #8b4c30;
+            border: 1px solid #8b4c30;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .payment-btn:hover {
+            background: #8b4c30;
+            color: white;
+        }
+        
+        .amount-display {
+            font-size: 24px;
+            font-weight: 600;
+            color: #8b4c30;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .wx-pay {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+        }
+        
+        .wx-pay-img {
+            max-width: 250px;
+            border: 1px solid #d1b5a2;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .result-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: #8a8681;
+        }
+        
+        .success-icon {
+            font-size: 60px;
+            color: #10b981;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-title">🏛️ 传承非遗·筑梦河北</div>
+        <div class="nav-links" id="auth-section">
+            <!-- JS填充 -->
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-title">
+            <h2>支付订单</h2>
+            <p>安全快捷的支付体验</p>
+        </div>
+
+        <div class="payment-container">
+            <div id="payment-form">
+                <div class="order-summary">
+                    <h3 class="summary-title">订单摘要</h3>
+                    <div id="order-items" class="order-items">
+                        <!-- 订单项目将通过JS动态生成 -->
+                    </div>
+                    <div class="amount-display">
+                        应付金额: ¥<span id="total-amount">0.00</span>
+                    </div>
+                </div>
+                
+                <div class="payment-methods">
+                    <h3 class="summary-title">选择支付方式</h3>
+                    <div class="method-option" onclick="selectPaymentMethod('wechat')">
+                        <div class="method-info">
+                            <input type="radio" name="payment" id="wechat" style="width: 18px; height: 18px; margin-right: 10px;">
+                            <label for="wechat" style="font-size: 16px; font-weight: 500;">微信支付</label>
+                        </div>
+                    </div>
+                    <div class="method-option" onclick="selectPaymentMethod('alipay')">
+                        <div class="method-info">
+                            <input type="radio" name="payment" id="alipay" style="width: 18px; height: 18px; margin-right: 10px;">
+                            <label for="alipay" style="font-size: 16px; font-weight: 500;">支付宝</label>
+                        </div>
+                    </div>
+                    <div class="method-option" onclick="selectPaymentMethod('bank')">
+                        <div class="method-info">
+                            <input type="radio" name="payment" id="bank" style="width: 18px; height: 18px; margin-right: 10px;">
+                            <label for="bank" style="font-size: 16px; font-weight: 500;">银行卡支付</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="payment-details" style="display: none;">
+                    <div class="wx-pay">
+                        <img src="images/wx-pay.jpg" alt="微信支付二维码" class="wx-pay-img" />
+                    </div>
+                    <p style="text-align: center; color: #8a8681; margin-bottom: 20px;">请使用微信扫描上方二维码完成支付</p>
+                </div>
+                
+                <button class="payment-btn" onclick="completePayment()">确认支付</button>
+            </div>
+            
+            <div id="payment-result" style="display: none;">
+                <div class="result-message">
+                    <div class="success-icon">✓</div>
+                    <h3 style="font-size: 24px; margin-bottom: 15px; color: #5a5651;">支付成功!</h3>
+                    <p>感谢您对非遗文化的传承与支持</p>
+                    <p style="margin-top: 10px;">我们会尽快为您安排发货</p>
+                    <a href="index.html" class="payment-btn" style="display: inline-block; margin-top: 30px; width: auto; padding: 12px 30px;">继续购物</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '';
+        let selectedMethod = null;
+        let cartItems = [];
+        let totalAmount = 0;
+        
+        window.onload = function() {
+            checkLoginStatus();
+            loadCartAndCalculate();
+        };
+
+        function checkLoginStatus() {
+            const user = localStorage.getItem('currentUser');
+            const authSection = document.getElementById('auth-section');
+            if (user) {
+                authSection.innerHTML = `
+                    <span>欢迎, ${user}</span>
+                    <a href="cart.html">🛒 购物车</a>
+                    <a href="favorites.html">❤️ 收藏</a>
+                    <a href="index.html">首页</a>
+                    <a onclick="logout()">退出</a>
+                `;
+            } else {
+                alert('请先登录以完成支付');
+                window.location.href = 'login.html';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'login.html';
+        }
+
+        async function loadCartAndCalculate() {
+            const user = localStorage.getItem('currentUser');
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/cart?username=${user}`);
+                cartItems = await res.json();
+                
+                const orderItemsContainer = document.getElementById('order-items');
+                totalAmount = 0;
+                
+                if (cartItems.length === 0) {
+                    orderItemsContainer.innerHTML = '<p style="text-align: center; color: #8a8681;">购物车为空</p>';
+                    document.getElementById('total-amount').textContent = '0.00';
+                    return;
+                }
+                
+                cartItems.forEach(item => {
+                    orderItemsContainer.innerHTML += `
+                        <div class="order-item">
+                            <span>${item.name}</span>
+                            <span>¥${item.price}</span>
+                        </div>
+                    `;
+                    totalAmount += item.price;
+                });
+                
+                // 添加总计行
+                orderItemsContainer.innerHTML += `
+                    <div class="order-item" style="font-weight: 600; border-top: 1px solid #eaeaea; margin-top: 10px; padding-top: 15px;">
+                        <span>总计</span>
+                        <span>¥${totalAmount.toFixed(2)}</span>
+                    </div>
+                `;
+                
+                document.getElementById('total-amount').textContent = totalAmount.toFixed(2);
+            } catch (err) {
+                console.error('加载购物车失败:', err);
+            }
+        }
+
+        function selectPaymentMethod(method) {
+            selectedMethod = method;
+            
+            // 更新选中样式
+            document.querySelectorAll('.method-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            event.currentTarget.classList.add('selected');
+            
+            // 显示支付详情
+            if (method === 'wechat') {
+                document.getElementById('payment-details').style.display = 'block';
+            } else {
+                document.getElementById('payment-details').style.display = 'none';
+            }
+        }
+
+        async function completePayment() {
+            if (!selectedMethod) {
+                alert('请选择支付方式');
+                return;
+            }
+            
+            if (!confirm('确认要完成支付吗？')) {
+                return;
+            }
+            
+            const user = localStorage.getItem('currentUser');
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            try {
+                const res = await fetch('/api/cart/checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        username: user, 
+                        totalPrice: totalAmount 
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if(data.success) {
+                    // 隐藏支付表单，显示成功信息
+                    document.getElementById('payment-form').style.display = 'none';
+                    document.getElementById('payment-result').style.display = 'block';
+                    
+                    // 可选：跳转回首页
+                    // setTimeout(() => {
+                    //     window.location.href = 'index.html';
+                    // }, 3000);
+                } else {
+                    alert('支付失败，请重试');
+                }
+            } catch (err) {
+                console.error('支付请求失败:', err);
+                alert('支付请求失败，请重试');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>冀遗筑梦————云端商城</title>
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; 
+        }
+        
+        body { 
+            background: #f9f7f4; 
+            padding-top: 80px; 
+            color: #5a5651;
+        }
+        
+        .navbar {
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%;
+            background: #f9f7f4; 
+            color: #5a5651; 
+            padding: 15px 30px;
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-bottom: 1px solid #d9d2ca;
+        }
+        
+        .nav-title {
+            font-size: 22px; 
+            font-weight: 400; 
+            font-family: 'KaiTi', '楷体', serif;
+            color: #8b4c30;
+        }
+        
+        .nav-links a { 
+            color: #8a8681; 
+            text-decoration: none; 
+            margin-left: 25px; 
+            cursor: pointer;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-links a:hover { 
+            color: #8b4c30; 
+        }
+        
+        /* 搜索框样式 */
+        .search-container {
+            display: flex;
+            align-items: center;
+            margin: 0 20px;
+            flex: 1;
+            max-width: 500px;
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            color: #5a5651;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            background: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            color: #aaa;
+            font-size: 16px;
+            pointer-events: none;
+        }
+        
+        .search-btn {
+            position: absolute;
+            right: 5px;
+            padding: 8px 20px;
+            background: #d1b5a2;
+            color: #5a5651;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .search-btn:hover {
+            background: #a53f3f;
+            color: white;
+            transform: scale(1.05);
+        }
+        
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 20px; 
+        }
+        
+        .page-title { 
+            text-align: center; 
+            margin: 30px 0 40px 0; 
+            color: #5a5651; 
+        }
+        .page-title h2 { 
+            font-size: 32px; 
+            font-weight: 300; 
+            margin-bottom: 10px; 
+            font-family: 'KaiTi', '楷体', serif;
+            color: #8b4c30;
+        }
+        .page-title p { 
+            color: #8a8681; 
+            font-size: 16px; 
+            font-weight: 300;
+        }
+
+        .product-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            gap: 60px; 
+            padding: 0 30px;
+        }
+        
+        .product-card { 
+            background: white; 
+            border-radius: 8px; 
+            overflow: hidden; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+            transition: all 0.3s ease;
+            border: 1px solid #d9d2ca;
+        }
+        
+        .product-card:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1); 
+        }
+        
+        .product-img { 
+            width: 100%; 
+            height: 220px;
+            object-fit: contain;
+            background-color: #fff;
+            padding: 20px;
+            transition: transform 0.3s ease;
+        }
+        
+        .product-img:hover {
+            transform: scale(1.02);
+        }
+        
+        .card-body { 
+            padding: 25px; 
+        }
+        .product-name { 
+            font-size: 18px; 
+            font-weight: 500; 
+            margin-bottom: 12px; 
+            color: #5a5651; 
+            line-height: 1.5;
+        }
+        .product-price { 
+            color: #8b4c30; 
+            font-size: 22px; 
+            font-weight: 600; 
+            margin-bottom: 15px; 
+        }
+        .product-desc { 
+            color: #8a8681; 
+            font-size: 14px; 
+            line-height: 1.6; 
+            margin-bottom: 20px; 
+            height: 60px; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            display: -webkit-box; 
+            -webkit-line-clamp: 3; 
+            -webkit-box-orient: vertical; 
+        }
+        
+        .btn-buy { 
+            width: 100%; 
+            padding: 12px; 
+            background: transparent; 
+            color: #8b4c30; 
+            border: 1px solid #d1b5a2;
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .btn-buy:hover { 
+            background: #8b4c30; 
+            color: white; 
+            border-color: #8b4c30;
+        }
+
+        .pagination { 
+            text-align: center; 
+            margin-top: 60px; 
+        }
+        .page-btn { 
+            padding: 10px 25px; 
+            margin: 0 8px; 
+            background: transparent; 
+            border: 1px solid #d1b5a2; 
+            color: #8a8681;
+            cursor: pointer; 
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        .page-btn:disabled { 
+            background: #f0f0f0; 
+            cursor: not-allowed; 
+            opacity: 0.5;
+        }
+        .page-btn:not(:disabled):hover {
+            background: #8b4c30;
+            color: white;
+            border-color: #8b4c30;
+        }
+        .page-info { 
+            margin: 0 15px; 
+            color: #8a8681; 
+            font-size: 16px;
+        }
+        
+        /* 搜索结果提示 */
+        .search-results {
+            text-align: center;
+            margin: 20px 0 30px;
+            color: #8a8681;
+            font-size: 16px;
+        }
+        .no-results {
+            text-align: center;
+            padding: 60px;
+            color: #8a8681;
+            font-size: 16px;
+        }
+        
+        /* 分类筛选样式 */
+        .filter-container {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0 40px;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 0 30px;
+        }
+        
+        .filter-btn {
+            padding: 10px 20px;
+            background: transparent;
+            border: 1px solid #d1b5a2;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #8a8681;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-btn.active, 
+        .filter-btn:hover {
+            background: #8b4c30;
+            color: white;
+            border-color: #8b4c30;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-title">🏛️ 传承非遗·筑梦河北</div>
+        
+        <!-- 搜索框 -->
+        <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-input" id="search-input" placeholder="搜索非遗商品...">
+            <button class="search-btn" onclick="performSearch()">搜索</button>
+        </div>
+        
+        <div class="nav-links" id="auth-section">
+            <!-- JS填充 -->
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-title">
+            <h2>传承非遗 · 筑梦河北</h2>
+            <p>精选燕赵大地文化瑰宝</p>
+        </div>
+
+        <!-- 分类筛选 -->
+        <div class="filter-container" id="filter-container">
+            <button class="filter-btn active" data-category="all">全部</button>
+            <button class="filter-btn" data-category="工艺品">工艺品</button>
+            <button class="filter-btn" data-category="剪纸">剪纸</button>
+            <button class="filter-btn" data-category="雕塑">雕塑</button>
+            <button class="filter-btn" data-category="陶瓷">陶瓷</button>
+            <button class="filter-btn" data-category="皮影">皮影</button>
+            <button class="filter-btn" data-category="雕刻">雕刻</button>
+            <button class="filter-btn" data-category="文房四宝">文房四宝</button>
+            <button class="filter-btn" data-category="年画">年画</button>
+            <button class="filter-btn" data-category="金银器">金银器</button>
+            <button class="filter-btn" data-category="内画">内画</button>
+            <button class="filter-btn" data-category="泥塑">泥塑</button>
+            <button class="filter-btn" data-category="乐器">乐器</button>
+        </div>
+
+        <!-- 搜索结果提示 -->
+        <div class="search-results" id="search-results"></div>
+
+        <div class="product-grid" id="product-list"></div>
+
+        <!-- 无结果提示 -->
+        <div class="no-results" id="no-results" style="display: none;">
+            没有找到相关商品，请尝试其他关键词
+        </div>
+
+        <div class="pagination" id="pagination">
+            <button class="page-btn" id="prev-btn" onclick="changePage(-1)">上一页</button>
+            <span class="page-info" id="page-info">第 1 页</span>
+            <button class="page-btn" id="next-btn" onclick="changePage(1)">下一页</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = ''; 
+        let currentPage = 1;
+        let productsCache = []; 
+        let allProducts = []; // 新增：存储所有商品用于搜索
+        let isSearchMode = false; // 新增：搜索模式标志
+        let currentSearchTerm = ''; // 新增：当前搜索关键词
+        let filteredProducts = []; // 新增：分类筛选后的商品
+        let currentCategory = 'all'; // 新增：当前分类
+
+        window.onload = function() {
+            checkLoginStatus();
+            loadAllProducts(); // 新增：加载所有商品用于搜索
+            trackUserAction('访问首页', '浏览商品列表');
+            
+            // 添加事件监听器到筛选按钮
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    filterProducts(this.getAttribute('data-category'));
+                });
+            });
+        };
+
+        function checkLoginStatus() {
+            const user = localStorage.getItem('currentUser');
+            const authSection = document.getElementById('auth-section');
+            if (user) {
+                authSection.innerHTML = `
+                    <span>欢迎, ${user}</span>
+                    <a href="cart.html">🛒 购物车</a>
+                    <a href="favorites.html">❤️ 收藏</a>
+                    <a onclick="logout()">退出</a>
+                `;
+            } else {
+                authSection.innerHTML = `
+                    <a href="login.html">登录</a>
+                    <a href="register.html">注册</a>
+                `;
+            }
+        }
+
+        function logout() {
+            trackUserAction('用户登出', '-');
+            localStorage.removeItem('currentUser');
+            window.location.reload();
+        }
+
+        // 新增：加载所有商品
+        async function loadAllProducts() {
+            try {
+                const res = await fetch(`${API_BASE}/api/products?page=1`);
+                const data = await res.json();
+                allProducts = data.items;
+                
+                // 如果有第二页，加载第二页商品
+                if (data.totalPages > 1) {
+                    const res2 = await fetch(`${API_BASE}/api/products?page=2`);
+                    const data2 = await res2.json();
+                    allProducts = allProducts.concat(data2.items);
+                }
+                
+                loadProducts(currentPage);
+            } catch (err) { 
+                console.error('加载商品失败:', err);
+                loadProducts(currentPage);
+            }
+        }
+
+        async function loadProducts(page) {
+            try {
+                const res = await fetch(`${API_BASE}/api/products?page=${page}`);
+                const data = await res.json();
+                productsCache = data.items; 
+                
+                displayProducts(data.items);
+                
+                document.getElementById('page-info').innerText = `第 ${data.page} 页 / 共 ${data.totalPages} 页`;
+                document.getElementById('prev-btn').disabled = data.page <= 1;
+                document.getElementById('next-btn').disabled = data.page >= data.totalPages;
+                currentPage = data.page;
+                
+                // 重置搜索状态
+                isSearchMode = false;
+                currentSearchTerm = '';
+                currentCategory = 'all';
+                document.getElementById('search-results').innerHTML = '';
+                document.getElementById('no-results').style.display = 'none';
+                document.getElementById('pagination').style.display = 'flex';
+                
+                // 重置分类按钮状态
+                const buttons = document.querySelectorAll('.filter-btn');
+                buttons.forEach(btn => btn.classList.remove('active'));
+                document.querySelector('.filter-btn[data-category="all"]').classList.add('active');
+            } catch (err) { console.error(err); }
+        }
+
+        // 新增：显示商品列表
+        function displayProducts(products) {
+            const productList = document.getElementById('product-list');
+            productList.innerHTML = ''; 
+
+            if (products.length === 0) {
+                document.getElementById('no-results').style.display = 'block';
+                document.getElementById('pagination').style.display = 'none';
+                return;
+            }
+
+            products.forEach((product, index) => {
+                productList.innerHTML += `
+                    <div class="product-card">
+                        <img src="${product.img}" class="product-img" onerror="this.src='https://placehold.co/300x200?text=No+Image'" onclick="viewProductDetail(${product.id})">
+                        <div class="card-body">
+                            <div class="product-name" onclick="viewProductDetail(${product.id})" style="cursor: pointer;">${product.name}</div>
+                            <div class="product-price">¥${product.price}</div>
+                            <div class="product-desc">${product.desc}</div>
+                            <button class="btn-buy" onclick="addToCart(${index})">加入购物车</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function changePage(step) {
+            if (isSearchMode) {
+                // 搜索模式下的翻页
+                const newPage = currentPage + step;
+                const startIndex = (newPage - 1) * 6;
+                const endIndex = startIndex + 6;
+                const pageProducts = searchResults.slice(startIndex, endIndex);
+                
+                if (pageProducts.length > 0) {
+                    displayProducts(pageProducts);
+                    document.getElementById('page-info').innerText = `第 ${newPage} 页 / 共 ${Math.ceil(searchResults.length / 6)} 页`;
+                    document.getElementById('prev-btn').disabled = newPage <= 1;
+                    document.getElementById('next-btn').disabled = newPage >= Math.ceil(searchResults.length / 6);
+                    currentPage = newPage;
+                }
+            } else if (currentCategory !== 'all') {
+                // 分类筛选模式下的翻页（暂不支持）
+                alert('分类筛选模式下不支持翻页');
+            } else {
+                // 正常模式下的翻页
+                loadProducts(currentPage + step);
+            }
+            trackUserAction('翻页浏览', `第 ${currentPage + step} 页`);
+        }
+
+        // 新增：搜索功能
+        function performSearch() {
+            const searchTerm = document.getElementById('search-input').value.trim();
+            if (!searchTerm) {
+                loadProducts(1);
+                return;
+            }
+            
+            currentSearchTerm = searchTerm;
+            isSearchMode = true;
+            
+            // 执行搜索
+            const searchResults = allProducts.filter(product => 
+                product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                product.desc.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            
+            // 显示搜索结果
+            displaySearchResults(searchResults, searchTerm);
+            trackUserAction('搜索商品', `关键词: ${searchTerm}`);
+        }
+
+        // 新增：显示搜索结果
+        function displaySearchResults(results, searchTerm) {
+            searchResults = results; // 存储搜索结果用于翻页
+            
+            if (results.length === 0) {
+                document.getElementById('product-list').innerHTML = '';
+                document.getElementById('no-results').style.display = 'block';
+                document.getElementById('search-results').innerHTML = `搜索 "<strong>${searchTerm}</strong>" 没有找到相关商品`;
+                document.getElementById('pagination').style.display = 'none';
+                return;
+            }
+            
+            // 显示第一页结果
+            const pageProducts = results.slice(0, 6);
+            displayProducts(pageProducts);
+            
+            // 更新搜索提示
+            document.getElementById('search-results').innerHTML = 
+                `搜索 "<strong>${searchTerm}</strong>" 找到 ${results.length} 个相关商品`;
+            
+            // 更新分页
+            if (results.length > 6) {
+                document.getElementById('page-info').innerText = `第 1 页 / 共 ${Math.ceil(results.length / 6)} 页`;
+                document.getElementById('prev-btn').disabled = true;
+                document.getElementById('next-btn').disabled = results.length <= 6;
+                document.getElementById('pagination').style.display = 'flex';
+            } else {
+                document.getElementById('pagination').style.display = 'none';
+            }
+            
+            currentPage = 1;
+        }
+
+        // 新增：回车键搜索
+        function handleSearchKeypress(event) {
+            if (event.key === 'Enter') {
+                performSearch();
+            }
+        }
+
+        // 新增：清除搜索
+        function clearSearch() {
+            document.getElementById('search-input').value = '';
+            loadProducts(1);
+        }
+
+        // 新增：商品详情页跳转
+        function viewProductDetail(productId) {
+            window.location.href = `product-detail.html?id=${productId}`;
+        }
+
+        // 新增：分类筛选功能
+        function filterProducts(category) {
+            currentCategory = category;
+            const buttons = document.querySelectorAll('.filter-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (category === 'all') {
+                displayProducts(allProducts);
+                document.getElementById('pagination').style.display = 'flex';
+            } else {
+                filteredProducts = allProducts.filter(product => product.category === category);
+                displayProducts(filteredProducts);
+                document.getElementById('pagination').style.display = 'none';
+                
+                // 更新搜索结果提示
+                document.getElementById('search-results').innerHTML = 
+                    `显示分类 "<strong>${category}</strong>" 的 ${filteredProducts.length} 个商品`;
+            }
+        }
+
+        async function addToCart(index) {
+            const user = localStorage.getItem('currentUser');
+            if(!user) {
+                alert('请先登录后再购买！');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const product = currentCategory !== 'all' ? 
+                filteredProducts[index] : 
+                (isSearchMode ? searchResults[index] : productsCache[index]);
+                
+            try {
+                const res = await fetch('/api/cart/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user, product: product })
+                });
+                const data = await res.json();
+                if(data.success) {
+                    alert(`✅ [${product.name}] 已加入购物车！`);
+                }
+            } catch(e) {
+                alert('添加失败');
+            }
+        }
+
+        async function trackUserAction(action, product) {
+            const currentUser = localStorage.getItem('currentUser') || '未登录游客';
+            try {
+                await fetch('/api/track', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: currentUser,
+                        action: action,
+                        product: product
+                    })
+                });
+            } catch (e) {}
+        }
+    </script>
+</body>
+</html>
