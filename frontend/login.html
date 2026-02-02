@@ -13,130 +13,191 @@
         }
         
         body { 
-            background: #fafafa; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            min-height: 100vh; 
-            margin: 0; 
+            background: #f9f7f4; /* 奶白色背景 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            color: #5a5651; /* 暖灰色文字 */
         }
         
-        .card { 
-            background: white; 
-            padding: 40px; 
-            border-radius: 16px; 
-            box-shadow: 0 8px 30px rgba(0,0,0,0.08); 
-            width: 100%; 
-            max-width: 420px; 
-            border: 1px solid #f0f0f0;
+        .login-container {
+            background: #fff; /* 白色背景 */
+            border-radius: 12px; /* 适度圆角 */
+            box-shadow: 0 4px 15px rgba(139, 76, 48, 0.08); /* 深棕色系轻微阴影 */
+            border: none; /* 去掉边框 */
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
         }
         
-        .card h2 {
-            text-align: center; 
-            margin-bottom: 30px; 
-            font-size: 26px;
-            font-weight: 600;
-            color: #222;
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
         }
         
-        input { 
-            width: 100%; 
-            padding: 14px 16px; 
-            margin: 12px 0; 
-            border: 1px solid #e0e0e0; 
-            border-radius: 10px; 
+        .logo h1 {
+            font-size: 28px;
+            font-weight: 400; /* 更纤细的字体 */
+            color: #8b4c30; /* 深棕色 */
+            margin-bottom: 8px;
+            font-family: 'Georgia', ' serif'; /* 更接近手写体的字体 */
+        }
+        
+        .logo p {
+            color: #a89f96; /* 暖灰色 */
             font-size: 16px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #5a5651; /* 暖灰色 */
+            font-size: 14px;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #d9d2ca; /* 陶土色边框 */
+            border-radius: 6px; /* 减小圆角 */
+            font-size: 16px;
+            background: #faf8f5; /* 很浅的奶白色 */
+            color: #5a5651; /* 暖灰色 */
             transition: all 0.3s;
         }
         
-        input:focus {
+        .form-control:focus {
             outline: none;
-            border-color: #d0d0d0;
-            box-shadow: 0 0 0 3px rgba(139, 42, 42, 0.1);
+            border-color: #8b4c30; /* 深棕色焦点色 */
+            box-shadow: 0 0 0 3px rgba(139, 76, 48, 0.1); /* 深棕色外发光 */
         }
         
-        button { 
-            width: 100%; 
-            padding: 14px; 
-            background: #8b2a2a; 
-            color: white; 
-            border: none; 
-            border-radius: 10px; 
-            cursor: pointer; 
-            font-size: 16px; 
-            font-weight: 500;
-            margin-top: 10px;
-            transition: background 0.3s;
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: transparent; /* 扁平设计 */
+            color: #8b4c30; /* 深棕色文字 */
+            border: 1px solid #d9d2ca; /* 陶土色边框 */
+            border-radius: 6px; /* 减小圆角 */
+            font-size: 16px;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.3s;
         }
         
-        button:hover { 
-            background: #a53f3f; 
+        .btn-login:hover {
+            background: #f0ebe5; /* 陶土色悬停背景 */
+            border-color: #c9b7ac; /* 更深的陶土色 */
         }
         
-        .link { 
-            text-align: center; 
-            margin-top: 20px; 
-            font-size: 15px; 
-            color: #666;
+        .links {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
         }
         
-        .link a { 
-            color: #8b2a2a; 
-            text-decoration: none; 
-            transition: color 0.3s;
+        .links a {
+            color: #8b4c30; /* 深棕色 */
+            text-decoration: none;
+            margin: 0 10px;
         }
         
-        .link a:hover { 
-            color: #a53f3f; 
+        .links a:hover {
             text-decoration: underline;
         }
         
-        .brand-header {
-            text-align: center;
+        .alert {
+            padding: 12px;
+            background: #f0ebe5; /* 陶土色背景 */
+            border: 1px solid #d9d2ca; /* 陶土色边框 */
+            border-radius: 6px;
+            color: #8b4c30; /* 深棕色文字 */
             margin-bottom: 20px;
-            color: #8b2a2a;
-            font-size: 24px;
-            font-weight: 600;
+            display: none;
+        }
+        
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 30px 20px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="card">
-        <div class="brand-header">🏛️ 冀遗筑梦</div>
-        <h2>用户登录</h2>
-        <input type="text" id="username" placeholder="请输入用户名">
-        <input type="password" id="password" placeholder="请输入密码">
-        <button onclick="handleLogin()">登录</button>
-        <div class="link">
-            还没有账号？ <a href="register.html">去注册</a> | <a href="index.html">返回首页</a>
+    <div class="login-container">
+        <div class="logo">
+            <h1>🏛️ 冀遗筑梦</h1>
+            <p>登录您的账户</p>
+        </div>
+        
+        <div class="alert" id="alert-message"></div>
+        
+        <form id="login-form">
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text" id="username" class="form-control" placeholder="请输入用户名" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" class="form-control" placeholder="请输入密码" required>
+            </div>
+            
+            <button type="submit" class="btn-login">登录</button>
+        </form>
+        
+        <div class="links">
+            <a href="index.html">返回首页</a>
+            <a href="register.html">注册账户</a>
         </div>
     </div>
 
     <script>
-        async function handleLogin() {
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-
+            const alertEl = document.getElementById('alert-message');
+            
             try {
                 const res = await fetch('/api/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
                 });
+                
                 const data = await res.json();
                 
-                if (data.success) {
-                    // 登录成功，把用户名存在浏览器里
-                    localStorage.setItem('currentUser', data.username);
-                    alert('登录成功！');
-                    window.location.href = 'index.html'; // 跳转回首页
+                if(data.success) {
+                    localStorage.setItem('currentUser', username);
+                    alertEl.style.display = 'block';
+                    alertEl.style.backgroundColor = '#ecfdf5';
+                    alertEl.style.color = '#047857';
+                    alertEl.textContent = '登录成功！正在跳转...';
+                    
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1000);
                 } else {
-                    alert('登录失败: ' + data.message);
+                    alertEl.style.display = 'block';
+                    alertEl.style.backgroundColor = '#fef2f2';
+                    alertEl.style.color = '#dc2626';
+                    alertEl.textContent = data.message || '登录失败，请检查用户名和密码';
                 }
-            } catch (err) {
-                alert('网络错误');
+            } catch(err) {
+                alertEl.style.display = 'block';
+                alertEl.style.backgroundColor = '#fef2f2';
+                alertEl.style.color = '#dc2626';
+                alertEl.textContent = '网络错误，请稍后重试';
             }
-        }
+        });
     </script>
 </body>
 </html>

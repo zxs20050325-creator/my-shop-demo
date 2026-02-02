@@ -14,9 +14,9 @@
         }
         
         body { 
-            background: #fafafa; 
+            background: #f9f7f4; /* 更柔和的奶白色 */
             padding-top: 80px; 
-            color: #333;
+            color: #5a5651; /* 暖灰色文字 */
         }
         
         .navbar {
@@ -24,27 +24,28 @@
             top: 0; 
             left: 0; 
             width: 100%;
-            background: rgba(255, 255, 255, 0.95); 
+            background: rgba(250, 247, 242, 0.95); /* 奶白色半透明背景 */
             backdrop-filter: blur(10px);
-            color: #333; 
+            color: #5a5651; /* 暖灰色 */
             padding: 15px 30px;
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
             z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            border-bottom: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 2px 10px rgba(139, 76, 48, 0.05); /* 深棕色系阴影 */
+            border-bottom: 1px solid rgba(139, 76, 48, 0.05); /* 深棕色系边框 */
         }
         
         .brand-logo { 
             font-size: 22px; 
-            font-weight: 600; 
-            color: #8b2a2a;
+            font-weight: 400; /* 更纤细的字体 */
+            color: #8b4c30; /* 深棕色 */
             letter-spacing: 0.5px;
+            font-family: 'Georgia', ' serif'; /* 更接近手写体的字体 */
         }
         
         .nav-links a { 
-            color: #555; 
+            color: #8a8681; /* 较浅的暖灰色 */
             text-decoration: none; 
             margin-left: 20px; 
             font-size: 15px;
@@ -52,7 +53,7 @@
         }
         
         .nav-links a:hover { 
-            color: #8b2a2a; 
+            color: #8b4c30; /* 深棕色悬停效果 */
         }
         
         .search-container {
@@ -66,24 +67,25 @@
         .search-input {
             width: 100%;
             padding: 12px 20px 12px 45px;
-            border: 1px solid #e0e0e0;
+            border: 1px solid #d9d2ca; /* 陶土色边框 */
             border-radius: 30px;
             outline: none;
             font-size: 14px;
-            background: #f8f8f8;
+            background: #f0ebe5; /* 陶土色背景 */
             transition: all 0.3s;
+            color: #5a5651;
         }
         
         .search-input:focus {
-            background: #fff;
-            border-color: #d0d0d0;
-            box-shadow: 0 0 0 3px rgba(139, 42, 42, 0.1);
+            background: #f9f7f4; /* 奶白色 */
+            border-color: #d1b5a2; /* 哑光陶土色 */
+            box-shadow: 0 0 0 3px rgba(209, 181, 162, 0.2); /* 陶土色外发光 */
         }
         
         .search-icon {
             position: absolute;
             left: 15px;
-            color: #aaa;
+            color: #a89f96; /* 暖灰色 */
             font-size: 16px;
         }
         
@@ -101,21 +103,23 @@
         .page-title { 
             text-align: center; 
             margin-bottom: 40px; 
-            color: #333; 
+            color: #5a5651; 
         }
         
         .page-title h2 { 
             font-size: 32px; 
-            font-weight: 500; 
+            font-weight: 300; /* 更纤细的字体 */
             margin-bottom: 10px; 
             letter-spacing: 0.5px;
-            color: #222;
+            color: #5a5651; /* 暖灰色 */
+            font-family: 'Georgia', 'serif'; /* 手写体风格 */
         }
         
         .page-title p { 
-            color: #666; 
+            color: #a89f96; /* 暖灰色 */
             font-size: 16px; 
             font-weight: 300;
+            letter-spacing: 1px;
         }
 
         .filter-container {
@@ -128,78 +132,83 @@
         
         .filter-btn {
             padding: 8px 20px;
-            background: #f0f0f0;
-            border: none;
+            background: #f0ebe5; /* 陶土色背景 */
+            border: 1px solid #d9d2ca; /* 陶土色边框 */
             border-radius: 30px;
             cursor: pointer;
             font-size: 14px;
-            color: #555;
+            color: #8a8681; /* 暖灰色文字 */
             transition: all 0.3s;
         }
         
         .filter-btn.active, 
         .filter-btn:hover {
-            background: #8b2a2a;
-            color: white;
+            background: #d1b5a2; /* 哑光陶土色 */
+            color: #fff;
+            border-color: #d1b5a2;
         }
 
         .product-grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
-            gap: 30px; 
+            gap: 60px; /* 增大间距，增加呼吸感 */
             padding: 0 20px;
         }
         
         .product-card { 
-            background: white; 
-            border-radius: 12px; 
+            background: #fff; /* 白色背景 */
+            border-radius: 8px; /* 减小圆角，更简约 */
             overflow: hidden; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05); 
+            box-shadow: 0 4px 15px rgba(139, 76, 48, 0.08); /* 深棕色系轻微阴影 */
             transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-            border: 1px solid #f0f0f0;
+            border: none; /* 去掉边框 */
+            display: flex;
+            flex-direction: column;
         }
         
         .product-card:hover { 
-            transform: translateY(-8px); 
-            box-shadow: 0 12px 30px rgba(0,0,0,0.12); 
-            border-color: rgba(139, 42, 42, 0.1);
+            transform: translateY(-5px); /* 减少位移，更克制 */
+            box-shadow: 0 8px 25px rgba(139, 76, 48, 0.12); /* 深棕色系阴影 */
         }
         
         .product-img { 
             width: 100%; 
             height: 220px;
             object-fit: contain;
-            background-color: #fff;
-            padding: 20px;
+            background-color: #faf8f5; /* 很浅的奶白色 */
+            padding: 25px;
             transition: transform 0.3s;
         }
         
         .product-card:hover .product-img {
-            transform: scale(1.03);
+            transform: scale(1.02);
         }
         
         .card-body { 
             padding: 20px; 
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
         }
         
         .product-name { 
             font-size: 18px; 
-            font-weight: 500; 
+            font-weight: 400; 
             margin-bottom: 10px; 
-            color: #222; 
+            color: #5a5651; 
             line-height: 1.4;
         }
         
         .product-price { 
-            color: #8b2a2a; 
-            font-size: 22px; 
-            font-weight: 600; 
+            color: #8b4c30; /* 深棕色价格 */
+            font-size: 20px; 
+            font-weight: 500; 
             margin-bottom: 15px; 
             display: block;
         }
         
         .product-desc { 
-            color: #666; 
+            color: #8a8681; /* 暖灰色描述 */
             font-size: 14px; 
             line-height: 1.5; 
             margin-bottom: 20px; 
@@ -209,23 +218,25 @@
             display: -webkit-box; 
             -webkit-line-clamp: 2; 
             -webkit-box-orient: vertical; 
+            flex-grow: 1;
         }
         
         .btn-buy { 
             width: 100%; 
             padding: 12px; 
-            background: #8b2a2a; 
-            color: white; 
-            border: none; 
-            border-radius: 8px; 
+            background: transparent; /* 扁平设计 */
+            color: #8b4c30; /* 深棕色文字 */
+            border: 1px solid #d9d2ca; /* 陶土色边框 */
+            border-radius: 6px; /* 减小圆角 */
             cursor: pointer; 
             font-size: 16px; 
-            font-weight: 500;
-            transition: background 0.3s;
+            font-weight: 400;
+            transition: all 0.3s;
         }
         
         .btn-buy:hover { 
-            background: #a53f3f; 
+            background: #f0ebe5; /* 陶土色悬停背景 */
+            border-color: #c9b7ac; /* 更深一点的陶土色 */
         }
 
         .pagination { 
@@ -238,28 +249,29 @@
         
         .page-btn { 
             padding: 10px 20px; 
-            background: white; 
-            border: 1px solid #e0e0e0; 
+            background: #f0ebe5; /* 陶土色背景 */
+            border: 1px solid #d9d2ca; /* 陶土色边框 */
+            color: #5a5651; /* 暖灰色文字 */
             cursor: pointer; 
-            border-radius: 8px;
+            border-radius: 6px;
             transition: all 0.3s;
         }
         
         .page-btn:hover:not(:disabled) {
-            background: #f8f8f8;
-            border-color: #d0d0d0;
+            background: #e8e2db; /* 更深的陶土色 */
+            border-color: #c9b7ac;
         }
         
         .page-btn:disabled { 
-            background: #f5f5f5; 
-            color: #bbb; 
+            background: #f5f2ee; /* 浅陶土色 */
+            color: #bfb8b1; /* 浅灰色 */
             cursor: not-allowed; 
-            border-color: #eee;
+            border-color: #eae5df;
         }
         
         .page-info { 
             margin: 0 15px; 
-            color: #666; 
+            color: #a89f96; /* 暖灰色 */
             display: flex;
             align-items: center;
         }
@@ -267,7 +279,7 @@
         .search-results {
             text-align: center;
             margin: 20px 0 30px;
-            color: #666;
+            color: #a89f96; /* 暖灰色 */
             font-size: 16px;
             font-weight: 500;
         }
@@ -275,7 +287,7 @@
         .no-results {
             text-align: center;
             padding: 60px 20px;
-            color: #999;
+            color: #bfb8b1; /* 浅灰色 */
             font-size: 18px;
         }
         
@@ -292,7 +304,7 @@
             .product-grid {
                 grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
                 padding: 0 10px;
-                gap: 20px;
+                gap: 40px; /* 移动端间距稍小 */
             }
             
             .page-title h2 {
