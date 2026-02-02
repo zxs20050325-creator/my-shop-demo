@@ -14,6 +14,9 @@ app.use(express.static(path.join(__dirname, '.')));
 // 专门配置图片资源路径，符合项目规范
 app.use('/images', express.static(path.join(__dirname, 'backend/images')));
 
+// 为了兼容不同部署环境，额外配置一个静态资源路径
+app.use('/static', express.static(path.join(__dirname, 'backend')));
+
 // 新增：输入验证函数
 function validateInput(input, type = 'string') {
     if (typeof input === 'undefined' || input === null) return false;
