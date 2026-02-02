@@ -8,10 +8,18 @@ const app = express();
 
 app.use(express.json());
 app.use(cors());
-// 修改静态文件服务路径，使其指向frontend目录
-app.use(express.static(path.join(__dirname, '../frontend')));
+
+// 为了支持Vue构建的前端，需要配置静态文件服务
+// 首先尝试提供构建的前端文件，如果找不到则提供静态资源
+app.use(express.static(path.join(__dirname, '../vue-frontend/dist')));
+
 // 修正图片资源路径，指向backend/images目录
 app.use('/images', express.static(path.join(__dirname, './images')));
+
+// 对于所有非API请求，返回index.html以支持Vue Router
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../vue-frontend/dist/index.html'));
+});
 
 // ====================== 1. 数据存储 ======================
 const MOCK_PRODUCTS = [
@@ -107,14 +115,14 @@ app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
     const user = users.find(u => u.username === username && u.password === password);
     if (user) res.json({ success: true, username: user.username });
-    else res.status(401).json({ success: false, message: '账号或密码错误' });
+    else res.status(401).json({ success: true, message: '账号或密码错误' });
 });
 
 // --- 购物车 ---
 app.post('/api/cart/add', (req, res) => {
     const { username, product } = req.body;
     if (!userCarts[username]) userCarts[username] = [];
-    userCarts[username].push(product);
+    userCarts[username].push({...product, quantity: 1}); // 添加数量字段
     addLog(username, '加入购物车', product.name);
     saveData(); // 新增：保存数据
     res.json({ success: true, count: userCarts[username].length });
