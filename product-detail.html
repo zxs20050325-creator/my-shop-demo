@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品详情 - 冀遗筑梦</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: '微软雅黑'; }
+        body { background: #f5f5f5; padding-top: 80px; }
+        .navbar {
+            position: fixed; top: 0; left: 0; width: 100%;
+            background: #8b2a2a; 
+            color: white; padding: 15px 30px;
+            display: flex; justify-content: space-between; align-items: center; z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .nav-links a { color: white; text-decoration: none; margin-left: 20px; cursor: pointer; }
+        .nav-links a:hover { color: #ffeb3b; }
+        
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        
+        .product-detail-container {
+            background: white; 
+            border-radius: 8px; 
+            overflow: hidden; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .product-image {
+            flex: 1;
+            padding: 30px;
+            background: white;
+        }
+        
+        .product-image img {
+            width: 100%;
+            height: 400px;
+            object-fit: contain;
+        }
+        
+        .product-info {
+            flex: 1;
+            padding: 30px;
+        }
+        
+        .product-name { font-size: 28px; font-weight: bold; margin-bottom: 15px; color: #333; }
+        .product-price { color: #8b2a2a; font-size: 32px; font-weight: bold; margin-bottom: 20px; }
+        .product-desc { color: #666; font-size: 16px; line-height: 1.8; margin-bottom: 25px; }
+        .product-category { 
+            display: inline-block; 
+            padding: 5px 15px; 
+            background: #f0f0f0; 
+            color: #333; 
+            border-radius: 20px; 
+            margin-bottom: 25px; 
+            font-size: 14px;
+        }
+        
+        .btn-actions { 
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .btn-buy, .btn-favorite { 
+            flex: 1;
+            padding: 15px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 18px; 
+        }
+        
+        .btn-buy { 
+            background: #8b2a2a; color: white; 
+        }
+        .btn-buy:hover { background: #a53f3f; }
+        
+        .btn-favorite { 
+            background: #f0f0f0; color: #333;
+        }
+        .btn-favorite:hover { background: #e0e0e0; }
+        
+        .back-link {
+            display: inline-block;
+            padding: 10px 15px;
+            background: #f0f0f0;
+            color: #333;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .back-link:hover {
+            background: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div style="font-size: 22px; font-weight: bold; font-family: '楷体';">🏛️ 冀遗筑梦</div>
+        <div class="nav-links" id="auth-section">
+            <!-- JS填充 -->
+        </div>
+    </nav>
+
+    <div class="container">
+        <a href="index.html" class="back-link">← 返回首页</a>
+        
+        <div class="product-detail-container">
+            <div class="product-image">
+                <img id="product-img" src="" alt="">
+            </div>
+            
+            <div class="product-info">
+                <h1 id="product-name" class="product-name"></h1>
+                <div id="product-category" class="product-category"></div>
+                <div id="product-price" class="product-price"></div>
+                <p id="product-desc" class="product-desc"></p>
+                
+                <div class="btn-actions">
+                    <button class="btn-buy" onclick="addToCart()">加入购物车</button>
+                    <button class="btn-favorite" onclick="toggleFavorite()">❤️ 收藏商品</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '';
+        let currentProduct = null;
+
+        window.onload = function() {
+            checkLoginStatus();
+            loadProductDetail();
+        };
+
+        function checkLoginStatus() {
+            const user = localStorage.getItem('currentUser');
+            const authSection = document.getElementById('auth-section');
+            if (user) {
+                authSection.innerHTML = `
+                    <span>欢迎, ${user}</span>
+                    <a href="cart.html">🛒 购物车</a>
+                    <a href="favorites.html">❤️ 收藏</a>
+                    <a href="index.html">首页</a>
+                    <a onclick="logout()">退出</a>
+                `;
+            } else {
+                authSection.innerHTML = `
+                    <a href="login.html">登录</a>
+                    <a href="register.html">注册</a>
+                    <a href="index.html">首页</a>
+                `;
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.reload();
+        }
+
+        function loadProductDetail() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get('id');
+            
+            if (!productId) {
+                alert('未指定商品ID');
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            fetch(`${API_BASE}/api/products`)
+                .then(res => res.json())
+                .then(data => {
+                    // 遍历所有页面的商品找到匹配的
+                    let product = null;
+                    
+                    // 先在第一页找
+                    for (let page = 1; page <= data.totalPages; page++) {
+                        fetch(`${API_BASE}/api/products?page=${page}`)
+                            .then(res => res.json())
+                            .then(pageData => {
+                                product = pageData.items.find(p => p.id == productId);
+                                
+                                if (product) {
+                                    currentProduct = product;
+                                    document.getElementById('product-name').textContent = product.name;
+                                    document.getElementById('product-price').textContent = `¥${product.price}`;
+                                    document.getElementById('product-desc').textContent = product.desc;
+                                    document.getElementById('product-img').src = product.img;
+                                    document.getElementById('product-category').textContent = product.category || '非遗商品';
+                                    document.title = `${product.name} - 冀遗筑梦`;
+                                }
+                            });
+                    }
+                })
+                .catch(err => console.error(err));
+        }
+
+        async function addToCart() {
+            const user = localStorage.getItem('currentUser');
+            if(!user) {
+                alert('请先登录后再购买！');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            if (!currentProduct) {
+                alert('商品信息尚未加载完成');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/cart/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user, product: currentProduct })
+                });
+                const data = await res.json();
+                if(data.success) {
+                    alert(`✅ [${currentProduct.name}] 已加入购物车！`);
+                }
+            } catch(e) {
+                alert('添加失败');
+            }
+        }
+
+        async function toggleFavorite() {
+            const user = localStorage.getItem('currentUser');
+            if(!user) {
+                alert('请先登录后再收藏！');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            if (!currentProduct) {
+                alert('商品信息尚未加载完成');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/favorites/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user, product: currentProduct })
+                });
+                const data = await res.json();
+                if(data.success) {
+                    alert(`✅ [${currentProduct.name}] 已收藏！`);
+                } else {
+                    alert(data.message);
+                }
+            } catch(e) {
+                alert('收藏失败');
+            }
+        }
+    </script>
+</body>
+</html>
