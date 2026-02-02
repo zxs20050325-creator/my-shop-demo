@@ -3,6 +3,15 @@
   "userCarts": {},
   "browseLogs": [
     {
+      "id": 1770003737121,
+      "username": "未登录游客",
+      "action": "访问首页",
+      "product": "浏览商品列表",
+      "time": "2026/2/2 11:42:17",
+      "timestamp": 1770003737121,
+      "ip": "10.0.0.1"
+    },
+    {
       "id": 1770002175745,
       "username": "未登录游客",
       "action": "访问首页",
@@ -15,5 +24,5 @@
   "totalRevenue": 0,
   "totalOrders": 0,
   "userFavorites": {},
-  "lastSave": "2026-02-02T03:16:15.805Z"
+  "lastSave": "2026-02-02T03:42:17.121Z"
 }

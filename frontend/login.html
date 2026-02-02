@@ -3,19 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>登录 - 云端商城</title>
+    <title>登录 - 冀遗筑梦</title>
     <style>
-        body { background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: '微软雅黑'; }
-        .card { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; }
-        button { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
-        button:hover { background: #0056b3; }
-        .link { text-align: center; margin-top: 15px; font-size: 14px; }
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; 
+        }
+        
+        body { 
+            background: #fafafa; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+        }
+        
+        .card { 
+            background: white; 
+            padding: 40px; 
+            border-radius: 16px; 
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08); 
+            width: 100%; 
+            max-width: 420px; 
+            border: 1px solid #f0f0f0;
+        }
+        
+        .card h2 {
+            text-align: center; 
+            margin-bottom: 30px; 
+            font-size: 26px;
+            font-weight: 600;
+            color: #222;
+        }
+        
+        input { 
+            width: 100%; 
+            padding: 14px 16px; 
+            margin: 12px 0; 
+            border: 1px solid #e0e0e0; 
+            border-radius: 10px; 
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #d0d0d0;
+            box-shadow: 0 0 0 3px rgba(139, 42, 42, 0.1);
+        }
+        
+        button { 
+            width: 100%; 
+            padding: 14px; 
+            background: #8b2a2a; 
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            font-weight: 500;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+        
+        button:hover { 
+            background: #a53f3f; 
+        }
+        
+        .link { 
+            text-align: center; 
+            margin-top: 20px; 
+            font-size: 15px; 
+            color: #666;
+        }
+        
+        .link a { 
+            color: #8b2a2a; 
+            text-decoration: none; 
+            transition: color 0.3s;
+        }
+        
+        .link a:hover { 
+            color: #a53f3f; 
+            text-decoration: underline;
+        }
+        
+        .brand-header {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #8b2a2a;
+            font-size: 24px;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
     <div class="card">
-        <h2 style="text-align: center; margin-bottom: 20px;">用户登录</h2>
+        <div class="brand-header">🏛️ 冀遗筑梦</div>
+        <h2>用户登录</h2>
         <input type="text" id="username" placeholder="请输入用户名">
         <input type="password" id="password" placeholder="请输入密码">
         <button onclick="handleLogin()">登录</button>
