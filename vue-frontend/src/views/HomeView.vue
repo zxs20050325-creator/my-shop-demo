@@ -221,17 +221,6 @@ export default {
   
   async mounted() {
     this.fetchProducts();
-  },
-  
-  data() {
-    return {
-      products: [],
-      allProducts: [],
-      currentPage: 1,
-      searchQuery: '',
-      selectedCategory: '全部',
-      uniqueCategories: ['全部']
-    }
   }
 }
 </script>

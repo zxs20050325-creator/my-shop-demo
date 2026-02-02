@@ -7,3 +7,5 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: VUE_APP_API_BASE_URL
+        value: https://your-backend.onrender.com

@@ -12,8 +12,8 @@
     </div>
 
     <div v-else class="product-grid" id="favorites-list">
-      <div v-for="(product, index) in favorites" :key="product.id" class="product-card">
-        <div class="favorite-icon" @click="removeFromFavorites(product.id, index)" style="position: absolute; top: 15px; right: 15px; font-size: 24px; color: #8b4c30; cursor: pointer; z-index: 10; transition: transform 0.3s; background: rgba(250, 247, 242, 0.9); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
+      <div v-for="product in favorites" :key="product.id" class="product-card">
+        <div class="favorite-icon" @click="removeFromFavorites(product.id)" style="position: absolute; top: 15px; right: 15px; font-size: 24px; color: #8b4c30; cursor: pointer; z-index: 10; transition: transform 0.3s; background: rgba(250, 247, 242, 0.9); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
           ❤️
         </div>
         <img :src="getImageUrl(product.img)" :alt="product.name" class="product-img" @click="viewProductDetail(product.id)" style="cursor: pointer;" />
@@ -22,8 +22,8 @@
           <div class="product-price">¥{{ product.price }}</div>
           <div class="product-desc">{{ product.desc }}</div>
           <div class="btn-actions">
-            <button class="btn-buy" @click="addToCart(index)">加入购物车</button>
-            <button class="btn-remove" @click="removeFromFavorites(product.id, index)">移除</button>
+            <button class="btn-buy" @click="addToCart(product)">加入购物车</button>
+            <button class="btn-remove" @click="removeFromFavorites(product.id)">移除</button>
           </div>
         </div>
       </div>
@@ -55,7 +55,7 @@ export default {
       }
     },
 
-    async removeFromFavorites(productId, index) {
+    async removeFromFavorites(productId) {
       const user = localStorage.getItem('currentUser');
       if (!user) {
         this.$router.push('/login');
@@ -78,15 +78,13 @@ export default {
       }
     },
 
-    async addToCart(index) {
+    async addToCart(product) {
       const user = localStorage.getItem('currentUser');
       if(!user) {
         this.$router.push('/login');
         return;
       }
 
-      const product = this.favorites[index];
-      
       try {
         const response = await fetch(`${this.$apiBase}/api/cart/add`, {
           method: 'POST',
