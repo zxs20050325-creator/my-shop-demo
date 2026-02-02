@@ -1,0 +1,69 @@
+<div class="product-img">
+    <img src="${product.img}" alt="${product.name}">
+</div>
+<script>
+    const API_BASE = ''; // 确保API_BASE已正确配置
+
+    async function loadProducts() {
+        try {
+            const res = await fetch(`${API_BASE}/api/products?page=1`);
+            const data = await res.json();
+            const products = data.items;
+
+            const productGrid = document.querySelector('.product-grid');
+            productGrid.innerHTML = ''; // 清空原有内容
+
+            products.forEach(product => {
+                const card = `
+                    <div class="product-card">
+                        <div class="product-img">
+                            <img src="${product.img}" alt="${product.name}">
+                        </div>
+                        <div class="card-body">
+                            <h3 class="product-name">${product.name}</h3>
+                            <p class="product-price">¥${product.price}</p>
+                            <p class="product-desc">${product.desc}</p>
+                            <div class="btn-actions">
+                                <button class="btn-buy" onclick="addToCart(${product.id})">加入购物车</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                productGrid.insertAdjacentHTML('beforeend', card);
+            });
+        } catch (error) {
+            console.error('加载商品失败:', error);
+            alert('加载商品失败，请稍后重试');
+        }
+    }
+
+    window.onload = function() {
+        checkLoginStatus();
+        loadProducts(); // 加载商品数据
+    };
+
+    function checkLoginStatus() {
+        const user = localStorage.getItem('currentUser');
+        const authSection = document.getElementById('auth-section');
+        if (user) {
+            authSection.innerHTML = `
+                <span>欢迎, ${user}</span>
+                <a href="cart.html">🛒 购物车</a>
+                <a href="favorites.html">❤️ 收藏</a>
+                <a href="index.html">首页</a>
+                <a onclick="logout()">退出</a>
+            `;
+        } else {
+            authSection.innerHTML = `
+                <a href="login.html">登录</a>
+                <a href="register.html">注册</a>
+                <a href="index.html">首页</a>
+            `;
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('currentUser');
+        window.location.reload();
+    }
+</script>
