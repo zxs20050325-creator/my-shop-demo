@@ -9,11 +9,11 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// 专门配置图片资源路径，符合项目规范 - 优先配置图片路径
-app.use('/images', express.static(path.join(__dirname, 'backend/images')));
-
 // 配置静态文件服务，使前端页面和图片资源都能正确访问
-app.use(express.static(path.join(__dirname, '.')));
+app.use(express.static(__dirname));
+// 专门配置图片资源路径，同时支持根目录下的images和backend/images目录
+app.use('/images', express.static(path.join(__dirname, 'images')));
+app.use('/images', express.static(path.join(__dirname, 'backend/images')));
 
 // 为了兼容不同部署环境，额外配置一个静态资源路径
 app.use('/static', express.static(path.join(__dirname, 'backend')));
