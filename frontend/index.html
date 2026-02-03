@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>冀遗筑梦————云端商城</title>
+    <!-- 引入GSAP库用于动画效果 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <style>
         /* 全局样式重置 */
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -258,6 +260,8 @@
             border-radius: 8px; /* 减少圆角大小 */
             position: relative;
             transition: transform 0.4s ease;
+            opacity: 0; /* 初始透明度为0，等待动画 */
+            transform: translateY(20px); /* 初始位置稍微向下偏移 */
         }
         
         /* 产品图片 */
@@ -834,6 +838,26 @@
                 
                 card.addEventListener('mouseleave', () => {
                     card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)';
+                });
+            });
+        }
+
+        // 为产品图片添加动画效果
+        function animateProductImages() {
+            const imgContainers = document.querySelectorAll('.product-img-container');
+            
+            // 使用GSAP为每个图片容器添加动画
+            imgContainers.forEach((container, index) => {
+                // 使用gsap.fromTo为每个图片容器添加动画
+                gsap.fromTo(container, {
+                    opacity: 0,
+                    y: 20
+                }, {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.6,
+                    delay: index * 0.1, // 每个元素延迟0.1秒，依次显示
+                    ease: "power2.out"
                 });
             });
         }
