@@ -157,3 +157,208 @@
         smoothScroll();
     };
 </script>
+<style>
+    /* 极简导航栏 - 固定顶部线条式设计 */
+    .navbar {
+        position: fixed; top: 0; left: 0; width: 100%;
+        background: rgba(253, 251, 247, 0.9); /* 稍微加深背景颜色 */
+        color: #333333;
+        padding: 12px 24px;
+        display: flex; justify-content: space-between; align-items: center; z-index: 1000;
+        backdrop-filter: blur(10px);
+        border-bottom: none;
+    }
+
+    /* 高级搜索框样式 */
+    .search-container {
+        display: flex;
+        align-items: center;
+        margin: 0 15px;
+        flex: 1;
+        max-width: 300px;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 10px 16px;
+        border: 1px solid #e2e8f0;
+        outline: none;
+        font-family: inherit;
+        font-size: 14px;
+        background: #ffffff;
+        border-radius: 24px;
+        transition: all 0.2s ease;
+    }
+
+    .search-input:focus {
+        border-color: #5a7d7c;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .search-btn {
+        margin-left: 6px;
+        padding: 10px 16px;
+        background: #5a7d7c;
+        color: white;
+        border: none;
+        border-radius: 24px;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 14px;
+        transition: opacity 0.2s ease;
+    }
+
+    .search-btn:hover {
+        opacity: 0.9;
+    }
+
+    /* Hero区域样式 */
+    .page-title {
+        position: relative;
+        height: 100vh;
+        background: url('https://via.placeholder.com/1920x1080') no-repeat center center/cover;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        text-align: center;
+        font-family: 'Noto Serif SC', 'Songti SC', serif;
+        font-size: 48px;
+        font-weight: 700;
+        text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+
+    /* 分类标签样式 */
+    .filter-container {
+        display: flex;
+        justify-content: center;
+        margin: 24px 0;
+    }
+
+    .filter-btn {
+        padding: 10px 24px;
+        background: transparent;
+        color: #333333;
+        border: 1px solid #e2e8f0;
+        border-radius: 24px;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 14px;
+        margin: 0 8px;
+        transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .filter-btn:hover {
+        background: #5a7d7c;
+        color: white;
+    }
+
+    /* 产品卡片样式 */
+    .product-card {
+        width: 300px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        margin: 12px;
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .product-img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .product-info {
+        padding: 16px;
+        text-align: center;
+    }
+
+    .product-name {
+        font-size: 18px;
+        font-weight: 500;
+        margin-bottom: 8px;
+    }
+
+    .product-price {
+        font-size: 16px;
+        color: #5a7d7c;
+        margin-bottom: 12px;
+    }
+
+    .btn-buy {
+        padding: 10px 24px;
+        background: #5a7d7c;
+        color: white;
+        border: none;
+        border-radius: 24px;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 14px;
+        opacity: 0;
+        transform: translateY(10px);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .btn-buy:hover {
+        background: #4a6d6c;
+    }
+
+    /* 自定义光标样式 */
+    .custom-cursor {
+        position: fixed;
+        width: 20px;
+        height: 20px;
+        background: #5a7d7c;
+        border-radius: 50%;
+        pointer-events: none;
+        transition: transform 0.1s ease, background 0.1s ease;
+        z-index: 1000;
+    }
+
+    .custom-cursor.hover {
+        transform: scale(1.5);
+        background: #4a6d6c;
+    }
+
+    /* 分类标签高亮样式 */
+    .filter-highlight {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: #5a7d7c;
+        transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+</style>
+
+<body>
+    <nav class="navbar">
+        <div style="font-size: 18px; font-weight: 500; color: #333333; font-family: 'Noto Serif SC', 'Songti SC', serif;">🏛️ 冀遗筑梦</div>
+        <div class="nav-links" id="auth-section">
+            <!-- JS填充 -->
+        </div>
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="搜索商品...">
+            <button class="search-btn">搜索</button>
+        </div>
+    </nav>
+
+    <div class="page-title">
+        <h2>欢迎来到冀遗筑梦</h2>
+    </div>
+
+    <div class="filter-container" id="filter-container">
+        <button class="filter-btn">全部</button>
+        <button class="filter-btn">古籍</button>
+        <button class="filter-btn">艺术品</button>
+        <button class="filter-btn">手工艺品</button>
+    </div>
+
+    <div class="product-list" id="product-list">
+        <!-- JS填充 -->
+    </div>
+</body>
