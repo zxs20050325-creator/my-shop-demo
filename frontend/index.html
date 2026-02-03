@@ -466,20 +466,39 @@
         let currentY = window.scrollY;
         let ticking = false;
 
+        // 检测是否为触摸设备或滚轮事件
+        let isWheeling = false;
+        let wheelTimeout;
+
         window.addEventListener("scroll", () => {
-            targetY = window.scrollY;
+            // 如果是鼠标滚轮事件，则不使用平滑滚动
+            if (!isWheeling) {
+                targetY = window.scrollY;
+            }
         });
+
+        // 监听滚轮事件
+        window.addEventListener("wheel", () => {
+            isWheeling = true;
+            clearTimeout(wheelTimeout);
+            
+            wheelTimeout = setTimeout(() => {
+                isWheeling = false;
+            }, 150); // 150ms内无新事件则认为结束
+        }, { passive: true });
 
         function lerp(start, end, t) {
             return start * (1 - t) + end * t;
         }
 
         function updateScroll() {
-            currentY = lerp(currentY, targetY, 0.1);
-            window.scrollTo(0, currentY);
+            if (!isWheeling) {
+                currentY = lerp(currentY, targetY, 0.1);
+                window.scrollTo(0, currentY);
 
-            if (Math.abs(targetY - currentY) < 0.5) {
-                currentY = targetY;
+                if (Math.abs(targetY - currentY) < 0.5) {
+                    currentY = targetY;
+                }
             }
 
             ticking = false;
