@@ -1,12 +1,17 @@
 {
-  "name": "frontend",
+  "name": "shop-frontend",
   "version": "1.0.0",
+  "description": "Frontend for冀遗筑梦 E-commerce Platform",
+  "main": "index.html",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build"
+    "start": "serve -s .",
+    "dev": "live-server --port=3000"
   },
+  "keywords": ["shop", "frontend", "e-commerce"],
+  "author": "",
+  "license": "ISC",
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "serve": "^14.2.1",
+    "live-server": "^1.2.2"
   }
 }
