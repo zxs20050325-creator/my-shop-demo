@@ -108,7 +108,7 @@ app.post('/api/favorites/add', (req, res) => {
     
     userFavorites[username].push(product);
     addLog(username, '收藏商品', product.name);
-    saveData();
+    // 移除对未定义saveData函数的调用
     res.json({ success: true, count: userFavorites[username].length });
 });
 
@@ -123,7 +123,7 @@ app.post('/api/favorites/remove', (req, res) => {
     const { username, productId } = req.body;
     if (userFavorites[username]) {
         userFavorites[username] = userFavorites[username].filter(item => item.id != productId);
-        saveData();
+        // 移除对未定义saveData函数的调用
     }
     res.json({ success: true });
 });
@@ -343,5 +343,7 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => { 
     console.log(`服务器启动在 http://localhost:${PORT}`);
     console.log(`当前数据：用户 ${users.length} 个，购物车 ${Object.keys(userCarts).length} 个，收藏 ${Object.keys(userFavorites).length} 个，日志 ${browseLogs.length} 条`);
-    console.log(`数据文件：${DATA_FILE}`);
+    // 移除对未定义DATA_FILE变量的引用
 });
+
+module.exports = app;
