@@ -820,6 +820,28 @@
                 `;
             });
             
+            // 为每个图片添加悬停旋转效果
+            document.querySelectorAll('.product-img').forEach(img => {
+                img.addEventListener('mouseenter', function() {
+                    // 使用GSAP创建连续旋转动画
+                    gsap.to(this, {
+                        rotation: 360,      // 旋转360度
+                        duration: 2,        // 2秒完成一圈
+                        ease: "none",       // 线性匀速运动
+                        repeat: -1,         // 无限重复
+                        yoyo: true,         // 来回旋转效果
+                        yoyoEase: true      // 往返时的缓动效果
+                    });
+                });
+                
+                img.addEventListener('mouseleave', function() {
+                    // 停止旋转动画
+                    gsap.killTweensOf(this);
+                    // 重置旋转角度
+                    gsap.set(this, { rotation: 0 });
+                });
+            });
+            
             // 重新添加倾斜效果到新的卡片
             document.querySelectorAll('.product-card').forEach(card => {
                 card.addEventListener('mousemove', (e) => {
