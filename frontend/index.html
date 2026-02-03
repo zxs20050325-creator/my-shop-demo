@@ -8,6 +8,30 @@
         /* 全局样式重置 */
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
+        /* 添加噪点纹理背景 */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(
+                    to bottom,
+                    rgba(0, 0, 0, 0.02) 0%,
+                    rgba(0, 0, 0, 0.01) 50%,
+                    rgba(0, 0, 0, 0.02) 100%
+                ),
+                radial-gradient(circle at 10px 10px, rgba(0, 0, 0, 0.01) 0%, transparent 20%),
+                repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.01) 0px, rgba(0, 0, 0, 0.01) 1px, transparent 1px, transparent 10px),
+                repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.01) 0px, rgba(0, 0, 0, 0.01) 1px, transparent 1px, transparent 10px);
+            background-size: 100% 100%, 200px 200px, 10px 10px, 10px 10px;
+            pointer-events: none;
+            z-index: 9999;
+            mix-blend-mode: overlay;
+        }
+
         /* 极简字体方案 */
         body { 
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -15,6 +39,7 @@
             color: #333333; /* 主色调改为墨色 */
             padding-top: 80px; 
             line-height: 1.6; /* 统一行高 */
+            overflow-x: hidden; /* 防止水平滚动 */
         }
 
         /* 极简导航栏 - 固定顶部线条式设计 */
@@ -95,18 +120,34 @@
             text-align: center; 
             margin-bottom: 60px; /* 减少外边距 */
             color: #333333; 
+            position: relative;
+            overflow: hidden;
         }
         .page-title h2 { 
             font-size: 36px; /* 减小标题字号 */
             font-weight: 300; /* 使用较细字重 */
             margin-bottom: 10px; 
             font-family: 'Noto Serif SC', 'Songti SC', serif; /* 标题使用衬线体 */
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s forwards 0.3s;
         }
         .page-title p { 
             color: #a0aec0; /* 浅灰色 */
             font-size: 14px; /* 缩小字号 */
             letter-spacing: 2px; /* 减少字间距 */
             font-family: 'Inter', sans-serif; /* 正文使用无衬线体 */
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s forwards 0.5s;
+        }
+
+        /* Hero区域入场动画 */
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* 分类筛选极简化 */
@@ -116,6 +157,17 @@
             margin: 20px 0 50px; /* 减少外边距 */
             gap: 15px; /* 减少间隔 */
             flex-wrap: wrap;
+            position: relative;
+        }
+        
+        /* 分类标签滑动背景 */
+        .filter-indicator {
+            position: absolute;
+            height: 30px;
+            background: rgba(90, 125, 124, 0.1);
+            border-radius: 15px;
+            transition: all 0.4s cubic-bezier(0.645, 0.045, 0.355, 1);
+            z-index: -1;
         }
 
         .filter-btn {
@@ -128,6 +180,7 @@
             position: relative; /* 为下划线定位 */
             transition: all 0.2s ease;
             letter-spacing: 0.5px; /* 减少字间距 */
+            z-index: 1;
         }
 
         .filter-btn::after {
@@ -167,20 +220,37 @@
             display: flex;
             flex-direction: column;
             align-items: center; /* 内容居中对齐 */
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+            perspective: 1000px;
         }
 
         .product-card:hover { 
             transform: translateY(-3px); /* 悬停时轻微上移，减小移动距离 */
         }
 
-        /* 产品图片 - 占比70% */
-        .product-img { 
-            width: 100%; 
+        /* 产品图片容器 - 添加溢出隐藏 */
+        .product-img-container {
+            width: 100%;
             height: 200px; /* 减小图片高度 */
-            object-fit: contain;
-            background-color: transparent; /* 去掉背景色 */
+            overflow: hidden;
             margin-bottom: 20px; /* 减小底部边距 */
             border-radius: 8px; /* 减少圆角大小 */
+            position: relative;
+        }
+        
+        /* 产品图片 */
+        .product-img { 
+            width: 100%; 
+            height: 100%;
+            object-fit: contain;
+            background-color: transparent; 
+            transition: transform 0.5s ease;
+        }
+        
+        .product-card:hover .product-img {
+            transform: scale(1.05);
         }
 
         /* 卡片内容区 - 居中对齐改为左对齐 */
@@ -188,6 +258,7 @@
             padding: 0; 
             width: 100%;
             text-align: center; /* 默认居中 */
+            position: relative;
         }
 
         .product-name { 
@@ -222,6 +293,19 @@
             font-size: 13px; /* 减小字体大小 */
             margin-top: 15px; /* 减小上边距 */
             transition: opacity 0.2s ease;
+            opacity: 0;
+            transform: translateY(10px);
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            backdrop-filter: blur(10px); /* 毛玻璃效果 */
+            background: rgba(51, 51, 51, 0.7);
+        }
+
+        .product-card:hover .btn-buy {
+            opacity: 1;
+            transform: translateY(0);
+            transition: all 0.3s ease 0.1s;
         }
 
         .btn-buy:hover { 
@@ -270,6 +354,27 @@
             font-size: 16px;
         }
 
+        /* 自定义光标样式 */
+        .custom-cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(90, 125, 124, 0.7);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 9999;
+            transition: all 0.1s ease;
+            mix-blend-mode: difference;
+        }
+        
+        .custom-cursor.hover {
+            width: 40px;
+            height: 40px;
+            background: rgba(90, 125, 124, 0.2);
+            border-color: rgba(90, 125, 124, 0.3);
+        }
+
         /* 响应式设计 */
         @media (max-width: 768px) {
             .navbar { padding: 12px 16px; }
@@ -283,6 +388,9 @@
     </style>
 </head>
 <body>
+
+    <!-- 自定义光标 -->
+    <div class="custom-cursor"></div>
 
     <nav class="navbar">
         <div style="font-size: 18px; font-weight: 500; color: #333333; font-family: 'Noto Serif SC', 'Songti SC', serif;">🏛️ 冀遗筑梦</div>
@@ -306,6 +414,7 @@
 
         <!-- 分类筛选 -->
         <div class="filter-container" id="filter-container">
+            <span class="filter-indicator" id="filter-indicator"></span>
             <button class="filter-btn active" data-category="all">全部</button>
             <button class="filter-btn" data-category="工艺品">工艺品</button>
             <button class="filter-btn" data-category="剪纸">剪纸</button>
@@ -351,6 +460,142 @@
         let currentSearchTerm = ''; // 新增：当前搜索关键词
         let filteredProducts = []; // 新增：分类筛选后的商品
         let currentCategory = 'all'; // 新增：当前分类
+
+        // 平滑滚动功能
+        let targetY = window.scrollY;
+        let currentY = window.scrollY;
+        let ticking = false;
+
+        window.addEventListener("scroll", () => {
+            targetY = window.scrollY;
+        });
+
+        function lerp(start, end, t) {
+            return start * (1 - t) + end * t;
+        }
+
+        function updateScroll() {
+            currentY = lerp(currentY, targetY, 0.1);
+            window.scrollTo(0, currentY);
+
+            if (Math.abs(targetY - currentY) < 0.5) {
+                currentY = targetY;
+            }
+
+            ticking = false;
+        }
+
+        function requestTick() {
+            if (!ticking) {
+                requestAnimationFrame(updateScroll);
+                ticking = true;
+            }
+        }
+
+        function smoothScroll() {
+            requestTick();
+            setTimeout(smoothScroll, 1000 / 60); // ~60fps
+        }
+
+        // 启动平滑滚动
+        smoothScroll();
+
+        // 自定义光标功能
+        const cursor = document.querySelector('.custom-cursor');
+        document.addEventListener('mousemove', (e) => {
+            const { clientX, clientY } = e;
+            cursor.style.left = `${clientX}px`;
+            cursor.style.top = `${clientY}px`;
+        });
+
+        // 光标悬停效果
+        const hoverElements = [...document.querySelectorAll('a'), ...document.querySelectorAll('button'), ...document.querySelectorAll('.product-card')];
+        hoverElements.forEach(element => {
+            element.addEventListener('mouseenter', () => {
+                cursor.classList.add('hover');
+            });
+            
+            element.addEventListener('mouseleave', () => {
+                cursor.classList.remove('hover');
+            });
+        });
+
+        // 分类标签滑动效果
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const indicator = document.getElementById('filter-indicator');
+
+        // 初始化指示器位置
+        const activeBtn = document.querySelector('.filter-btn.active');
+        if(activeBtn) {
+            const rect = activeBtn.getBoundingClientRect();
+            const containerRect = activeBtn.parentElement.getBoundingClientRect();
+            indicator.style.width = `${rect.width}px`;
+            indicator.style.left = `${rect.left - containerRect.left}px`;
+        }
+
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // 移除所有激活状态
+                filterBtns.forEach(b => b.classList.remove('active'));
+                // 添加激活状态到当前按钮
+                btn.classList.add('active');
+                
+                // 更新指示器位置
+                const rect = btn.getBoundingClientRect();
+                const containerRect = btn.parentElement.getBoundingClientRect();
+                indicator.style.width = `${rect.width}px`;
+                indicator.style.left = `${rect.left - containerRect.left}px`;
+            });
+            
+            // 鼠标悬停时的指示器动画
+            btn.addEventListener('mouseover', () => {
+                if(!btn.classList.contains('active')) {
+                    const rect = btn.getBoundingClientRect();
+                    const containerRect = btn.parentElement.getBoundingClientRect();
+                    indicator.style.width = `${rect.width}px`;
+                    indicator.style.left = `${rect.left - containerRect.left}px`;
+                    indicator.style.opacity = '0.6';
+                }
+            });
+            
+            btn.addEventListener('mouseout', () => {
+                if(!btn.classList.contains('active')) {
+                    indicator.style.opacity = '0';
+                    // 恢复到活动按钮的位置
+                    setTimeout(() => {
+                        const activeBtn = document.querySelector('.filter-btn.active');
+                        if(activeBtn) {
+                            const rect = activeBtn.getBoundingClientRect();
+                            const containerRect = activeBtn.parentElement.getBoundingClientRect();
+                            indicator.style.width = `${rect.width}px`;
+                            indicator.style.left = `${rect.left - containerRect.left}px`;
+                            indicator.style.opacity = '1';
+                        }
+                    }, 300);
+                }
+            });
+        });
+
+        // 产品卡片倾斜效果
+        document.querySelectorAll('.product-card').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const cardRect = card.getBoundingClientRect();
+                const x = e.clientX - cardRect.left;
+                const y = e.clientY - cardRect.top;
+                
+                const centerX = cardRect.width / 2;
+                const centerY = cardRect.height / 2;
+                
+                const rotateY = (x - centerX) / 25; // 控制X轴旋转强度
+                const rotateX = (centerY - y) / 25; // 控制Y轴旋转强度
+                
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-3px)`;
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)';
+            });
+        });
 
         window.onload = function() {
             checkLoginStatus();
@@ -436,6 +681,15 @@
                 const buttons = document.querySelectorAll('.filter-btn');
                 buttons.forEach(btn => btn.classList.remove('active'));
                 document.querySelector('.filter-btn[data-category="all"]').classList.add('active');
+                
+                // 更新指示器位置
+                const activeBtn = document.querySelector('.filter-btn.active');
+                if(activeBtn) {
+                    const rect = activeBtn.getBoundingClientRect();
+                    const containerRect = activeBtn.parentElement.getBoundingClientRect();
+                    indicator.style.width = `${rect.width}px`;
+                    indicator.style.left = `${rect.left - containerRect.left}px`;
+                }
             } catch (err) { console.error(err); }
         }
 
@@ -461,7 +715,9 @@
                 
                 productList.innerHTML += `
                     <div class="product-card">
-                        <img src="${imgSrc}" class="product-img" alt="${product.name}" onerror="this.onerror=null;this.src='https://placehold.co/300x200?text=No+Image'; console.error('Failed to load image: ' + this.src);">
+                        <div class="product-img-container">
+                            <img src="${imgSrc}" class="product-img" alt="${product.name}" onerror="this.onerror=null;this.src='https://placehold.co/300x200?text=No+Image'; console.error('Failed to load image: ' + this.src);">
+                        </div>
                         <div class="card-body">
                             <div class="product-name" onclick="viewProductDetail(${product.id})" style="cursor: pointer;">${product.name}</div>
                             <div class="product-price">¥${product.price}</div>
@@ -469,6 +725,27 @@
                         </div>
                     </div>
                 `;
+            });
+            
+            // 重新添加倾斜效果到新的卡片
+            document.querySelectorAll('.product-card').forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const cardRect = card.getBoundingClientRect();
+                    const x = e.clientX - cardRect.left;
+                    const y = e.clientY - cardRect.top;
+                    
+                    const centerX = cardRect.width / 2;
+                    const centerY = cardRect.height / 2;
+                    
+                    const rotateY = (x - centerX) / 25;
+                    const rotateX = (centerY - y) / 25;
+                    
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-3px)`;
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)';
+                });
             });
         }
 
@@ -583,6 +860,15 @@
             
             // 隐藏分页，因为分类筛选不使用分页
             document.getElementById('pagination').style.display = 'none';
+            
+            // 更新指示器位置
+            const activeBtn = document.querySelector('.filter-btn.active');
+            if(activeBtn) {
+                const rect = activeBtn.getBoundingClientRect();
+                const containerRect = activeBtn.parentElement.getBoundingClientRect();
+                indicator.style.width = `${rect.width}px`;
+                indicator.style.left = `${rect.left - containerRect.left}px`;
+            }
         }
 
         function trackUserAction(action, product) {
