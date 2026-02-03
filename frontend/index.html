@@ -1,120 +1,3 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>冀遗筑梦————云端商城</title>
-    <!-- 引入GSAP库用于动画效果 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <style>
-        /* 全局样式重置 */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        /* 添加噪点纹理背景 */
-        body::before {
-            content: "";
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                linear-gradient(
-                    to bottom,
-                    rgba(0, 0, 0, 0.02) 0%,
-                    rgba(0, 0, 0, 0.01) 50%,
-                    rgba(0, 0, 0, 0.02) 100%
-                ),
-                radial-gradient(circle at 10px 10px, rgba(0, 0, 0, 0.01) 0%, transparent 20%),
-                repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.01) 0px, rgba(0, 0, 0, 0.01) 1px, transparent 1px, transparent 10px),
-                repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.01) 0px, rgba(0, 0, 0, 0.01) 1px, transparent 1px, transparent 10px);
-            background-size: 100% 100%, 200px 200px, 10px 10px, 10px 10px;
-            pointer-events: none;
-            z-index: 9999;
-            mix-blend-mode: overlay;
-        }
-
-        /* 极简字体方案 */
-        body { 
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #FDFBF7; /* 改为米白色背景，增加质感 */
-            color: #333333; /* 主色调改为墨色 */
-            line-height: 1.6; /* 统一行高 */
-            overflow-x: hidden; /* 防止水平滚动 */
-        }
-
-        /* 主容器布局：左右分栏 */
-        .main-layout {
-            display: grid;
-            grid-template-columns: 200px 1fr;
-            min-height: 100vh;
-        }
-
-        /* 侧边栏样式 */
-        .sidebar {
-            position: sticky;
-            top: 20px;
-            padding: 20px 0;
-            height: fit-content;
-        }
-
-        .filter-container {
-            display: flex;
-            flex-direction: column;
-            gap: 15px; /* 增加行间距 */
-        }
-
-        .filter-indicator {
-            position: absolute;
-            width: 4px;
-            background: #333333; /* 小黑点颜色 */
-            border-radius: 2px;
-            transition: all 0.3s ease;
-            z-index: -1;
-        }
-
-        .filter-btn {
-            padding: 8px 0 8px 20px; /* 左边距用于小黑点 */
-            background: transparent; /* 去掉背景 */
-            border: none; /* 去掉边框 */
-            cursor: pointer;
-            font-size: 14px; /* 字体大小 */
-            color: #4a5568;
-            position: relative; /* 为小黑点定位 */
-            transition: all 0.2s ease;
-            font-weight: 500; /* 字体加粗 */
-            text-align: left; /* 左对齐 */
-        }
-
-        .filter-btn::before {
-            content: '•'; /* 小黑点 */
-            position: absolute;
-            left: 10px;
-            color: #333333;
-            opacity: 0; /* 默认隐藏 */
-        }
-
-        .filter-btn.active::before, .filter-btn:hover::before {
-            opacity: 1; /* 选中或悬停时显示 */
-        }
-
-        .filter-btn.active, .filter-btn:hover {
-            color: #333333; /* 增加颜色深度 */
-            background: transparent;
-        }
-
-        /* 极简导航栏 - 固定顶部线条式设计 */
-        .navbar {
-            position: fixed; top: 0; left: 0; width: 100%;
-            background: transparent; /* 改为透明背景 */
-            color: #333333; /* 主色调改为墨色 */
-            padding: 12px 24px; /* 减小导航栏内边距 */
-            display: flex; justify-content: space-between; align-items: center; z-index: 1000;
-            backdrop-filter: blur(10px); /* 添加磨砂玻璃效果 */
-            background-color: rgba(253, 251, 247, 0.8); /* 半透明背景 */
-            border-bottom: none; /* 去掉边框 */
-        }
-
         .nav-links a { 
             color: #333333; /* 主色调改为墨色 */
             text-decoration: none; 
@@ -123,10 +6,29 @@
             letter-spacing: 1px; /* 减小字间距 */
             transition: opacity 0.2s ease;
             font-size: 14px; /* 减小字体大小 */
+            position: relative;
+            transform-style: preserve-3d;
         }
         .nav-links a:hover { 
             opacity: 0.7; /* 悬停时仅改变透明度 */
             color: #5a7d7c; /* 改为黛蓝色 */
+            transform: translateY(-3px); /* 添加轻微上浮效果 */
+        }
+
+        .nav-links a::before {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #5a7d7c; /* 黛蓝色下划线 */
+            transition: width 0.3s ease;
+            transform: translateZ(20px); /* 给下划线一个3D深度 */
+        }
+
+        .nav-links a:hover::before {
+            width: 100%;
         }
 
         /* 搜索框极简化 */
@@ -165,10 +67,30 @@
             font-family: inherit;
             font-size: 13px; /* 减小字体大小 */
             transition: opacity 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            transform: translateZ(0);
         }
 
         .search-btn:hover {
             opacity: 0.9;
+            transform: translateY(-3px); /* 添加轻微上浮效果 */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); /* 添加轻微阴影增强3D感 */
+        }
+
+        .search-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .search-btn:hover::before {
+            left: 100%;
         }
 
         .container { 
@@ -335,6 +257,8 @@
 
         .btn-buy:hover { 
             opacity: 0.9; /* 悬停时仅改变透明度 */
+            transform: translateY(-3px); /* 添加轻微上浮效果 */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); /* 添加轻微阴影增强3D感 */
         }
 
         .pagination { 
@@ -355,8 +279,15 @@
             cursor: pointer; 
             transition: opacity 0.2s ease;
             font-size: 13px; /* 减小字体大小 */
+            position: relative;
+            overflow: hidden;
+            transform: translateZ(0);
         }
-        .page-btn:hover:not(:disabled) { opacity: 0.9; }
+        .page-btn:hover:not(:disabled) { 
+            opacity: 0.9; 
+            transform: translateY(-3px); /* 添加轻微上浮效果 */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); /* 添加轻微阴影增强3D感 */
+        }
         .page-btn:disabled { 
             background: #e2e8f0; 
             color: #a0aec0;
@@ -398,6 +329,43 @@
             height: 40px;
             background: rgba(90, 125, 124, 0.2);
             border-color: rgba(90, 125, 124, 0.3);
+        }
+
+        /* 分类按钮3D效果 */
+        .filter-btn {
+            padding: 8px 0 8px 20px; /* 左边距用于小黑点 */
+            background: transparent; /* 去掉背景 */
+            border: none; /* 去掉边框 */
+            cursor: pointer;
+            font-size: 14px; /* 字体大小 */
+            color: #4a5568;
+            position: relative; /* 为小黑点定位 */
+            transition: all 0.2s ease;
+            font-weight: 500; /* 字体加粗 */
+            text-align: left; /* 左对齐 */
+            transform-style: preserve-3d;
+            transform: translateZ(0);
+            margin: 8px 0;
+        }
+
+        .filter-btn::before {
+            content: '•'; /* 小黑点 */
+            position: absolute;
+            left: 10px;
+            color: #333333;
+            opacity: 0; /* 默认隐藏 */
+            transform: translateZ(20px); /* 给小黑点一个3D深度 */
+        }
+
+        .filter-btn.active::before, .filter-btn:hover::before {
+            opacity: 1; /* 选中或悬停时显示 */
+        }
+
+        .filter-btn.active, .filter-btn:hover {
+            color: #333333; /* 增加颜色深度 */
+            background: transparent;
+            transform: translateY(-3px); /* 添加轻微上浮效果 */
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08); /* 添加轻微阴影增强3D感 */
         }
 
         /* 响应式设计 */
