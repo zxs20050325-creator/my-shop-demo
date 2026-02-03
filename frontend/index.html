@@ -183,7 +183,8 @@
     </div>
 
     <script>
-        const API_BASE = ''; 
+        // 设置API基础URL，以便在部署时调整
+        const API_BASE = process?.env?.RENDER ? '' : ''; // 在Render环境中使用相对路径
         let currentPage = 1;
         let productsCache = []; 
         let allProducts = []; // 新增：存储所有商品用于搜索
@@ -437,7 +438,7 @@
                 (isSearchMode ? searchResults[index] : productsCache[index]);
                 
             try {
-                const res = await fetch('/api/cart/add', {
+                const res = await fetch(`${API_BASE}/api/cart/add`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username: user, product: product })
@@ -454,7 +455,7 @@
         async function trackUserAction(action, product) {
             const currentUser = localStorage.getItem('currentUser') || '未登录游客';
             try {
-                await fetch('/api/track', {
+                await fetch(`${API_BASE}/api/track`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
