@@ -1,0 +1,16 @@
+services:
+  backend:
+    type: "nodejs"
+    rootDirectory: "backend"  # 指向后端目录
+    buildCommand: "npm install"
+    startCommand: "npm start"
+    environmentVariables:
+      NODE_ENV: "production"
+
+  frontend:
+    type: "web"
+    rootDirectory: "frontend"
+    buildCommand: "npm run build"
+    startCommand: "serve -s build"
+    environmentVariables:
+      NODE_ENV: "production"
