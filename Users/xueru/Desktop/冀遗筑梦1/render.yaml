@@ -1,0 +1,24 @@
+services:
+  - name: backend
+    type: web
+    plan: free
+    runtime: node
+    repository: git@github.com:zxs20050325-creator/my-shop-demo.git
+    rootDirectory: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+  - name: frontend
+    type: static
+    plan: free
+    runtime: static
+    repository: git@github.com:zxs20050325-creator/my-shop-demo.git
+    rootDirectory: frontend
+    buildCommand: echo "No build required for pure HTML/CSS/JS frontend"
+    staticPublishPath: ./
+    envVars:
+      - key: NODE_ENV
+        value: production
