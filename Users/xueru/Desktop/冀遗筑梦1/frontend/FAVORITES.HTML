@@ -1,0 +1,64 @@
+    <script>
+        // 设置API基础URL，以便在部署时调整
+        const isDeployed = window.location.hostname.includes('onrender.com');
+        // 修改API_BASE地址为正确的后端地址
+        const API_BASE = isDeployed ? 'https://jiyi-zhumeng.onrender.com' : 'http://localhost:3000';
+        
+        window.onload = function() {
+            checkLoginStatus();
+            loadFavorites();
+        };
+
+
+        async function loadFavorites() {
+            const user = localStorage.getItem('currentUser');
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/favorites?username=${user}`);
+                const favorites = await res.json();
+                
+                const favoritesList = document.getElementById('favorites-list');
+                const emptyFavorites = document.getElementById('empty-favorites');
+                
+                if (favorites.length === 0) {
+                    favoritesList.innerHTML = '';
+                    emptyFavorites.style.display = 'block';
+                    return;
+                }
+                
+                emptyFavorites.style.display = 'none';
+                favoritesList.innerHTML = '';
+
+                favorites.forEach((product, index) => {
+                    // 修复图片路径处理逻辑 - 完全从后端获取
+                    let imgSrc = product.img;
+                    
+                    // 确保图片URL是完整的，如果只是相对路径则拼接API基础URL
+                    if (!imgSrc.startsWith('http') && !imgSrc.startsWith('/')) {
+                        imgSrc = `${API_BASE}/${imgSrc}`;
+                    }
+                    
+                    favoritesList.innerHTML += `
+                        <div class="product-card">
+                            <div class="favorite-icon" onclick="removeFromFavorites(${product.id}, ${index})">❤️</div>
+                            <img src="${imgSrc}" class="product-img" onerror="this.src='https://placehold.co/300x200?text=No+Image'; console.error('Failed to load image: ' + this.src);" onclick="window.location.href='product-detail.html?id=${product.id}'" style="cursor: pointer;">
+                            <div class="card-body">
+                                <div class="product-name" onclick="window.location.href='product-detail.html?id=${product.id}'" style="cursor: pointer;">${product.name}</div>
+                                <div class="product-price">¥${product.price}</div>
+                                <div class="product-desc">${product.desc}</div>
+                                <div class="btn-actions">
+                                    <button class="btn-buy" onclick="addToCart(${index})">加入购物车</button>
+                                    <button class="btn-remove" onclick="removeFromFavorites(${product.id}, ${index})">移除</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch (err) {
+                console.error('加载收藏失败:', err);
+            }
+        }
