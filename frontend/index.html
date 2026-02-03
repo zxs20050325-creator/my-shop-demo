@@ -238,6 +238,7 @@
             margin-bottom: 20px; /* 减小底部边距 */
             border-radius: 8px; /* 减少圆角大小 */
             position: relative;
+            transition: transform 0.4s ease;
         }
         
         /* 产品图片 */
@@ -247,6 +248,7 @@
             object-fit: contain;
             background-color: transparent; 
             transition: transform 0.5s ease;
+            opacity: 1;
         }
         
         .product-card:hover .product-img {
@@ -614,6 +616,57 @@
             card.addEventListener('mouseleave', () => {
                 card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)';
             });
+            
+            // 添加图片预加载和渐入效果
+            const imgContainer = card.querySelector('.product-img-container');
+            const img = card.querySelector('.product-img');
+            
+            // 创建加载占位符
+            const placeholder = document.createElement('div');
+            placeholder.className = 'img-placeholder';
+            placeholder.style.cssText = `
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: #f0f0f0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                transition: opacity 0.3s ease;
+            `;
+            
+            // 添加加载指示器
+            const loader = document.createElement('div');
+            loader.className = 'img-loader';
+            loader.innerHTML = '...';
+            loader.style.cssText = `
+                color: #ccc;
+                font-size: 14px;
+            `;
+            
+            placeholder.appendChild(loader);
+            imgContainer.appendChild(placeholder);
+            
+            // 图片加载完成后淡入
+            img.onload = function() {
+                placeholder.style.opacity = '0';
+                setTimeout(() => {
+                    placeholder.style.display = 'none';
+                }, 300);
+                
+                // 添加淡入效果
+                img.style.opacity = '0';
+                img.style.transition = 'opacity 0.5s ease';
+                setTimeout(() => {
+                    img.style.opacity = '1';
+                }, 10);
+            };
+            
+            img.onerror = function() {
+                placeholder.innerHTML = '<div style="color:#999;font-size:12px;text-align:center;padding:20px;">图片加载失败</div>';
+            };
         });
 
         window.onload = function() {
