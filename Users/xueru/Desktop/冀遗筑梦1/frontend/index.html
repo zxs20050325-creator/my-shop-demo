@@ -1,192 +1,6 @@
-
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>冀遗筑梦————云端商城</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: '微软雅黑'; }
-        body { background: #f5f5f5; padding-top: 80px; }
-        .navbar {
-            position: fixed; top: 0; left: 0; width: 100%;
-            background: #8b2a2a; 
-            color: white; padding: 15px 30px;
-            display: flex; justify-content: space-between; align-items: center; z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        }
-        .nav-links a { color: white; text-decoration: none; margin-left: 20px; cursor: pointer; }
-        .nav-links a:hover { color: #ffeb3b; }
-        
-        /* 新增：搜索框样式 */
-        .search-container {
-            display: flex;
-            align-items: center;
-            margin: 0 20px;
-            flex: 1;
-            max-width: 400px;
-        }
-        .search-input {
-            width: 100%;
-            padding: 8px 15px;
-            border: none;
-            border-radius: 20px 0 0 20px;
-            outline: none;
-            font-size: 14px;
-        }
-        .search-btn {
-            padding: 8px 15px;
-            background: #ffeb3b;
-            color: #8b2a2a;
-            border: none;
-            border-radius: 0 20px 20px 0;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .search-btn:hover {
-            background: #ffd600;
-        }
-        
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        
-        .page-title { text-align: center; margin-bottom: 30px; color: #333; }
-        .page-title h2 { font-size: 32px; font-weight: bold; margin-bottom: 10px; }
-        .page-title p { color: #666; font-size: 16px; }
-
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; }
-        
-        .product-card { 
-            background: white; border-radius: 8px; overflow: hidden; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
-            transition: transform 0.3s; 
-        }
-        .product-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
-        
-        .product-img { 
-            width: 100%; 
-            height: 250px;
-            object-fit: contain;
-            background-color: #fff;
-            padding: 10px;
-        }
-        
-        .card-body { padding: 20px; }
-        .product-name { font-size: 18px; font-weight: bold; margin-bottom: 8px; color: #333; }
-        .product-price { color: #8b2a2a; font-size: 22px; font-weight: bold; margin-bottom: 10px; }
-        .product-desc { color: #666; font-size: 14px; line-height: 1.5; margin-bottom: 15px; height: 42px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-        
-        .btn-buy { 
-            width: 100%; padding: 10px; 
-            background: #8b2a2a; color: white; 
-            border: none; border-radius: 5px; cursor: pointer; font-size: 16px; 
-        }
-        .btn-buy:hover { background: #a53f3f; }
-
-        .pagination { text-align: center; margin-top: 40px; }
-        .page-btn { padding: 8px 20px; margin: 0 5px; background: white; border: 1px solid #ddd; cursor: pointer; }
-        .page-btn:disabled { background: #eee; cursor: not-allowed; }
-        .page-info { margin: 0 15px; color: #666; }
-        
-        /* 新增：搜索结果提示 */
-        .search-results {
-            text-align: center;
-            margin: 20px 0;
-            color: #666;
-            font-size: 16px;
-        }
-        .no-results {
-            text-align: center;
-            padding: 40px;
-            color: #999;
-            font-size: 18px;
-        }
-        
-        /* 新增：分类筛选样式 */
-        .filter-container {
-            display: flex;
-            justify-content: center;
-            margin: 20px 0;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .filter-btn {
-            padding: 8px 16px;
-            background: #f0f0f0;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 14px;
-            color: #333;
-        }
-        
-        .filter-btn.active, .filter-btn:hover {
-            background: #8b2a2a;
-            color: white;
-        }
-    </style>
-</head>
-<body>
-
-    <nav class="navbar">
-        <div style="font-size: 22px; font-weight: bold; font-family: '楷体';">🏛️ 冀遗筑梦</div>
-        
-        <!-- 新增：搜索框 -->
-        <div class="search-container">
-            <input type="text" class="search-input" id="search-input" placeholder="搜索商品名称或描述..." onkeypress="handleSearchKeypress(event)">
-            <button class="search-btn" onclick="performSearch()">🔍 搜索</button>
-        </div>
-        
-        <div class="nav-links" id="auth-section">
-            <!-- JS填充 -->
-        </div>
-    </nav>
-
-    <div class="container">
-        <div class="page-title">
-            <h2>传承非遗 · 筑梦河北</h2>
-            <p>精选燕赵大地文化瑰宝</p>
-        </div>
-
-        <!-- 新增：分类筛选 -->
-        <div class="filter-container" id="filter-container">
-            <button class="filter-btn active" data-category="all">全部</button>
-            <button class="filter-btn" data-category="工艺品">工艺品</button>
-            <button class="filter-btn" data-category="剪纸">剪纸</button>
-            <button class="filter-btn" data-category="雕塑">雕塑</button>
-            <button class="filter-btn" data-category="陶瓷">陶瓷</button>
-            <button class="filter-btn" data-category="皮影">皮影</button>
-            <button class="filter-btn" data-category="雕刻">雕刻</button>
-            <button class="filter-btn" data-category="文房四宝">文房四宝</button>
-            <button class="filter-btn" data-category="年画">年画</button>
-            <button class="filter-btn" data-category="金银器">金银器</button>
-            <button class="filter-btn" data-category="内画">内画</button>
-            <button class="filter-btn" data-category="泥塑">泥塑</button>
-            <button class="filter-btn" data-category="乐器">乐器</button>
-        </div>
-
-        <!-- 新增：搜索结果提示 -->
-        <div class="search-results" id="search-results"></div>
-
-        <div class="product-grid" id="product-list"></div>
-
-        <!-- 新增：无结果提示 -->
-        <div class="no-results" id="no-results" style="display: none;">
-            没有找到相关商品，请尝试其他关键词
-        </div>
-
-        <div class="pagination" id="pagination">
-            <button class="page-btn" id="prev-btn" onclick="changePage(-1)">上一页</button>
-            <span class="page-info" id="page-info">第 1 页</span>
-            <button class="page-btn" id="next-btn" onclick="changePage(1)">下一页</button>
-        </div>
-    </div>
-
-    <script>
+<script>
         // 设置API基础URL，以便在部署时调整
-        // 修复：不再使用 Node.js 特有的 process.env 对象
-        const isDeployed = window.location.hostname.includes('onrender.com');
-        const API_BASE = isDeployed ? '' : 'http://localhost:3000';
+        const API_BASE = window.location.hostname === 'my-shop-demo.onrender.com' ? '' : ''; // 使用hostname判断是否在Render上部署
         let currentPage = 1;
         let productsCache = []; 
         let allProducts = []; // 新增：存储所有商品用于搜索
@@ -294,22 +108,17 @@
             }
 
             products.forEach((product, index) => {
-                // 修复图片路径处理逻辑，尝试多种可能的路径
+                // 修复图片路径，如果图片路径是相对路径，需要加上正确的前缀
                 let imgSrc = product.img;
-                
-                // 如果是相对路径，构建合适的访问路径
-                if (product.img.startsWith('images/')) {
-                    // 方案1：直接使用原始路径（适用于本地开发）
-                    // 方案2：使用绝对路径访问前端资源
-                    imgSrc = `/${product.img}`;
-                    
-                    // 方案3：如果上述路径无效，可以尝试其他路径格式
-                    // 如需要，还可以增加更多路径尝试逻辑
+                if (imgSrc.startsWith('images/')) {
+                    // 如果后端返回的图片路径是相对路径，我们可以尝试多个可能的位置
+                    imgSrc = `/assets/${product.img.substring(7)}`; // 尝试从/assets/目录加载
                 }
                 
                 productList.innerHTML += `
                     <div class="product-card">
-                        <img src="${imgSrc}" class="product-img" alt="${product.name}" onerror="this.onerror=null;this.src='https://placehold.co/300x200?text=No+Image'; console.error('Failed to load image: ' + this.src);">
+                        <img src="${imgSrc}" class="product-img" alt="${product.name}" 
+                             onerror="this.onerror=null;this.src='https://placehold.co/300x200?text=No+Image'; console.error('Failed to load image: ' + this.src);">
                         <div class="card-body">
                             <div class="product-name" onclick="viewProductDetail(${product.id})" style="cursor: pointer;">${product.name}</div>
                             <div class="product-price">¥${product.price}</div>
@@ -482,5 +291,3 @@
             } catch (e) {}
         }
     </script>
-</body>
-</html>
