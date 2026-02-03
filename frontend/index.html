@@ -11,8 +11,8 @@
         /* 极简字体方案 */
         body { 
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #ffffff; /* 纯白背景 */
-            color: #2d3748; /* 暖灰色文字 */
+            background: #FDFBF7; /* 改为米白色背景，增加质感 */
+            color: #333333; /* 主色调改为墨色 */
             padding-top: 80px; 
             line-height: 1.6; /* 统一行高 */
         }
@@ -20,23 +20,26 @@
         /* 极简导航栏 - 固定顶部线条式设计 */
         .navbar {
             position: fixed; top: 0; left: 0; width: 100%;
-            background: #ffffff; /* 哑光黑背景改为纯白以符合极简风格 */
-            color: #2d3748; /* 暖灰色文字 */
+            background: transparent; /* 改为透明背景 */
+            color: #333333; /* 主色调改为墨色 */
             padding: 16px 40px;
             display: flex; justify-content: space-between; align-items: center; z-index: 1000;
-            border-bottom: 1px solid #e2e8f0; /* 微弱分隔线 */
+            backdrop-filter: blur(10px); /* 添加磨砂玻璃效果 */
+            background-color: rgba(253, 251, 247, 0.8); /* 半透明背景 */
+            border-bottom: none; /* 去掉边框 */
         }
 
         .nav-links a { 
-            color: #2d3748; /* 暖灰色 */
+            color: #333333; /* 主色调改为墨色 */
             text-decoration: none; 
             margin-left: 30px; 
             font-weight: 400;
+            letter-spacing: 1.5px; /* 增加字间距 */
             transition: opacity 0.2s ease;
         }
         .nav-links a:hover { 
             opacity: 0.7; /* 悬停时仅改变透明度 */
-            color: #8b2a2a; /* 赤陶色强调 */
+            color: #5a7d7c; /* 改为黛蓝色 */
         }
 
         /* 搜索框极简化 */
@@ -51,25 +54,26 @@
         .search-input {
             width: 100%;
             padding: 10px 16px;
-            border: 1px solid #e2e8f0; /* 暖灰色边框 */
-            border-radius: 4px;
+            border: none;
+            border-bottom: 1px solid #cbd5e0; /* 只保留底部边框 */
             outline: none;
             font-family: inherit;
             font-size: 14px;
+            background: transparent; /* 背景透明 */
             transition: border-color 0.2s ease;
         }
 
         .search-input:focus {
-            border-color: #cbd5e0; /* 焦点时边框颜色 */
+            border-color: #5a7d7c; /* 焦点时边框颜色改为黛蓝色 */
         }
 
         .search-btn {
             margin-left: 8px;
             padding: 10px 16px;
-            background: #8b2a2a; /* 赤陶色按钮 */
+            background: #333333; /* 改为墨色按钮 */
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 0; /* 去掉圆角，保持简洁 */
             cursor: pointer;
             font-family: inherit;
             transition: opacity 0.2s ease;
@@ -81,23 +85,82 @@
 
         .container { max-width: 1200px; margin: 0 auto; padding: 40px; }
 
-        .page-title { text-align: center; margin-bottom: 50px; color: #2d3748; }
-        .page-title h2 { font-size: 36px; font-weight: 700; margin-bottom: 12px; } /* 加粗标题 */
-        .page-title p { color: #718096; font-size: 18px; } /* 暖灰色副标题 */
+        .page-title { text-align: center; margin-bottom: 100px; color: #333333; } /* 增加垂直留白 */
+        .page-title h2 { 
+            font-size: 48px; /* 加大字号 */
+            font-weight: 300; /* 使用较细字重 */
+            margin-bottom: 12px; 
+            font-family: 'Noto Serif SC', 'Songti SC', serif; /* 标题使用衬线体 */
+        } /* 加粗标题 */
+        .page-title p { 
+            color: #a0aec0; /* 浅灰色 */
+            font-size: 16px; /* 缩小字号 */
+            letter-spacing: 3px; /* 增加字间距 */
+            font-family: 'Inter', sans-serif; /* 正文使用无衬线体 */
+        } /* 暖灰色副标题 */
 
-        /* 产品网格 - 大留白设计 */
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 40px; }
+        /* 分类筛选极简化 */
+        .filter-container {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0 80px; /* 增加下方留白 */
+            gap: 30px; /* 增加间隔 */
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 0; /* 只保留上下内边距 */
+            background: transparent; /* 去掉背景 */
+            border: none; /* 去掉边框 */
+            cursor: pointer;
+            font-size: 14px;
+            color: #4a5568;
+            position: relative; /* 为下划线定位 */
+            transition: all 0.2s ease;
+            letter-spacing: 1px; /* 增加字间距 */
+        }
+
+        .filter-btn::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: #5a7d7c; /* 黛蓝色下划线 */
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .filter-btn.active::after, .filter-btn:hover::after {
+            width: 60%; /* 选中或悬停时显示下划线 */
+        }
+
+        .filter-btn.active, .filter-btn:hover {
+            color: #333333; /* 增加颜色深度 */
+            background: transparent;
+        }
+
+        /* 产品网格 - 大留白设计，使用masonry布局 */
+        .product-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            gap: 60px; /* 增加网格间距 */
+        }
 
         /* 极简产品卡片 - 去掉边框和阴影 */
         .product-card { 
-            background: #ffffff;
-            padding-bottom: 20px; /* 底部分隔线区域 */
-            border-bottom: 1px solid #edf2f7; /* 微弱底部分隔线 */
+            background: transparent; /* 去掉背景 */
+            padding-bottom: 0; /* 去掉底部填充 */
+            border-bottom: none; /* 去掉边框 */
             transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* 内容居中对齐 */
         }
 
         .product-card:hover { 
-            border-bottom: 1px solid #cbd5e0; /* 悬停时加强分隔线 */
+            transform: translateY(-5px); /* 悬停时轻微上移 */
         }
 
         /* 产品图片 - 占比70% */
@@ -105,25 +168,33 @@
             width: 100%; 
             height: 280px; /* 调整高度以符合70%比例 */
             object-fit: contain;
-            background-color: #f8fafc;
-            margin-bottom: 20px;
+            background-color: transparent; /* 去掉背景色 */
+            margin-bottom: 25px;
+            border-radius: 12px; /* 增加圆角 */
         }
 
-        /* 卡片内容区 */
-        .card-body { padding: 0; }
+        /* 卡片内容区 - 居中对齐改为左对齐 */
+        .card-body { 
+            padding: 0; 
+            width: 100%;
+            text-align: center; /* 默认居中 */
+        }
 
         .product-name { 
             font-size: 18px; 
-            font-weight: 700; /* 加粗标题 */
+            font-weight: 400; /* 不再加粗 */
             margin-bottom: 8px; 
-            color: #1a202c; /* 深灰色 */
+            color: #333333; /* 增加颜色深度 */
             line-height: 1.5;
+            font-family: 'Noto Serif SC', 'Songti SC', serif; /* 使用衬线体 */
+            text-align: center; /* 居中对齐 */
         }
 
         .product-price { 
-            color: #8b2a2a; /* 赤陶色价格 */ 
+            color: #5a7d7c; /* 改为黛蓝色价格 */ 
             font-size: 20px; 
-            font-weight: 700; /* 加粗价格 */
+            font-weight: 400; /* 不再加粗 */
+            text-align: center;
         }
 
         .product-desc { display: none; } /* 隐藏描述以实现极简 */
@@ -132,14 +203,14 @@
         .btn-buy { 
             width: 100%; 
             padding: 12px; 
-            background: #8b2a2a; /* 赤陶色按钮 */
+            background: #333333; /* 改为墨色按钮 */
             color: white; 
             border: none; 
-            border-radius: 4px; /* 小圆角 */
+            border-radius: 0; /* 去掉圆角 */
             cursor: pointer; 
             font-family: inherit;
-            font-size: 16px; 
-            margin-top: 16px;
+            font-size: 14px; 
+            margin-top: 20px;
             transition: opacity 0.2s ease;
         }
 
@@ -149,7 +220,7 @@
 
         .pagination { 
             text-align: center; 
-            margin-top: 60px; 
+            margin-top: 80px; /* 增加上方留白 */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -158,10 +229,10 @@
 
         .page-btn { 
             padding: 10px 20px; 
-            background: #8b2a2a; /* 赤陶色按钮 */
+            background: #333333; /* 改为墨色按钮 */
             color: white;
             border: none; 
-            border-radius: 4px; 
+            border-radius: 0; /* 去掉圆角 */
             cursor: pointer; 
             transition: opacity 0.2s ease;
         }
@@ -176,7 +247,7 @@
         /* 搜索结果提示 */
         .search-results {
             text-align: center;
-            margin: 30px 0;
+            margin: 30px 0 60px; /* 增加下方留白 */
             color: #718096;
             font-size: 16px;
         }
@@ -188,46 +259,22 @@
             font-size: 18px;
         }
 
-        /* 分类筛选极简化 */
-        .filter-container {
-            display: flex;
-            justify-content: center;
-            margin: 30px 0 50px;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .filter-btn {
-            padding: 8px 20px;
-            background: #f7fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 14px;
-            color: #4a5568;
-            transition: all 0.2s ease;
-        }
-
-        .filter-btn.active, .filter-btn:hover {
-            background: #8b2a2a;
-            color: white;
-            border-color: #8b2a2a;
-        }
-
         /* 响应式设计 */
         @media (max-width: 768px) {
             .navbar { padding: 16px 20px; }
             .container { padding: 20px; }
-            .product-grid { gap: 30px; }
-            .page-title { margin-bottom: 30px; }
-            .filter-container { margin: 20px 0 30px; }
+            .product-grid { gap: 40px; } /* 移动端稍小的间距 */
+            .page-title { margin-bottom: 60px; }
+            .filter-container { margin: 20px 0 50px; }
+            .page-title h2 { font-size: 32px; } /* 移动端标题稍小 */
+            .pagination { margin-top: 60px; }
         }
     </style>
 </head>
 <body>
 
     <nav class="navbar">
-        <div style="font-size: 22px; font-weight: 700; color: #1a202c;">🏛️ 冀遗筑梦</div>
+        <div style="font-size: 22px; font-weight: 500; color: #333333; font-family: 'Noto Serif SC', 'Songti SC', serif;">🏛️ 冀遗筑梦</div>
         
         <!-- 搜索框 -->
         <div class="search-container">
@@ -533,7 +580,7 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username: user, action, product })
-            }).catch(() => {}); // 忽略错误
+            }).catch(() => {}); /* 忽略错误 */
         }
     </script>
 </body>
