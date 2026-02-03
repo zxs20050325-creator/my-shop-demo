@@ -5,7 +5,8 @@
   "main": "index.html",
   "scripts": {
     "start": "serve -s .",
-    "dev": "live-server --port=3000"
+    "dev": "live-server --port=3000",
+    "build": "echo 'Build completed'"
   },
   "keywords": ["shop", "frontend", "e-commerce"],
   "author": "",

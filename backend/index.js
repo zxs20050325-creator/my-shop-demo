@@ -8,7 +8,6 @@ const app = express();
 
 app.use(express.json());
 app.use(cors());
-app.use(express.static(path.join(__dirname, '../frontend'))); // 修正静态文件目录路径
 
 // ====================== 1. 数据存储 ======================
 const MOCK_PRODUCTS = [
