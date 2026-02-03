@@ -2,6 +2,9 @@
 const express = require('express');
 const cors = require('cors');
 
+// 移除未使用的模块引用（fs, path）
+// 不再需要 DATA_FILE 常量，因为使用内存存储
+
 const app = express();
 
 app.use(express.json());
@@ -327,18 +330,13 @@ app.get('/api/admin/data', (req, res) => {
         logs: browseLogs.length,
         revenue: totalRevenue,
         orders: totalOrders,
-        fileExists: fs.existsSync(DATA_FILE)
+        fileExists: false // 修改：不再使用文件存储
     });
 });
 
 app.post('/api/admin/backup', (req, res) => {
-    const backupFile = path.join(__dirname, `data_backup_${Date.now()}.json`);
-    try {
-        fs.copyFileSync(DATA_FILE, backupFile);
-        res.json({ success: true, message: '备份成功', file: backupFile });
-    } catch (error) {
-        res.status(500).json({ success: false, message: '备份失败' });
-    }
+    // 由于使用内存存储，这里不提供备份功能
+    res.status(400).json({ success: false, message: '当前使用内存存储，不支持备份功能' });
 });
 
 const PORT = process.env.PORT || 3000;
