@@ -123,11 +123,12 @@
         // 设置API基础URL，以便在部署时调整
         const isDeployed = window.location.hostname.includes('onrender.com');
         // 修改为实际的后端服务地址
-        const API_BASE = isDeployed ? 'https://jiyizhumeng.onrender.com' : 'http://localhost:3000';
-        
+        const API_BASE = isDeployed ? 'https://jiyi-zhumeng.onrender.com' : 'http://localhost:3000';
+
         window.onload = function() {
             checkLoginStatus();
             loadFavorites();
+            trackUserAction('访问收藏夹', '-');
         };
 
         function checkLoginStatus() {
@@ -135,98 +136,101 @@
             const authSection = document.getElementById('auth-section');
             if (user) {
                 authSection.innerHTML = `
-                    <span>欢迎, ${user}</span>
+                    <span style="margin-right: 20px;">欢迎, ${user}</span>
                     <a href="cart.html">🛒 购物车</a>
                     <a href="favorites.html">❤️ 收藏</a>
-                    <a href="index.html">首页</a>
                     <a onclick="logout()">退出</a>
                 `;
             } else {
-                alert('请先登录以查看收藏');
-                window.location.href = 'login.html';
+                authSection.innerHTML = `
+                    <a href="login.html">登录</a>
+                    <a href="register.html">注册</a>
+                `;
             }
         }
 
         function logout() {
+            trackUserAction('用户登出', '-');
             localStorage.removeItem('currentUser');
-            window.location.href = 'login.html';
+            window.location.reload();
         }
 
         async function loadFavorites() {
             const user = localStorage.getItem('currentUser');
-            if (!user) {
+            if(!user) {
+                alert('请先登录！');
                 window.location.href = 'login.html';
                 return;
             }
 
             try {
-                const res = await fetch(`${API_BASE}/api/favorites?username=${user}`);
+                const res = await fetch(`${API_BASE}/api/favorites?username=${encodeURIComponent(user)}`);
                 const favorites = await res.json();
                 
-                const favoritesList = document.getElementById('favorites-list');
-                const emptyFavorites = document.getElementById('empty-favorites');
-                
-                if (favorites.length === 0) {
-                    favoritesList.innerHTML = '';
-                    emptyFavorites.style.display = 'block';
+                if(favorites.length === 0) {
+                    document.getElementById('favorites-list').style.display = 'none';
+                    document.getElementById('empty-favorites-message').style.display = 'block';
                     return;
                 }
-                
-                emptyFavorites.style.display = 'none';
-                favoritesList.innerHTML = '';
 
-                favorites.forEach((product, index) => {
-                    // 修复图片路径处理逻辑
-                    let imgSrc = product.img;
-                    if (product.img.startsWith('images/')) {
-                        imgSrc = `/${product.img}`;
+                document.getElementById('favorites-list').style.display = 'grid';
+                document.getElementById('empty-favorites-message').style.display = 'none';
+                
+                document.getElementById('favorites-list').innerHTML = '';
+
+                favorites.forEach((fav, index) => {
+                    // 处理图片URL
+                    let imgSrc = fav.product.img;
+                    if (!imgSrc.startsWith('http') && !imgSrc.startsWith('/')) {
+                        imgSrc = `${API_BASE}/${imgSrc}`;
                     }
-                    
-                    favoritesList.innerHTML += `
-                        <div class="product-card">
-                            <div class="favorite-icon" onclick="removeFromFavorites(${product.id}, ${index})">❤️</div>
-                            <img src="${imgSrc}" class="product-img" onerror="this.src='https://placehold.co/300x200?text=No+Image'" onclick="window.location.href='product-detail.html?id=${product.id}'" style="cursor: pointer;">
+
+                    document.getElementById('favorites-list').innerHTML += `
+                        <div class="favorite-card">
+                            <img src="${imgSrc}" class="favorite-img" alt="${fav.product.name}">
                             <div class="card-body">
-                                <div class="product-name" onclick="window.location.href='product-detail.html?id=${product.id}'" style="cursor: pointer;">${product.name}</div>
-                                <div class="product-price">¥${product.price}</div>
-                                <div class="product-desc">${product.desc}</div>
+                                <div class="product-name" onclick="viewProductDetail(${fav.product.id})" style="cursor: pointer;">${fav.product.name}</div>
+                                <div class="product-price">¥${fav.product.price}</div>
                                 <div class="btn-actions">
-                                    <button class="btn-buy" onclick="addToCart(${index})">加入购物车</button>
-                                    <button class="btn-remove" onclick="removeFromFavorites(${product.id}, ${index})">移除</button>
+                                    <button class="btn-buy" onclick="addToCart(${fav.product.id})">购买</button>
+                                    <button class="btn-remove" onclick="removeFromFavorites(${fav.product.id})">取消收藏</button>
                                 </div>
                             </div>
                         </div>
                     `;
                 });
-            } catch (err) {
+            } catch (err) { 
                 console.error('加载收藏失败:', err);
+                alert('收藏加载失败');
             }
         }
 
-        async function removeFromFavorites(productId, index) {
+        async function removeFromFavorites(productId) {
             const user = localStorage.getItem('currentUser');
-            if (!user) {
-                window.location.href = 'login.html';
-                return;
-            }
+            if(!user) return;
 
             try {
                 const res = await fetch(`${API_BASE}/api/favorites/remove`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: user, productId: productId })
+                    body: JSON.stringify({ 
+                        username: user, 
+                        productId: productId
+                    })
                 });
                 const data = await res.json();
                 
                 if(data.success) {
-                    loadFavorites();
+                    loadFavorites(); // 重新加载收藏
+                } else {
+                    alert('取消收藏失败: ' + (data.message || '未知错误'));
                 }
             } catch(e) {
-                console.error('移除收藏失败:', e);
+                alert('网络错误');
             }
         }
 
-        async function addToCart(index) {
+        async function addToCart(productId) {
             const user = localStorage.getItem('currentUser');
             if(!user) {
                 alert('请先登录后再购买！');
@@ -234,25 +238,39 @@
                 return;
             }
 
-            // 获取当前显示的收藏商品列表
+            // 获取商品信息
             try {
-                const res = await fetch(`${API_BASE}/api/favorites?username=${user}`);
-                const favorites = await res.json();
-                const product = favorites[index];
-                
-                const cartRes = await fetch(`${API_BASE}/api/cart/add`, {
+                const res = await fetch(`${API_BASE}/api/products/${productId}`);
+                const product = await res.json();
+
+                const res2 = await fetch(`${API_BASE}/api/cart/add`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username: user, product: product })
                 });
-                const data = await cartRes.json();
+                const data = await res2.json();
                 if(data.success) {
                     alert(`✅ [${product.name}] 已加入购物车！`);
+                } else {
+                    alert('添加失败: ' + (data.message || '未知错误'));
                 }
             } catch(e) {
-                alert('添加失败');
+                alert('网络错误');
             }
+        }
+
+        function viewProductDetail(id) {
+            window.location.href = `product-detail.HTML?id=${id}`;
+        }
+
+        function trackUserAction(action, product) {
+            const user = localStorage.getItem('currentUser');
+            fetch(`${API_BASE}/api/track`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: user, action, product })
+            }).catch(() => {}); // 忽略错误
         }
     </script>
 </body>
-</html> 
+</html>

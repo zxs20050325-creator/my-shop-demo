@@ -9,44 +9,37 @@
         
         body { 
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #FDFBF7; /* 改为米白色背景，增加质感 */
-            color: #333333; /* 主色调改为墨色 */
+            background: #ffffff; 
+            color: #2d3748; 
             padding-top: 80px; 
             line-height: 1.6; 
         }
         
         .navbar {
             position: fixed; top: 0; left: 0; width: 100%;
-            background: transparent; /* 改为透明背景 */
-            color: #333333; /* 主色调改为墨色 */
-            padding: 12px 24px; /* 减小导航栏内边距 */
+            background: #ffffff; 
+            color: #2d3748; 
+            padding: 16px 40px;
             display: flex; justify-content: space-between; align-items: center; z-index: 1000;
-            backdrop-filter: blur(10px); /* 添加磨砂玻璃效果 */
-            background-color: rgba(253, 251, 247, 0.8); /* 半透明背景 */
-            border-bottom: none; /* 去掉边框 */
+            border-bottom: 1px solid #e2e8f0; 
         }
         
         .nav-links a { 
-            color: #333333; /* 主色调改为墨色 */
+            color: #2d3748; 
             text-decoration: none; 
-            margin-left: 20px; /* 减小导航项间距 */
+            margin-left: 30px; 
             font-weight: 400;
-            letter-spacing: 1px; /* 减小字间距 */
             transition: opacity 0.2s ease;
-            font-size: 14px; /* 减小字体大小 */
         }
         .nav-links a:hover { 
-            opacity: 0.7; /* 悬停时仅改变透明度 */
-            color: #5a7d7c; /* 改为黛蓝色 */
+            opacity: 0.7; 
+            color: #8b2a2a; 
         }
         
-        .container { 
-            max-width: 900px; /* 减小最大宽度 */
-            margin: 0 auto; 
-            padding: 30px 20px; /* 减小内边距 */
-        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 40px; }
         
         .product-detail-container {
+            background: white; 
             display: flex;
             gap: 40px;
             margin-bottom: 20px;
@@ -55,13 +48,13 @@
         .product-image {
             flex: 1;
             padding: 20px;
+            background: #f8fafc;
         }
         
         .product-image img {
             width: 100%;
-            height: 400px; /* 减小高度 */
+            height: 500px;
             object-fit: contain;
-            border-radius: 8px; /* 增加圆角 */
         }
         
         .product-info {
@@ -70,53 +63,36 @@
         }
         
         .product-name { 
-            font-size: 28px; /* 减小字体大小 */
-            font-weight: 400; /* 不再加粗 */
+            font-size: 32px; 
+            font-weight: 700; 
             margin-bottom: 15px; 
-            color: #333333; /* 增加颜色深度 */
+            color: #1a202c; 
             line-height: 1.3;
-            font-family: 'Noto Serif SC', 'Songti SC', serif; /* 使用衬线体 */
         }
         
         .product-price { 
-            color: #5a7d7c; /* 改为黛蓝色价格 */
-            font-size: 24px; /* 减小字体大小 */
-            font-weight: 400; /* 不再加粗 */
+            color: #8b2a2a; 
+            font-size: 28px; 
+            font-weight: 700; 
             margin-bottom: 25px; 
         }
         
         .product-desc { 
             color: #4a5568; 
-            font-size: 15px; /* 减小字体大小 */
-            line-height: 1.6; /* 减小行高 */
+            font-size: 16px; 
+            line-height: 1.8; 
             margin-bottom: 30px; 
         }
         
         .product-category { 
             display: inline-block; 
             padding: 6px 16px; 
-            background: transparent; /* 去掉背景 */
+            background: #f7fafc; 
             color: #4a5568; 
-            border: none; /* 去掉边框 */
+            border: 1px solid #e2e8f0;
+            border-radius: 20px; 
             margin-bottom: 25px; 
             font-size: 14px;
-            position: relative; /* 为下划线定位 */
-        }
-        
-        .product-category::after {
-            content: '';
-            position: absolute;
-            bottom: -4px;
-            left: 50%;
-            width: 0;
-            height: 2px;
-            background: #5a7d7c; /* 黛蓝色下划线 */
-            transition: all 0.3s ease;
-            transform: translateX(-50%);
-        }
-        
-        .product-category:hover::after {
-            width: 60%; /* 悬停时显示下划线 */
         }
         
         .btn-actions { 
@@ -126,63 +102,59 @@
         }
         
         .btn-buy, .btn-favorite { 
-            padding: 12px 20px; /* 减小内边距 */
+            padding: 14px 24px; 
             border: none; 
-            border-radius: 0; /* 去掉圆角 */
+            border-radius: 4px; 
             cursor: pointer; 
             font-family: inherit;
-            font-size: 14px; /* 减小字体大小 */
+            font-size: 16px; 
             transition: opacity 0.2s ease;
-            flex: 1;
         }
         
         .btn-buy { 
-            background: #333333; /* 改为墨色按钮 */
+            background: #8b2a2a; 
             color: white; 
+            flex: 1;
         }
         .btn-buy:hover { 
             opacity: 0.9; 
         }
         
         .btn-favorite { 
-            background: transparent; /* 改为透明背景 */
-            color: #333333; /* 墨色文字 */
-            border: 1px solid #333333; /* 墨色边框 */
+            background: #f7fafc; 
+            color: #4a5568;
+            border: 1px solid #e2e8f0;
         }
         .btn-favorite:hover { 
-            background: #333333;
-            color: white;
+            opacity: 0.9; 
         }
         
         .back-link {
             display: inline-block;
-            padding: 10px 16px; /* 减小内边距 */
-            background: transparent; /* 改为透明背景 */
-            color: #333333; /* 墨色文字 */
+            padding: 10px 16px;
+            background: #f7fafc;
+            color: #4a5568;
             text-decoration: none;
-            border: 1px solid #333333; /* 墨色边框 */
-            border-radius: 0; /* 去掉圆角 */
-            transition: all 0.2s ease;
-            margin-bottom: 20px;
+            border-radius: 4px;
+            border: 1px solid #e2e8f0;
+            transition: opacity 0.2s ease;
         }
         .back-link:hover {
-            background: #333333;
-            color: white;
+            opacity: 0.9;
         }
         
         @media (max-width: 768px) {
             .product-detail-container {
                 flex-direction: column;
             }
-            .container { padding: 20px 15px; }
-            .navbar { padding: 12px 16px; }
-            .product-name { font-size: 24px; } /* 移动端标题稍小 */
+            .container { padding: 20px; }
+            .navbar { padding: 16px 20px; }
         }
     </style>
 </head>
 <body>
     <nav class="navbar">
-        <div style="font-size: 18px; font-weight: 500; color: #333333; font-family: 'Noto Serif SC', 'Songti SC', serif;">🏛️ 冀遗筑梦</div>
+        <div style="font-size: 22px; font-weight: 700; color: #1a202c;">🏛️ 冀遗筑梦</div>
         <div class="nav-links" id="auth-section">
             <!-- JS填充 -->
         </div>

@@ -9,42 +9,56 @@
         
         body { 
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #ffffff; 
-            color: #2d3748; 
+            background: #FDFBF7; /* 改为米白色背景，增加质感 */
+            color: #333333; /* 主色调改为墨色 */
             padding-top: 80px; 
             line-height: 1.6; 
         }
         
         .navbar {
             position: fixed; top: 0; left: 0; width: 100%;
-            background: #ffffff; 
-            color: #2d3748; 
-            padding: 16px 40px;
+            background: transparent; /* 改为透明背景 */
+            color: #333333; /* 主色调改为墨色 */
+            padding: 12px 24px; /* 减小导航栏内边距 */
             display: flex; justify-content: space-between; align-items: center; z-index: 1000;
-            border-bottom: 1px solid #e2e8f0; 
+            backdrop-filter: blur(10px); /* 添加磨砂玻璃效果 */
+            background-color: rgba(253, 251, 247, 0.8); /* 半透明背景 */
+            border-bottom: none; /* 去掉边框 */
         }
         
         .nav-links a { 
-            color: #2d3748; 
+            color: #333333; /* 主色调改为墨色 */
             text-decoration: none; 
-            margin-left: 30px; 
+            margin-left: 20px; /* 减小导航项间距 */
             font-weight: 400;
+            letter-spacing: 1px; /* 减小字间距 */
             transition: opacity 0.2s ease;
+            font-size: 14px; /* 减小字体大小 */
         }
         .nav-links a:hover { 
-            opacity: 0.7; 
-            color: #8b2a2a; 
+            opacity: 0.7; /* 悬停时仅改变透明度 */
+            color: #5a7d7c; /* 改为黛蓝色 */
         }
         
-        .container { max-width: 900px; margin: 0 auto; padding: 40px; }
-        .cart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .container { 
+            max-width: 900px; 
+            margin: 0 auto; 
+            padding: 30px 20px; /* 减小内边距 */
+        }
+        
+        .cart-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 30px; 
+        }
         
         .cart-item { 
-            background: white; 
-            padding: 25px 0; 
+            background: transparent; /* 去掉背景 */
+            padding: 20px 0; /* 减少内边距 */
             display: flex; 
             align-items: center; 
-            border-bottom: 1px solid #edf2f7;
+            border-bottom: 1px solid #e2e8f0; /* 更淡的分隔线 */
         }
         
         /* 图片防变形处理 */
@@ -52,107 +66,173 @@
             width: 120px; 
             height: 120px; 
             object-fit: contain; 
-            border-radius: 4px; 
             margin-right: 25px; 
-            border: 1px solid #e2e8f0; 
-            background: #f8fafc;
+            border-radius: 8px; /* 增加圆角 */
         }
         
-        .cart-info { 
+        .item-details { 
             flex: 1; 
-            margin-right: 20px;
-        }
-        .cart-title { 
-            font-size: 18px; 
-            font-weight: 700; 
-            margin-bottom: 8px; 
-            color: #1a202c; 
-        }
-        .cart-price { 
-            color: #8b2a2a; 
-            font-size: 20px; 
-            font-weight: 700; 
-        }
-        .btn-remove { 
-            padding: 10px 20px; 
-            background: #f7fafc; 
-            color: #e53e3e; 
-            border: 1px solid #e2e8f0; 
-            border-radius: 4px; 
-            cursor: pointer; 
-            transition: opacity 0.2s ease;
-        }
-        .btn-remove:hover { 
-            opacity: 0.9; 
-            background: #fff5f5;
+            display: flex; 
+            flex-direction: column; 
+            gap: 8px; 
         }
         
-        .checkout-bar { 
-            background: white; 
-            padding: 25px; 
-            border-top: 1px solid #edf2f7;
-            text-align: right; 
-            margin-top: 20px; 
-            font-size: 20px; 
+        .item-name { 
+            font-size: 18px; 
+            font-weight: 400; /* 不再加粗 */
+            color: #333333; /* 增加颜色深度 */
+            font-family: 'Noto Serif SC', 'Songti SC', serif; /* 使用衬线体 */
         }
-        .total-price { 
-            color: #8b2a2a; 
-            font-weight: 700; 
-            font-size: 24px; 
-            margin: 0 10px; 
+        
+        .item-price { 
+            color: #5a7d7c; /* 改为黛蓝色价格 */
+            font-size: 18px; 
+            font-weight: 400; /* 不再加粗 */
         }
-        .btn-checkout { 
-            padding: 14px 32px; 
-            background: #8b2a2a; 
+        
+        .item-controls { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            margin-left: 20px; 
+        }
+        
+        .quantity-btn { 
+            width: 32px; 
+            height: 32px; 
+            border: 1px solid #333333; 
+            background: transparent; /* 改为透明背景 */
+            color: #333333; 
+            border-radius: 0; /* 去掉圆角 */
+            cursor: pointer; 
+            font-size: 16px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+        }
+        
+        .quantity-display { 
+            font-size: 16px; 
+            min-width: 30px; 
+            text-align: center; 
+        }
+        
+        .remove-btn { 
+            padding: 8px 16px; 
+            background: #333333; 
             color: white; 
             border: none; 
-            border-radius: 4px; 
-            font-size: 18px; 
+            border-radius: 0; /* 去掉圆角 */
             cursor: pointer; 
+            font-size: 14px; 
+            margin-left: 15px;
             transition: opacity 0.2s ease;
         }
-        .btn-checkout:hover { 
+        
+        .remove-btn:hover { 
             opacity: 0.9; 
         }
-
+        
+        .cart-total { 
+            margin: 30px 0; 
+            padding: 20px; 
+            background: transparent; /* 去掉背景 */
+            border: 1px solid #333333; /* 墨色边框 */
+            border-radius: 0; /* 去掉圆角 */
+            font-size: 18px; 
+            display: flex; 
+            justify-content: space-between; 
+        }
+        
+        .checkout-btn { 
+            width: 100%; 
+            padding: 14px; 
+            background: #333333; 
+            color: white; 
+            border: none; 
+            border-radius: 0; /* 去掉圆角 */
+            cursor: pointer; 
+            font-size: 16px; 
+            font-weight: 400;
+            transition: opacity 0.2s ease;
+        }
+        
+        .checkout-btn:hover { 
+            opacity: 0.9; 
+        }
+        
         .empty-cart { 
             text-align: center; 
-            margin-top: 50px; 
+            padding: 60px 20px; 
             color: #a0aec0; 
-            padding: 40px 0;
+            font-size: 18px; 
+        }
+        
+        .back-link {
+            display: inline-block;
+            padding: 10px 16px; /* 减小内边距 */
+            background: transparent; /* 改为透明背景 */
+            color: #333333; /* 墨色文字 */
+            text-decoration: none;
+            border: 1px solid #333333; /* 墨色边框 */
+            border-radius: 0; /* 去掉圆角 */
+            transition: all 0.2s ease;
+            margin-bottom: 20px;
+        }
+        .back-link:hover {
+            background: #333333;
+            color: white;
         }
         
         @media (max-width: 768px) {
-            .cart-item { flex-direction: column; text-align: center; }
-            .cart-img { margin-right: 0; margin-bottom: 15px; }
-            .cart-info { margin-right: 0; margin-bottom: 15px; }
-            .container { padding: 20px; }
-            .navbar { padding: 16px 20px; }
+            .cart-item { 
+                flex-direction: column; 
+                align-items: flex-start; 
+                gap: 15px; 
+            }
+            .cart-img { 
+                width: 100px; 
+                height: 100px; 
+                margin-right: 0; 
+            }
+            .item-controls { 
+                width: 100%; 
+                justify-content: space-between; 
+                margin-left: 0; 
+            }
+            .container { padding: 20px 15px; }
+            .navbar { padding: 12px 16px; }
         }
     </style>
 </head>
 <body>
     <nav class="navbar">
-        <div style="font-size: 22px; font-weight: 700; color: #1a202c;">🛒 购物车</div>
-        <div class="nav-links">
-            <a href="index.html">继续购物</a>
+        <div style="font-size: 18px; font-weight: 500; color: #333333; font-family: 'Noto Serif SC', 'Songti SC', serif;">🏛️ 冀遗筑梦</div>
+        <div class="nav-links" id="auth-section">
+            <!-- JS填充 -->
         </div>
     </nav>
 
     <div class="container">
+        <a href="index.html" class="back-link">← 返回首页</a>
+        
         <div class="cart-header">
-            <h2>购物清单</h2>
-            <span id="user-display" style="color:#718096; font-size:16px;"></span>
+            <h2>我的购物车</h2>
+            <div id="item-count">共 <span id="count-value">0</span> 件商品</div>
         </div>
-
-        <div id="cart-list">
-            <!-- 购物车列表 JS 填充 -->
+        
+        <div id="cart-items"></div>
+        
+        <div id="empty-cart-message" class="empty-cart" style="display: none;">
+            购物车空空如也，请前往首页选购商品
         </div>
-
-        <div class="checkout-bar" id="checkout-bar" style="display:none;">
-            总计: <span class="total-price" id="total-price">¥0</span>
-            <button class="btn-checkout" onclick="checkout()">立即结算</button>
+        
+        <div class="cart-total">
+            <strong>总计:</strong>
+            <span id="total-price">¥0.00</span>
         </div>
+        
+        <button class="checkout-btn" onclick="proceedToPay()">立即结算</button>
     </div>
 
     <script>
@@ -160,92 +240,181 @@
         const isDeployed = window.location.hostname.includes('onrender.com');
         // 修改为实际的后端服务地址
         const API_BASE = isDeployed ? 'https://jiyi-zhumeng.onrender.com' : 'http://localhost:3000';
-        
-        const user = localStorage.getItem('currentUser');
-        let currentCart = [];
 
         window.onload = function() {
+            checkLoginStatus();
+            loadCartItems();
+            trackUserAction('访问购物车', '-');
+        };
+
+        function checkLoginStatus() {
+            const user = localStorage.getItem('currentUser');
+            const authSection = document.getElementById('auth-section');
+            if (user) {
+                authSection.innerHTML = `
+                    <span style="margin-right: 20px;">欢迎, ${user}</span>
+                    <a href="cart.html">🛒 购物车</a>
+                    <a href="favorites.html">❤️ 收藏</a>
+                    <a onclick="logout()">退出</a>
+                `;
+            } else {
+                authSection.innerHTML = `
+                    <a href="login.html">登录</a>
+                    <a href="register.html">注册</a>
+                `;
+            }
+        }
+
+        function logout() {
+            trackUserAction('用户登出', '-');
+            localStorage.removeItem('currentUser');
+            window.location.reload();
+        }
+
+        async function loadCartItems() {
+            const user = localStorage.getItem('currentUser');
             if(!user) {
-                alert('请先登录');
+                alert('请先登录！');
                 window.location.href = 'login.html';
                 return;
             }
-            document.getElementById('user-display').innerText = `当前用户: ${user}`;
-            loadCart();
-        }
 
-        async function loadCart() {
             try {
-                const res = await fetch(`${API_BASE}/api/cart?username=${user}`);
-                currentCart = await res.json();
-                renderCart();
-            } catch(e) { console.error(e); }
+                const res = await fetch(`${API_BASE}/api/cart?username=${encodeURIComponent(user)}`);
+                const items = await res.json();
+                
+                if(items.length === 0) {
+                    document.getElementById('cart-items').style.display = 'none';
+                    document.getElementById('empty-cart-message').style.display = 'block';
+                    document.getElementById('count-value').textContent = '0';
+                    document.getElementById('total-price').textContent = '¥0.00';
+                    return;
+                }
+
+                document.getElementById('cart-items').style.display = 'block';
+                document.getElementById('empty-cart-message').style.display = 'none';
+                
+                document.getElementById('cart-items').innerHTML = '';
+                let total = 0;
+                let count = 0;
+
+                items.forEach((item, index) => {
+                    const itemTotal = item.product.price * item.quantity;
+                    total += itemTotal;
+                    count += item.quantity;
+
+                    // 处理图片URL
+                    let imgSrc = item.product.img;
+                    if (!imgSrc.startsWith('http') && !imgSrc.startsWith('/')) {
+                        imgSrc = `${API_BASE}/${imgSrc}`;
+                    }
+
+                    document.getElementById('cart-items').innerHTML += `
+                        <div class="cart-item">
+                            <img src="${imgSrc}" alt="${item.product.name}" class="cart-img">
+                            <div class="item-details">
+                                <div class="item-name">${item.product.name}</div>
+                                <div class="item-price">单价: ¥${item.product.price}</div>
+                            </div>
+                            <div class="item-controls">
+                                <button class="quantity-btn" onclick="updateQuantity(${item.product.id}, ${item.quantity - 1})">-</button>
+                                <span class="quantity-display">${item.quantity}</span>
+                                <button class="quantity-btn" onclick="updateQuantity(${item.product.id}, ${item.quantity + 1})">+</button>
+                                <button class="remove-btn" onclick="removeFromCart(${item.product.id})">删除</button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                document.getElementById('count-value').textContent = count;
+                document.getElementById('total-price').textContent = `¥${total.toFixed(2)}`;
+            } catch (err) { 
+                console.error('加载购物车失败:', err);
+                alert('购物车加载失败');
+            }
         }
 
-        function renderCart() {
-            const listDiv = document.getElementById('cart-list');
-            const checkoutBar = document.getElementById('checkout-bar');
+        async function updateQuantity(productId, newQuantity) {
+            if(newQuantity < 1) return; // 数量不能小于1
             
-            if(currentCart.length === 0) {
-                listDiv.innerHTML = '<div class="empty-cart"><h3>购物车空空如也 💨</h3><p>去首页看看有没有喜欢的非遗文创吧！</p></div>';
-                checkoutBar.style.display = 'none';
+            const user = localStorage.getItem('currentUser');
+            if(!user) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/api/cart/update`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        username: user, 
+                        productId: productId,
+                        quantity: newQuantity
+                    })
+                });
+                const data = await res.json();
+                
+                if(data.success) {
+                    loadCartItems(); // 重新加载购物车
+                } else {
+                    alert('更新失败: ' + (data.message || '未知错误'));
+                }
+            } catch(e) {
+                alert('网络错误');
+            }
+        }
+
+        async function removeFromCart(productId) {
+            const user = localStorage.getItem('currentUser');
+            if(!user) return;
+
+            if(!confirm('确定要删除这件商品吗？')) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/api/cart/remove`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        username: user, 
+                        productId: productId
+                    })
+                });
+                const data = await res.json();
+                
+                if(data.success) {
+                    loadCartItems(); // 重新加载购物车
+                } else {
+                    alert('删除失败: ' + (data.message || '未知错误'));
+                }
+            } catch(e) {
+                alert('网络错误');
+            }
+        }
+
+        function proceedToPay() {
+            const user = localStorage.getItem('currentUser');
+            if(!user) {
+                alert('请先登录！');
+                window.location.href = 'login.html';
                 return;
             }
 
-            listDiv.innerHTML = '';
-            let total = 0;
+            // 检查购物车是否为空
+            const totalPrice = parseFloat(document.getElementById('total-price').textContent.replace('¥', ''));
+            if(totalPrice <= 0) {
+                alert('购物车不能为空！');
+                return;
+            }
 
-            currentCart.forEach((item, index) => {
-                total += parseFloat(item.price);
-                
-                // 修复图片路径处理逻辑
-                let imgSrc = item.img;
-                if (item.img.startsWith('images/')) {
-                    imgSrc = `/${item.img}`;
-                }
-                
-                listDiv.innerHTML += `
-                    <div class="cart-item">
-                        <img src="${imgSrc}" class="cart-img" onerror="this.src='https://placehold.co/120?text=No+Img'">
-                        <div class="cart-info">
-                            <div class="cart-title">${item.name}</div>
-                            <div class="cart-price">¥${item.price}</div>
-                        </div>
-                        <button class="btn-remove" onclick="removeItem(${index})">删除</button>
-                    </div>
-                `;
-            });
-
-            // 保留两位小数
-            document.getElementById('total-price').innerText = `¥${total.toFixed(2)}`;
-            checkoutBar.style.display = 'flex';
+            // 跳转到支付页面
+            window.location.href = 'pay.html';
         }
 
-        async function removeItem(index) {
-            if(!confirm('确定移除这个商品吗？')) return;
-            
-            await fetch(`${API_BASE}/api/cart/remove`, {
+        function trackUserAction(action, product) {
+            const user = localStorage.getItem('currentUser');
+            fetch(`${API_BASE}/api/track`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: user, index: index })
-            });
-            loadCart(); // 刷新列表
-        }
-
-        // ====================== 核心修改：跳转到支付收银台 ======================
-        function checkout() {
-            const totalStr = document.getElementById('total-price').innerText;
-            const money = totalStr.replace('¥', ''); // 去掉人民币符号，只留数字
-            
-            if (parseFloat(money) <= 0) {
-                alert('购物车是空的，无法结算');
-                return;
-            }
-
-            if(confirm(`确认跳转至收银台支付 ${totalStr} 吗？`)) {
-                // 跳转到 pay.html，并把金额通过网址传过去
-                window.location.href = `pay.html?money=${money}`;
-            }
+                body: JSON.stringify({ username: user, action, product })
+            }).catch(() => {}); // 忽略错误
         }
     </script>
 </body>
