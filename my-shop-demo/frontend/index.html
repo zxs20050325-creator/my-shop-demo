@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>冀遗筑梦</title>
+    <!-- 其他 head 内容 -->
+</head>
+<body>
+    <!-- 页面内容 -->
+    <script>
+        
+        //     console.log('生产环境');
+        // }
+        
+        // 修改为使用浏览器安全的方式判断环境
+        if (window.location.hostname.includes('onrender.com')) {
+            console.log('生产环境');
+        } else {
+            console.log('开发环境');
+        }
+        
+    </script>
+</body>
+</html>

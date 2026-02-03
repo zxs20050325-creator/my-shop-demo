@@ -358,6 +358,11 @@
     <div class="notification" id="notification"></div>
 
     <script>
+        // 设置API基础URL，以便在部署时调整
+        const isDeployed = window.location.hostname.includes('onrender.com');
+        // 修改为实际的后端服务地址
+        const API_BASE = isDeployed ? 'https://jiyi-zhumeng.onrender.com' : 'http://localhost:3000';
+        
         Chart.defaults.color = '#94a3b8';
         Chart.defaults.borderColor = '#334155';
         
@@ -562,7 +567,7 @@
 
         async function updateDashboard() {
             try {
-                const res = await fetch('/api/admin/stats');
+                const res = await fetch(`${API_BASE}/api/admin/stats`);
                 const data = await res.json();
 
                 // 更新数字
@@ -632,7 +637,7 @@
         // 新增：数据导出功能
         async function exportData() {
             try {
-                const res = await fetch('/api/admin/stats');
+                const res = await fetch(`${API_BASE}/api/admin/stats`);
                 const data = await res.json();
                 
                 const csvContent = [
@@ -656,7 +661,7 @@
         // 新增：清空数据
         async function clearData() {
             if(confirm('⚠ 确定清空所有数据吗？')) {
-                await fetch('/api/admin/clear', { method: 'POST' });
+                await fetch(`${API_BASE}/api/admin/clear`, { method: 'POST' });
                 updateDashboard();
                 showNotification('数据已清空', 'info');
             }
@@ -665,7 +670,7 @@
         // 新增：用户管理功能
         async function refreshUsers() {
             try {
-                const res = await fetch('/api/admin/users');
+                const res = await fetch(`${API_BASE}/api/admin/users`);
                 const users = await res.json();
                 
                 const userList = document.getElementById('user-list');
@@ -687,7 +692,7 @@
                     userList.appendChild(userItem);
                 });
                 
-                showNotification(`已加载 ${users.length} 个用户`, 'success');
+                showNotification(\`已加载 \${users.length} 个用户\`, 'success');
             } catch (err) {
                 console.error('获取用户列表失败:', err);
                 showNotification('获取用户列表失败', 'error');
@@ -699,7 +704,7 @@
             const message = prompt('请输入要发送的公告内容:');
             if (message) {
                 // 模拟发送公告
-                showNotification(`公告已发送: ${message}`, 'info');
+                showNotification(\`公告已发送: \${message}\`, 'info');
                 // 在实际应用中，这里可以调用后端API发送公告
             }
         }
@@ -725,34 +730,34 @@
         // 新增：系统状态功能
         async function refreshSystemStatus() {
             try {
-                const res = await fetch('/api/admin/system');
+                const res = await fetch(`${API_BASE}/api/admin/system`);
                 const systemData = await res.json();
                 
                 const systemMonitor = document.getElementById('system-monitor');
                 systemMonitor.innerHTML = `
                     <div class="monitor-item">
                         <div class="monitor-label">服务器状态</div>
-                        <div class="monitor-value" style="color: #10b981;">${systemData.status.toUpperCase()}</div>
+                        <div class="monitor-value" style="color: #10b981;">\${systemData.status.toUpperCase()}</div>
                     </div>
                     <div class="monitor-item">
                         <div class="monitor-label">运行时间</div>
-                        <div class="monitor-value">${systemData.uptime.humanReadable}</div>
+                        <div class="monitor-value">\${systemData.uptime.humanReadable}</div>
                     </div>
                     <div class="monitor-item">
                         <div class="monitor-label">内存使用</div>
-                        <div class="monitor-value">${systemData.memory.heapUsed} MB</div>
+                        <div class="monitor-value">\${systemData.memory.heapUsed} MB</div>
                     </div>
                     <div class="monitor-item">
                         <div class="monitor-label">在线用户</div>
-                        <div class="monitor-value">${systemData.users.online}</div>
+                        <div class="monitor-value">\${systemData.users.online}</div>
                     </div>
                     <div class="monitor-item">
                         <div class="monitor-label">总用户数</div>
-                        <div class="monitor-value">${systemData.users.total}</div>
+                        <div class="monitor-value">\${systemData.users.total}</div>
                     </div>
                     <div class="monitor-item">
                         <div class="monitor-label">Node版本</div>
-                        <div class="monitor-value">${systemData.server.nodeVersion}</div>
+                        <div class="monitor-value">\${systemData.server.nodeVersion}</div>
                     </div>
                 `;
                 
@@ -777,7 +782,7 @@
         // 新增：商品管理功能
         async function refreshProducts() {
             try {
-                const res = await fetch('/api/admin/products');
+                const res = await fetch(`${API_BASE}/api/admin/products`);
                 const products = await res.json();
                 
                 const productTable = document.getElementById('product-table');
@@ -786,16 +791,16 @@
                 products.forEach(product => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${product.id}</td>
-                        <td title="${product.name}">${product.name.substring(0, 20)}${product.name.length > 20 ? '...' : ''}</td>
-                        <td>¥${product.price}</td>
-                        <td><span class="badge" style="background: #3b82f6; color: white;">${product.category}</span></td>
-                        <td>${product.views}</td>
-                        <td>${product.cartAdds}</td>
-                        <td>${product.purchases}</td>
-                        <td>${product.conversionRate}</td>
+                        <td>\${product.id}</td>
+                        <td title="\${product.name}">\${product.name.substring(0, 20)}\${product.name.length > 20 ? '...' : ''}</td>
+                        <td>¥\${product.price}</td>
+                        <td><span class="badge" style="background: #3b82f6; color: white;">\${product.category}</span></td>
+                        <td>\${product.views}</td>
+                        <td>\${product.cartAdds}</td>
+                        <td>\${product.purchases}</td>
+                        <td>\${product.conversionRate}</td>
                         <td>
-                            <button onclick="viewProductDetail(${product.id})" style="background: #f0f0f0; border: none; padding: 3px 8px; border-radius: 4px; cursor: pointer;">👁️</button>
+                            <button onclick="viewProductDetail(\${product.id})" style="background: #f0f0f0; border: none; padding: 3px 8px; border-radius: 4px; cursor: pointer;">👁️</button>
                         </td>
                     `;
                     productTable.appendChild(row);
@@ -817,7 +822,7 @@
         // 新增：导出商品数据
         async function exportProductData() {
             try {
-                const res = await fetch('/api/admin/products');
+                const res = await fetch(`${API_BASE}/api/admin/products`);
                 const products = await res.json();
                 
                 const csvContent = [
@@ -849,10 +854,10 @@
         // 新增：导出完整数据
         async function exportAllData() {
             try {
-                const statsRes = await fetch('/api/admin/stats');
+                const statsRes = await fetch(`${API_BASE}/api/admin/stats`);
                 const statsData = await statsRes.json();
                 
-                const prodRes = await fetch('/api/admin/products');
+                const prodRes = await fetch(`${API_BASE}/api/admin/products`);
                 const prodData = await prodRes.json();
                 
                 const csvContent = [

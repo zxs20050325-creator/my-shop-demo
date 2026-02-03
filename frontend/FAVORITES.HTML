@@ -120,7 +120,10 @@
     </div>
 
     <script>
-        const API_BASE = '';
+        // 设置API基础URL，以便在部署时调整
+        const isDeployed = window.location.hostname.includes('onrender.com');
+        // 修改为实际的后端服务地址
+        const API_BASE = isDeployed ? 'https://jiyizhumeng.onrender.com' : 'http://localhost:3000';
         
         window.onload = function() {
             checkLoginStatus();
@@ -157,7 +160,7 @@
             }
 
             try {
-                const res = await fetch(`/api/favorites?username=${user}`);
+                const res = await fetch(`${API_BASE}/api/favorites?username=${user}`);
                 const favorites = await res.json();
                 
                 const favoritesList = document.getElementById('favorites-list');
@@ -173,10 +176,16 @@
                 favoritesList.innerHTML = '';
 
                 favorites.forEach((product, index) => {
+                    // 修复图片路径处理逻辑
+                    let imgSrc = product.img;
+                    if (product.img.startsWith('images/')) {
+                        imgSrc = `/${product.img}`;
+                    }
+                    
                     favoritesList.innerHTML += `
                         <div class="product-card">
                             <div class="favorite-icon" onclick="removeFromFavorites(${product.id}, ${index})">❤️</div>
-                            <img src="${product.img}" class="product-img" onerror="this.src='https://placehold.co/300x200?text=No+Image'" onclick="window.location.href='product-detail.html?id=${product.id}'" style="cursor: pointer;">
+                            <img src="${imgSrc}" class="product-img" onerror="this.src='https://placehold.co/300x200?text=No+Image'" onclick="window.location.href='product-detail.html?id=${product.id}'" style="cursor: pointer;">
                             <div class="card-body">
                                 <div class="product-name" onclick="window.location.href='product-detail.html?id=${product.id}'" style="cursor: pointer;">${product.name}</div>
                                 <div class="product-price">¥${product.price}</div>
@@ -202,7 +211,7 @@
             }
 
             try {
-                const res = await fetch('/api/favorites/remove', {
+                const res = await fetch(`${API_BASE}/api/favorites/remove`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username: user, productId: productId })
@@ -227,11 +236,11 @@
 
             // 获取当前显示的收藏商品列表
             try {
-                const res = await fetch(`/api/favorites?username=${user}`);
+                const res = await fetch(`${API_BASE}/api/favorites?username=${user}`);
                 const favorites = await res.json();
                 const product = favorites[index];
                 
-                const cartRes = await fetch('/api/cart/add', {
+                const cartRes = await fetch(`${API_BASE}/api/cart/add`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username: user, product: product })

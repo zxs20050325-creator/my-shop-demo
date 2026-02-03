@@ -1,31 +1,32 @@
 // server.js - 最终完整版 (含数据过滤+冀遗筑梦商品+北京时间+内存存储+分类收藏)
 const express = require('express');
 const cors = require('cors');
-
-// 移除未使用的模块引用（fs, path）
-// 不再需要 DATA_FILE 常量，因为使用内存存储
+const path = require('path'); // 添加path模块以提供静态资源服务
 
 const app = express();
 
 app.use(express.json());
 app.use(cors());
 
+// 添加静态资源服务，使客户端可以访问图片
+app.use('/images', express.static(path.join(__dirname, 'public', 'images')));
+
 // ====================== 1. 数据存储 - 修改为内存存储以适配云平台 ======================
 const MOCK_PRODUCTS = [
     // 第一页
-    { id: 1, name: "【镇店之宝】冀州古韵·微缩避暑山庄", price: 399, desc: "皇家园林典范，缩尺还原山水之间，承载千年古建智慧。", img: "images/001.jpg", category: "工艺品" },
-    { id: 2, name: "【非遗国礼】蔚县剪纸·百鸟朝凤", price: 168, desc: "世界非遗技艺，刀刻彩染，色彩明艳，寓意吉祥如意。", img: "images/002.jpg", category: "剪纸" },
-    { id: 3, name: "【镇宅神兽】沧州铁狮·铸铁摆件", price: 299, desc: "威武雄壮，镇海吼缩影，象征力量与守护，燕赵雄风。", img: "images/003.jpg", category: "雕塑" },
-    { id: 4, name: "【白如玉】曲阳定窑·刻花梅瓶", price: 899, desc: "千年定瓷，白如玉薄如纸，手工刻花，尽显宋韵素雅。", img: "images/004.jpg", category: "陶瓷" },
-    { id: 5, name: "【光影传奇】唐山皮影·传统礼盒", price: 128, desc: "一口叙说千古事，双手对舞百万兵，光影间的民间艺术。", img: "images/005.jpg", category: "皮影" },
-    { id: 6, name: "【古城印记】正定记忆·浮雕砖刻", price: 268, desc: "复刻古城墙纹理，抚摸历史的痕迹，自在正定，文化传承。", img: "images/006.jpg", category: "雕刻" },
+    { id: 1, name: "【镇店之宝】冀州古韵·微缩避暑山庄", price: 399, desc: "皇家园林典范，缩尺还原山水之间，承载千年古建智慧。", img: "/images/001.jpg", category: "工艺品" },
+    { id: 2, name: "【非遗国礼】蔚县剪纸·百鸟朝凤", price: 168, desc: "世界非遗技艺，刀刻彩染，色彩明艳，寓意吉祥如意。", img: "/images/002.jpg", category: "剪纸" },
+    { id: 3, name: "【镇宅神兽】沧州铁狮·铸铁摆件", price: 299, desc: "威武雄壮，镇海吼缩影，象征力量与守护，燕赵雄风。", img: "/images/003.jpg", category: "雕塑" },
+    { id: 4, name: "【白如玉】曲阳定窑·刻花梅瓶", price: 899, desc: "千年定瓷，白如玉薄如纸，手工刻花，尽显宋韵素雅。", img: "/images/004.jpg", category: "陶瓷" },
+    { id: 5, name: "【光影传奇】唐山皮影·传统礼盒", price: 128, desc: "一口叙说千古事，双手对舞百万兵，光影间的民间艺术。", img: "/images/005.jpg", category: "皮影" },
+    { id: 6, name: "【古城印记】正定记忆·浮雕砖刻", price: 268, desc: "复刻古城墙纹理，抚摸历史的痕迹，自在正定，文化传承。", img: "/images/006.jpg", category: "雕刻" },
     // 第二页
-    { id: 7, name: "【文房至宝】易水古砚·雕龙画凤", price: 688, desc: "南有端砚，北有易水。石质细腻，发墨如油，文人雅士首选。", img: "images/101.jpg", category: "文房四宝" },
-    { id: 8, name: "【新春纳福】武强年画·连年有余", price: 88, desc: "中国木版年画之乡，色彩浓烈，线条粗犷，不仅是画，更是福气。", img: "images/102.jpg", category: "年画" },
-    { id: 9, name: "【皇家工艺】花丝镶嵌·鎏金首饰盒", price: 1299, desc: "燕京八绝之一，细如发丝，堆垒编织，尽显宫廷奢华技艺。", img: "images/103.jpg", category: "金银器" },
-    { id: 10, name: "【掌中乾坤】衡水内画·水晶鼻烟壶", price: 568, desc: "鬼斧神工，寸幅之地具千里之势，集诗书画印于一壶。", img: "images/104.jpg", category: "内画" },
-    { id: 11, name: "【民间艺术】玉田泥塑·萌趣生肖", price: 68, desc: "乡土气息浓郁，造型夸张可爱，唤醒儿时的快乐记忆。", img: "images/105.jpg", category: "泥塑" },
-    { id: 12, name: "【民间绝响】抚宁吹歌·乐器模型", price: 328, desc: "唢呐一响，黄金万两。非遗吹歌文化，传承民族之音。", img: "images/106.jpg", category: "乐器" }
+    { id: 7, name: "【文房至宝】易水古砚·雕龙画凤", price: 688, desc: "南有端砚，北有易水。石质细腻，发墨如油，文人雅士首选。", img: "/images/101.jpg", category: "文房四宝" },
+    { id: 8, name: "【新春纳福】武强年画·连年有余", price: 88, desc: "中国木版年画之乡，色彩浓烈，线条粗犷，不仅是画，更是福气。", img: "/images/102.jpg", category: "年画" },
+    { id: 9, name: "【皇家工艺】花丝镶嵌·鎏金首饰盒", price: 1299, desc: "燕京八绝之一，细如发丝，堆垒编织，尽显宫廷奢华技艺。", img: "/images/103.jpg", category: "金银器" },
+    { id: 10, name: "【掌中乾坤】衡水内画·水晶鼻烟壶", price: 568, desc: "鬼斧神工，寸幅之地具千里之势，集诗书画印于一壶。", img: "/images/104.jpg", category: "内画" },
+    { id: 11, name: "【民间艺术】玉田泥塑·萌趣生肖", price: 68, desc: "乡土气息浓郁，造型夸张可爱，唤醒儿时的快乐记忆。", img: "/images/105.jpg", category: "泥塑" },
+    { id: 12, name: "【民间绝响】抚宁吹歌·乐器模型", price: 328, desc: "唢呐一响，黄金万两。非遗吹歌文化，传承民族之音。", img: "/images/106.jpg", category: "乐器" }
 ];
 
 // 初始化数据（使用内存而不是文件存储）
@@ -339,11 +340,16 @@ app.post('/api/admin/backup', (req, res) => {
     res.status(400).json({ success: false, message: '当前使用内存存储，不支持备份功能' });
 });
 
+// 修改端口绑定逻辑，使其适用于Render部署
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => { 
-    console.log(`服务器启动在 http://localhost:${PORT}`);
-    console.log(`当前数据：用户 ${users.length} 个，购物车 ${Object.keys(userCarts).length} 个，收藏 ${Object.keys(userFavorites).length} 个，日志 ${browseLogs.length} 条`);
-    // 移除对未定义DATA_FILE变量的引用
-});
 
+// 只在直接运行此文件时才监听端口
+if (require.main === module) {
+  app.listen(PORT, () => { 
+      console.log(`服务器启动在 http://localhost:${PORT}`);
+      console.log(`当前数据：用户 ${users.length} 个，购物车 ${Object.keys(userCarts).length} 个，收藏 ${Object.keys(userFavorites).length} 个，日志 ${browseLogs.length} 条`);
+  });
+}
+
+// 导出app实例，以便在部署环境中使用
 module.exports = app;

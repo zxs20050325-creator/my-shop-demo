@@ -186,7 +186,8 @@
         // 设置API基础URL，以便在部署时调整
         // 修复：不再使用 Node.js 特有的 process.env 对象
         const isDeployed = window.location.hostname.includes('onrender.com');
-        const API_BASE = isDeployed ? '' : 'http://localhost:3000';
+        // 修改为实际的后端服务地址
+        const API_BASE = isDeployed ? 'https://jiyi-zhumeng.onrender.com' : 'http://localhost:3000';
         let currentPage = 1;
         let productsCache = []; 
         let allProducts = []; // 新增：存储所有商品用于搜索

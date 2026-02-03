@@ -25,6 +25,11 @@
     </div>
 
     <script>
+        // 设置API基础URL，以便在部署时调整
+        const isDeployed = window.location.hostname.includes('onrender.com');
+        // 修改为实际的后端服务地址
+        const API_BASE = isDeployed ? 'https://jiyi-zhumeng.onrender.com' : 'http://localhost:3000';
+        
         async function handleRegister() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
@@ -32,7 +37,7 @@
             if(!username || !password) return alert('请填写完整');
 
             try {
-                const res = await fetch('/api/register', {
+                const res = await fetch(`${API_BASE}/api/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
