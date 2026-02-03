@@ -181,35 +181,65 @@
     .search-input {
         width: 100%;
         padding: 10px 16px;
-        border: 1px solid #e2e8f0;
-        outline: none;
+        border: none;
+        background: transparent;
         font-family: inherit;
         font-size: 14px;
-        background: #ffffff;
-        border-radius: 24px;
-        transition: all 0.2s ease;
+        color: #333333;
+        transition: all 0.3s ease;
+        position: relative;
+        z-index: 1;
     }
 
-    .search-input:focus {
-        border-color: #5a7d7c;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    .search-input::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.5));
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.3s ease;
+        z-index: -1;
+    }
+
+    .search-input:focus::before {
+        transform: scaleX(1);
     }
 
     .search-btn {
         margin-left: 6px;
         padding: 10px 16px;
-        background: #5a7d7c;
+        background: #333333;
         color: white;
         border: none;
-        border-radius: 24px;
+        border-radius: 0;
         cursor: pointer;
         font-family: inherit;
         font-size: 14px;
         transition: opacity 0.2s ease;
+        position: relative;
+        z-index: 1;
     }
 
-    .search-btn:hover {
-        opacity: 0.9;
+    .search-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.5));
+        transform: scaleY(0);
+        transform-origin: top;
+        transition: transform 0.3s ease;
+        z-index: -1;
+    }
+
+    .search-btn:hover::before {
+        transform: scaleY(1);
     }
 
     /* Hero区域样式 */
@@ -233,6 +263,7 @@
         display: flex;
         justify-content: center;
         margin: 24px 0;
+        background: #f9f9f9; /* 背景稍微添加一点点色差 */
     }
 
     .filter-btn {
@@ -256,9 +287,9 @@
     /* 产品卡片样式 */
     .product-card {
         width: 300px;
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        background: #ffffff; /* 纯白色背景 */
+        border: 1px solid #eaeaea; /* 添加轻微边框 */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
         overflow: hidden;
         margin: 12px;
         transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -333,32 +364,124 @@
         background: #5a7d7c;
         transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
+
+    /* 修改侧边栏样式 */
+    .sidebar {
+        background: #ffffff; /* 改为纯白色背景 */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
+    }
+
+    /* 商品分类背景添加色差 */
+    .filter-container {
+        background: #f9f9f9; /* 背景稍微添加一点点色差 */
+    }
+
+    /* 每个商品背景也有一点点色差 */
+    .product-card {
+        background: #ffffff; /* 纯白色背景 */
+        border: 1px solid #eaeaea; /* 添加轻微边框 */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
+    }
+
+    /* 大的颜色背景 */
+    .main-layout {
+        background: #f5f5f5; /* 设置一个大的颜色背景 */
+    }
+
+    /* 搜索框3D效果和动态特效 */
+    .search-input {
+        width: 100%;
+        padding: 10px 16px;
+        border: none;
+        background: transparent;
+        font-family: inherit;
+        font-size: 14px;
+        color: #333333;
+        transition: all 0.3s ease;
+        position: relative;
+        z-index: 1;
+    }
+
+    .search-input::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.5));
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.3s ease;
+        z-index: -1;
+    }
+
+    .search-input:focus::before {
+        transform: scaleX(1);
+    }
+
+    .search-btn {
+        margin-left: 6px;
+        padding: 10px 16px;
+        background: #333333;
+        color: white;
+        border: none;
+        border-radius: 0;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 14px;
+        transition: opacity 0.2s ease;
+        position: relative;
+        z-index: 1;
+    }
+
+    .search-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.5));
+        transform: scaleY(0);
+        transform-origin: top;
+        transition: transform 0.3s ease;
+        z-index: -1;
+    }
+
+    .search-btn:hover::before {
+        transform: scaleY(1);
+    }
 </style>
 
 <body>
-    <nav class="navbar">
-        <div style="font-size: 18px; font-weight: 500; color: #333333; font-family: 'Noto Serif SC', 'Songti SC', serif;">🏛️ 冀遗筑梦</div>
-        <div class="nav-links" id="auth-section">
-            <!-- JS填充 -->
+    <div class="main-layout">
+        <div class="sidebar">
+            <!-- 左侧导航栏内容 -->
         </div>
-        <div class="search-container">
-            <input type="text" class="search-input" placeholder="搜索商品...">
-            <button class="search-btn">搜索</button>
+        <div class="container">
+            <div class="navbar">
+                <div style="font-size: 18px; font-weight: 500; color: #333333; font-family: 'Noto Serif SC', 'Songti SC', serif;">🏛️ 冀遗筑梦</div>
+                <div class="nav-links" id="auth-section">
+                    <!-- JS填充 -->
+                </div>
+            </div>
+            <div class="search-container">
+                <input type="text" class="search-input" placeholder="搜索商品...">
+                <button class="search-btn">搜索</button>
+            </div>
+            <div class="page-title">
+                <h2>欢迎来到冀遗筑梦</h2>
+            </div>
+            <div class="filter-container" id="filter-container">
+                <button class="filter-btn">全部</button>
+                <button class="filter-btn">古籍</button>
+                <button class="filter-btn">艺术品</button>
+                <button class="filter-btn">手工艺品</button>
+            </div>
+            <div class="product-list" id="product-list">
+                <!-- JS填充 -->
+            </div>
         </div>
-    </nav>
-
-    <div class="page-title">
-        <h2>欢迎来到冀遗筑梦</h2>
-    </div>
-
-    <div class="filter-container" id="filter-container">
-        <button class="filter-btn">全部</button>
-        <button class="filter-btn">古籍</button>
-        <button class="filter-btn">艺术品</button>
-        <button class="filter-btn">手工艺品</button>
-    </div>
-
-    <div class="product-list" id="product-list">
-        <!-- JS填充 -->
     </div>
 </body>
