@@ -7,156 +7,270 @@
     document.addEventListener('mousemove', (e) => {
         cursor.style.left = e.clientX + 'px';
         cursor.style.top = e.clientY + 'px';
-        
-        // 检查是否悬停在可交互元素上
-        const hoverElement = document.elementFromPoint(e.clientX, e.clientY);
-        if (hoverElement && (hoverElement.tagName === 'A' || hoverElement.classList.contains('btn-buy') || hoverElement.classList.contains('btn-favorite'))) {
-            cursor.classList.add('hover');
-        } else {
-            cursor.classList.remove('hover');
+            
+            // 检查是否悬停在可交互元素上
+            const hoverElement = document.elementFromPoint(e.clientX, e.clientY);
+            if (hoverElement && (hoverElement.tagName === 'A' || hoverElement.classList.contains('btn-buy') || hoverElement.classList.contains('btn-favorite'))) {
+                cursor.classList.add('hover');
+            } else {
+                cursor.classList.remove('hover');
+            }
+        });
+
+        // 新增：平滑滚动逻辑（模拟Lenis效果）
+        let scrollPosition = window.pageYOffset;
+        let lastScrollPosition = scrollPosition;
+        let scrollDirection = 0;
+
+        function smoothScroll() {
+            const currentScroll = window.pageYOffset;
+            const delta = currentScroll - scrollPosition;
+            scrollDirection = delta > 0 ? 1 : -1;
+            
+            // 使用指数衰减来模拟阻尼效果
+            const dampingFactor = 0.1;
+            const newScrollPosition = scrollPosition + delta * dampingFactor;
+            
+            window.scrollTo(0, newScrollPosition);
+            
+            // 更新位置
+            scrollPosition = newScrollPosition;
+            
+            // 触发视差效果
+            triggerParallax();
+            
+            requestAnimationFrame(smoothScroll);
         }
-    });
 
-    // 新增：平滑滚动逻辑（模拟Lenis效果）
-    let scrollPosition = window.pageYOffset;
-    let lastScrollPosition = scrollPosition;
-    let scrollDirection = 0;
-
-    function smoothScroll() {
-        const currentScroll = window.pageYOffset;
-        const delta = currentScroll - scrollPosition;
-        scrollDirection = delta > 0 ? 1 : -1;
-        
-        // 使用指数衰减来模拟阻尼效果
-        const dampingFactor = 0.1;
-        const newScrollPosition = scrollPosition + delta * dampingFactor;
-        
-        window.scrollTo(0, newScrollPosition);
-        
-        // 更新位置
-        scrollPosition = newScrollPosition;
-        
-        // 触发视差效果
-        triggerParallax();
-        
-        requestAnimationFrame(smoothScroll);
-    }
-
-    // 启动平滑滚动
-    window.addEventListener('scroll', () => {
-        lastScrollPosition = scrollPosition;
-    });
-
-    // 新增：视差效果触发器
-    function triggerParallax() {
-        const heroSection = document.querySelector('.page-title');
-        if (heroSection) {
-            const scrollTop = window.pageYOffset;
-            const offset = scrollTop * 0.2;
-            heroSection.style.transform = `translateY(${offset}px)`;
-        }
-    }
-
-    // 新增：Hero区域文字入场动画
-    function animateHeroText() {
-        const title = document.querySelector('.page-title h2');
-        const words = title.textContent.split('');
-        title.textContent = '';
-        
-        words.forEach((word, index) => {
-            const span = document.createElement('span');
-            span.textContent = word;
-            span.style.opacity = '0';
-            span.style.transform = 'translateY(20px)';
-            span.style.transition = `all 0.5s cubic-bezier(0.16, 1, 0.3, 1) ${index * 0.1}s`;
-            title.appendChild(span);
-            
-            // 等待所有文字加载后统一显示
-            setTimeout(() => {
-                span.style.opacity = '1';
-                span.style.transform = 'translateY(0)';
-            }, 100);
-        });
-    }
-
-    // 新增：分类标签流体交互
-    function setupFilterAnimation() {
-        const filterBtns = document.querySelectorAll('.filter-btn');
-        const highlight = document.createElement('div');
-        highlight.classList.add('filter-highlight');
-        highlight.style.position = 'absolute';
-        highlight.style.bottom = '0';
-        highlight.style.left = '0';
-        highlight.style.width = '0';
-        highlight.style.height = '2px';
-        highlight.style.backgroundColor = '#5a7d7c';
-        highlight.style.transition = 'width 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
-        document.getElementById('filter-container').appendChild(highlight);
-        
-        filterBtns.forEach(btn => {
-            btn.addEventListener('mouseenter', () => {
-                const rect = btn.getBoundingClientRect();
-                const containerRect = document.getElementById('filter-container').getBoundingClientRect();
-                const left = rect.left - containerRect.left;
-                const width = rect.width;
-                
-                highlight.style.width = `${width}px`;
-                highlight.style.left = `${left}px`;
-            });
-        });
-    }
-
-    // 新增：产品卡片高级悬停反馈
-    function setupProductCardAnimation() {
-        const productCards = document.querySelectorAll('.product-card');
-        
-        productCards.forEach(card => {
-            const img = card.querySelector('.product-img');
-            const buyBtn = card.querySelector('.btn-buy');
-            
-            card.addEventListener('mouseenter', () => {
-                // 图片缩放
-                img.style.transform = 'scale(1.05)';
-                img.style.transition = 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
-                
-                // 信息浮现
-                buyBtn.style.opacity = '1';
-                buyBtn.style.transform = 'translateY(0)';
-                buyBtn.style.transition = 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
-                
-                // 3D倾斜效果
-                card.style.transform = 'perspective(1000px) rotateX(5deg) rotateY(5deg)';
-            });
-            
-            card.addEventListener('mouseleave', () => {
-                // 图片恢复
-                img.style.transform = 'scale(1)';
-                
-                // 信息隐藏
-                buyBtn.style.opacity = '0';
-                buyBtn.style.transform = 'translateY(10px)';
-                
-                // 3D恢复
-                card.style.transform = 'none';
-            });
-        });
-    }
-
-    // 页面加载完成后执行初始化
-    window.onload = function() {
-        checkLoginStatus();
-        loadAllProducts();
-        trackUserAction('访问首页', '浏览商品列表');
-        
-        // 初始化各种动画效果
-        animateHeroText();
-        setupFilterAnimation();
-        setupProductCardAnimation();
-        
         // 启动平滑滚动
-        smoothScroll();
-    };
-</script>
+        window.addEventListener('scroll', () => {
+            lastScrollPosition = scrollPosition;
+        });
+
+        // 新增：视差效果触发器
+        function triggerParallax() {
+            const heroSection = document.querySelector('.page-title');
+            if (heroSection) {
+                const scrollTop = window.pageYOffset;
+                const offset = scrollTop * 0.2;
+                heroSection.style.transform = `translateY(${offset}px)`;
+            }
+        }
+
+        // 新增：Hero区域文字入场动画
+        function animateHeroText() {
+            const title = document.querySelector('.page-title h2');
+            const words = title.textContent.split('');
+            title.textContent = '';
+            
+            words.forEach((word, index) => {
+                const span = document.createElement('span');
+                span.textContent = word;
+                span.style.opacity = '0';
+                span.style.transform = 'translateY(20px)';
+                span.style.transition = `all 0.5s cubic-bezier(0.16, 1, 0.3, 1) ${index * 0.1}s`;
+                title.appendChild(span);
+                
+                // 等待所有文字加载后统一显示
+                setTimeout(() => {
+                    span.style.opacity = '1';
+                    span.style.transform = 'translateY(0)';
+                }, 100);
+            });
+        }
+
+        // 新增：分类标签流体交互
+        function setupFilterAnimation() {
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            const highlight = document.createElement('div');
+            highlight.classList.add('filter-highlight');
+            highlight.style.position = 'absolute';
+            highlight.style.bottom = '0';
+            highlight.style.left = '0';
+            highlight.style.width = '0';
+            highlight.style.height = '2px';
+            highlight.style.backgroundColor = '#5a7d7c';
+            highlight.style.transition = 'width 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
+            document.getElementById('filter-container').appendChild(highlight);
+            
+            filterBtns.forEach(btn => {
+                btn.addEventListener('mouseenter', () => {
+                    const rect = btn.getBoundingClientRect();
+                    const containerRect = document.getElementById('filter-container').getBoundingClientRect();
+                    const left = rect.left - containerRect.left;
+                    const width = rect.width;
+                    
+                    highlight.style.width = `${width}px`;
+                    highlight.style.left = `${left}px`;
+                });
+            });
+        }
+
+        // 新增：产品卡片高级悬停反馈
+        function setupProductCardAnimation() {
+            const productCards = document.querySelectorAll('.product-card');
+            
+            productCards.forEach(card => {
+                const img = card.querySelector('.product-img');
+                const buyBtn = card.querySelector('.btn-buy');
+                
+                card.addEventListener('mouseenter', () => {
+                    // 图片缩放
+                    img.style.transform = 'scale(1.05)';
+                    img.style.transition = 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
+                    
+                    // 信息浮现
+                    buyBtn.style.opacity = '1';
+                    buyBtn.style.transform = 'translateY(0)';
+                    buyBtn.style.transition = 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
+                    
+                    // 3D倾斜效果
+                    card.style.transform = 'perspective(1000px) rotateX(5deg) rotateY(5deg)';
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    // 图片恢复
+                    img.style.transform = 'scale(1)';
+                    
+                    // 信息隐藏
+                    buyBtn.style.opacity = '0';
+                    buyBtn.style.transform = 'translateY(10px)';
+                    
+                    // 3D倾斜效果恢复
+                    card.style.transform = 'perspective(1000px)';
+                });
+            });
+        }
+
+        // 新增：图片加载完成后的淡入动画
+        function setupImageFadeIn() {
+            const images = document.querySelectorAll('.product-img');
+            images.forEach(img => {
+                img.style.opacity = '0';
+                img.style.transition = 'opacity 0.8s ease-in-out';
+                
+                // 监听图片加载完成
+                img.onload = function() {
+                    this.style.opacity = '1';
+                };
+                
+                // 如果图片加载失败，设置默认占位图
+                img.onerror = function() {
+                    this.src = 'https://via.placeholder.com/300x200?text=图片加载失败';
+                    this.style.opacity = '1';
+                };
+            });
+        }
+
+        // 新增：光标悬停在图片上的旋转效果
+        function setupImageRotation() {
+            const productImages = document.querySelectorAll('.product-img');
+            
+            productImages.forEach(img => {
+                img.addEventListener('mouseenter', () => {
+                    // 设置较大的旋转角度
+                    gsap.to(img, {
+                        rotation: 360,
+                        duration: 2,
+                        ease: "power1.inOut",
+                        repeat: -1,
+                        yoyo: true
+                    });
+                });
+                
+                img.addEventListener('mouseleave', () => {
+                    // 停止旋转
+                    gsap.killTweensOf(img);
+                    img.style.rotation = '0';
+                });
+            });
+        }
+
+        // 新增：初始化所有交互效果
+        function initInteractions() {
+            // 初始化自定义光标
+            setupCustomCursor();
+            
+            // 初始化分类标签动画
+            setupFilterAnimation();
+            
+            // 初始化产品卡片动画
+            setupProductCardAnimation();
+            
+            // 初始化图片淡入动画
+            setupImageFadeIn();
+            
+            // 初始化图片旋转效果
+            setupImageRotation();
+            
+            // 初始化Hero文字动画
+            animateHeroText();
+            
+            // 启动平滑滚动
+            smoothScroll();
+        }
+
+        // 新增：自定义光标样式
+        function setupCustomCursor() {
+            const cursor = document.querySelector('.custom-cursor');
+            cursor.style.position = 'fixed';
+            cursor.style.width = '20px';
+            cursor.style.height = '20px';
+            cursor.style.border = '1px solid #333';
+            cursor.style.borderRadius = '50%';
+            cursor.style.pointerEvents = 'none';
+            cursor.style.zIndex = '99999';
+            cursor.style.transition = 'all 0.1s ease';
+            
+            // 添加悬停状态样式
+            cursor.classList.add('hover');
+        }
+
+        // 页面加载完成后初始化所有交互效果
+        window.addEventListener('DOMContentLoaded', () => {
+            // 添加"全部商品"导航栏
+            const navLinks = document.getElementById('auth-section');
+            const allProductsLink = document.createElement('a');
+            allProductsLink.href = '#';
+            allProductsLink.textContent = '全部商品';
+            allProductsLink.style.marginLeft = '20px';
+            allProductsLink.style.color = '#333333';
+            allProductsLink.style.textDecoration = 'none';
+            allProductsLink.style.transition = 'opacity 0.2s ease';
+            allProductsLink.style.fontSize = '14px';
+            allProductsLink.style.fontWeight = '400';
+            allProductsLink.style.letterSpacing = '1px';
+            allProductsLink.style.display = 'inline-block';
+            allProductsLink.style.padding = '0 10px';
+            allProductsLink.style.borderBottom = '2px solid transparent';
+            allProductsLink.style.cursor = 'pointer';
+            
+            allProductsLink.addEventListener('mouseenter', () => {
+                allProductsLink.style.borderBottomColor = '#5a7d7c';
+                allProductsLink.style.opacity = '0.7';
+            });
+            
+            allProductsLink.addEventListener('mouseleave', () => {
+                allProductsLink.style.borderBottomColor = 'transparent';
+                allProductsLink.style.opacity = '1';
+            });
+            
+            navLinks.insertBefore(allProductsLink, navLinks.firstChild);
+            
+            // 调整色差
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.style.background = '#FDFBF7'; // 更浅的米白色
+            
+            const productCards = document.querySelectorAll('.product-card');
+            productCards.forEach((card, index) => {
+                // 交替使用两种微妙的色差背景
+                card.style.background = index % 2 === 0 ? '#F5F5F0' : '#FDFBF7';
+            });
+            
+            // 初始化所有交互效果
+            initInteractions();
+        });
+    </script>
 <style>
     /* 极简导航栏 - 固定顶部线条式设计 */
     .navbar {
