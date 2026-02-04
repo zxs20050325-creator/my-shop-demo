@@ -347,6 +347,18 @@
             font-size: 18px;
         }
 
+        /* 占位图片样式 */
+        .placeholder-image {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #FDFBF7;
+            color: #8B4513;
+            font-size: 14px;
+            text-align: center;
+            border: 1px dashed #d5d5d3;
+        }
+
         /* ========================================
            响应式设计
            ======================================== */
@@ -437,11 +449,6 @@
     </nav>
 
     <div class="container">
-        <div class="page-title">
-            <h2>传承非遗 · 筑梦河北</h2>
-            <p>精选燕赵大地文化瑰宝</p>
-        </div>
-
         <!-- 分类筛选 - 现在在左侧 -->
         <div class="filter-container" id="filter-container">
             <button class="filter-btn active" data-category="all">全部</button>
@@ -554,6 +561,10 @@
                 });
                 clearTimeout(timeoutId);
                 
+                if (!res.ok) {
+                    throw new Error(`API请求失败: ${res.status} ${res.statusText}`);
+                }
+                
                 const data = await res.json();
                 allProducts = data.items;
                 
@@ -566,14 +577,75 @@
                     allProducts = allProducts.concat(data2.items);
                 }
                 
+                // 如果没有商品数据，生成示例数据
+                if (!allProducts || allProducts.length === 0) {
+                    console.warn('后端返回空数据，使用示例数据');
+                    allProducts = generateExampleProducts();
+                }
+                
                 loadProducts(currentPage);
             } catch (err) { 
                 console.error('加载商品失败:', err);
-                alert('加载商品失败，请稍后重试');
+                // 兜底逻辑：使用示例数据
+                allProducts = generateExampleProducts();
                 loadProducts(currentPage);
             } finally {
                 showLoadingState(false);
             }
+        }
+
+        // 生成示例非遗商品数据
+        function generateExampleProducts() {
+            return [
+                {
+                    id: 1,
+                    name: "蔚县剪纸",
+                    price: 88,
+                    category: "剪纸",
+                    img: "001.jpg",
+                    desc: "河北蔚县传统剪纸艺术，精美绝伦"
+                },
+                {
+                    id: 2,
+                    name: "曲阳石雕",
+                    price: 298,
+                    category: "雕刻",
+                    img: "002.jpg",
+                    desc: "曲阳石雕工艺，千年传承技艺"
+                },
+                {
+                    id: 3,
+                    name: "定瓷茶具",
+                    price: 568,
+                    category: "陶瓷",
+                    img: "003.jpg",
+                    desc: "宋代定窑瓷器，温润如玉"
+                },
+                {
+                    id: 4,
+                    name: "衡水内画鼻烟壶",
+                    price: 198,
+                    category: "内画",
+                    img: "004.jpg",
+                    desc: "国家级非遗，方寸之间见天地"
+                },
+                {
+                    id: 5,
+                    name: "唐山皮影",
+                    price: 158,
+                    category: "皮影",
+                    img: "005.jpg",
+                    desc: "光影艺术，民间戏曲瑰宝"
+                },
+                {
+                    id: 6,
+                    name: "武强年画",
+                    price: 128,
+                    category: "年画",
+                    img: "006.jpg",
+                    desc: "中国四大年画之一，色彩鲜艳"
+                }
+            ];
         }
 
         // 显示加载状态
@@ -637,22 +709,18 @@
             document.getElementById('no-results').style.display = 'none';
             
             products.forEach((product, index) => {
-                // 修复图片路径处理逻辑
+                // 修复图片路径处理逻辑：提取图片名并拼接API_BASE
                 let imgSrc = product.img;
                 
-                // 确保图片URL是完整的，如果只是相对路径则拼接API基础URL
-                if (!imgSrc.startsWith('http')) {
-                    // 避免重复拼接 /images/
-                    if (!imgSrc.includes('/images/')) {
-                        imgSrc = `${API_BASE}/images/${imgSrc}`;
-                    } else {
-                        imgSrc = `${API_BASE}/${imgSrc}`;
-                    }
-                }
+                // 提取图片文件名（去掉可能的路径）
+                const imgName = imgSrc.split('/').pop();
+                
+                // 拼接完整路径
+                imgSrc = `${API_BASE}/images/${imgName}`;
                 
                 productList.innerHTML += `
                     <div class="product-card">
-                        <img src="${imgSrc}" class="product-img" alt="${product.name}" loading="lazy" onerror="this.onerror=null;this.src=getPlaceholderImage('${product.name}'); console.error('Failed to load image: ' + this.src);">
+                        <img src="${imgSrc}" class="product-img" alt="${product.name}" loading="lazy" onerror="this.onerror=null;this.className='product-img placeholder-image';this.innerHTML='<div>无图<br><small>${product.name}</small></div>'; console.error('Failed to load image: ' + this.src);">
                         <div class="card-body">
                             <div class="product-name" onclick="viewProductDetailWithFeedback(${product.id})" style="cursor: pointer;">${product.name}</div>
                             <div class="product-price">¥${product.price}</div>
