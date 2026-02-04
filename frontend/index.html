@@ -107,23 +107,29 @@
         }
 
         /* ========================================
-           主容器布局 - 侧边栏+内容区
+           主容器布局 - Flexbox + Grid混合布局
            ======================================== */
         .container { 
             max-width: 1400px; 
             margin: 0 auto; 
             padding: 40px; 
-            display: grid;
-            grid-template-columns: 240px 1fr; /* 左侧边栏240px，右侧内容区域剩余空间 */
+            display: flex; /* 使用flexbox主布局 */
+            flex-direction: column;
             gap: 40px;
         }
 
+        /* 页面标题区域 */
+        .header-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px 0;
+        }
+        
         .page-title { 
-            grid-column: 2 / -1; /* 标题只在右侧内容区 */
             text-align: center; /* 中心对齐标题 */
-            align-self: start; /* 顶部对齐 */
-            padding-top: 60px; /* 增加更多顶部padding */
-            margin-bottom: 60px; /* 增加更多底部margin */
+            margin-bottom: 20px; /* 减少底部margin */
             color: #333333; 
         }
         .page-title h2 { 
@@ -139,6 +145,12 @@
             font-weight: 300;
         } 
 
+        /* 主体内容区域：分类筛选 + 商品展示 */
+        .main-content {
+            display: flex;
+            gap: 40px;
+        }
+
         /* ========================================
            分类筛选 - 左侧固定导航栏
            ======================================== */
@@ -146,6 +158,7 @@
             display: flex;
             flex-direction: column; /* 垂直排列 */
             gap: 24px;
+            flex: 0 0 240px; /* 固定宽度240px */
             position: sticky; /* 固定定位 */
             top: 100px; /* 考虑顶部导航栏高度 */
             align-self: start; /* 保持在顶部 */
@@ -449,39 +462,86 @@
     </nav>
 
     <div class="container">
-        <!-- 分类筛选 - 现在在左侧 -->
-        <div class="filter-container" id="filter-container">
-            <button class="filter-btn active" data-category="all">全部</button>
-            <button class="filter-btn" data-category="工艺品">工艺</button>
-            <button class="filter-btn" data-category="剪纸">剪纸</button>
-            <button class="filter-btn" data-category="雕塑">雕塑</button>
-            <button class="filter-btn" data-category="陶瓷">陶瓷</button>
-            <button class="filter-btn" data-category="皮影">皮影</button>
-            <button class="filter-btn" data-category="雕刻">雕刻</button>
-            <button class="filter-btn" data-category="文房四宝">文房</button>
-            <button class="filter-btn" data-category="年画">年画</button>
-            <button class="filter-btn" data-category="金银器">金银</button>
-            <button class="filter-btn" data-category="内画">内画</button>
-            <button class="filter-btn" data-category="泥塑">泥塑</button>
-            <button class="filter-btn" data-category="乐器">乐器</button>
+        <!-- 标题区域 -->
+        <div class="header-section">
+            <div class="page-title">
+                <h2>传承非遗 · 筑梦河北</h2>
+                <p>精选燕赵大地文化瑰宝</p>
+            </div>
         </div>
 
-        <!-- 搜索结果提示 -->
-        <div class="search-results" id="search-results"></div>
+        <!-- 主体内容：分类筛选 + 商品展示 -->
+        <div class="main-content">
+            <!-- 左侧分类筛选 -->
+            <div class="filter-container" id="filter-container">
+                <button class="filter-btn active" data-category="all">全部</button>
+                <button class="filter-btn" data-category="工艺品">工艺</button>
+                <button class="filter-btn" data-category="剪纸">剪纸</button>
+                <button class="filter-btn" data-category="雕塑">雕塑</button>
+                <button class="filter-btn" data-category="陶瓷">陶瓷</button>
+                <button class="filter-btn" data-category="皮影">皮影</button>
+                <button class="filter-btn" data-category="雕刻">雕刻</button>
+                <button class="filter-btn" data-category="文房四宝">文房</button>
+                <button class="filter-btn" data-category="年画">年画</button>
+                <button class="filter-btn" data-category="金银器">金银</button>
+                <button class="filter-btn" data-category="内画">内画</button>
+                <button class="filter-btn" data-category="泥塑">泥塑</button>
+                <button class="filter-btn" data-category="乐器">乐器</button>
+            </div>
 
-        <div class="product-grid" id="product-list"></div>
+            <!-- 右侧内容区域 -->
+            <div class="content-area">
+                <!-- 搜索结果提示 -->
+                <div class="search-results" id="search-results"></div>
 
-        <!-- 无结果提示 -->
-        <div class="no-results" id="no-results" style="display: none;">
-            没有找到相关商品，请尝试其他关键词
-        </div>
+                <div class="product-grid" id="product-list"></div>
 
-        <div class="pagination" id="pagination">
-            <button class="page-btn" id="prev-btn" onclick="changePage(-1)">上一页</button>
-            <span class="page-info" id="page-info">第 1 页</span>
-            <button class="page-btn" id="next-btn" onclick="changePage(1)">下一页</button>
+                <!-- 无结果提示 -->
+                <div class="no-results" id="no-results" style="display: none;">
+                    没有找到相关商品，请尝试其他关键词
+                </div>
+
+                <div class="pagination" id="pagination">
+                    <button class="page-btn" id="prev-btn" onclick="changePage(-1)">上一页</button>
+                    <span class="page-info" id="page-info">第 1 页</span>
+                    <button class="page-btn" id="next-btn" onclick="changePage(1)">下一页</button>
+                </div>
+            </div>
         </div>
     </div>
+```
+
+c:\Users\xueru\Desktop\冀遗筑梦1\frontend\index.html
+```html
+<<<<<<< SEARCH
+        @media (max-width: 1024px) {
+            .container { 
+                grid-template-columns: 1fr; 
+                padding: 20px; 
+            }
+            
+            .filter-container {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 12px;
+                top: 80px;
+                padding: 15px;
+                border-right: none;
+            }
+        @media (max-width: 1024px) {
+            .main-content { 
+                flex-direction: column; /* 小屏时垂直排列 */
+            }
+            
+            .filter-container {
+                order: 2; /* 分类筛选移到下方 */
+                flex-direction: row; /* 水平排列 */
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 12px;
+                top: 80px;
+            }
 
     <script>
         // 设置API基础URL，以便在部署时调整
