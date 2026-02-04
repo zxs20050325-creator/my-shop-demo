@@ -1,3 +1,4 @@
+index.html
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -17,10 +18,10 @@
         /* 新中式极简字体方案 */
         body { 
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #F9F6F0; /* 4.1 页面背景：统一设为米白色 */
-            color: #333333; /* 墨色文字 */
+            background: #F9F6F0; /* 3.1 页面背景色：柔和米白色 */
+            color: #333333; 
             padding-top: 80px; 
-            line-height: 1.6; /* 统一行高 */
+            line-height: 1.6; 
         }
 
         /* ========================================
@@ -31,17 +32,16 @@
             top: 0; 
             left: 0; 
             width: 100%;
-            background: linear-gradient(to bottom, rgba(249, 246, 240, 0.95), rgba(249, 246, 240, 0.85)); /* 4.1 页面背景同步 */
-            backdrop-filter: blur(10px); /* 磨砂玻璃效果 */
+            background: linear-gradient(to bottom, rgba(249, 246, 240, 0.95), rgba(249, 246, 240, 0.85)); 
+            backdrop-filter: blur(10px); 
             color: #333333; 
             padding: 16px 40px;
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
             z-index: 1000;
-            /* 改进视觉分隔效果 */
-            border-bottom: 1px solid #eaeaea; /* 更清晰的底部边框 */
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03); /* 添加轻微阴影增强层次 */
+            border-bottom: 1px solid #eaeaea; 
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03); 
         }
 
         .logo {
@@ -57,23 +57,24 @@
             text-decoration: none; 
             margin-left: 30px; 
             font-weight: 400;
-            letter-spacing: 1px; /* 增加字间距 */
+            letter-spacing: 1px; 
             transition: opacity 0.2s ease;
         }
         .nav-links a:hover { 
             opacity: 0.7; 
-            color: #5a5a5a; /* 更柔和的悬停色 */
+            color: #5a5a5a; 
         }
         
-        /* 4.5 顶部图标样式 */
+        /* 3.3 顶部图标样式：尺寸调整为24px*24px */
         .nav-links img {
             width: 24px;
             height: 24px;
             transition: transform 0.3s ease;
         }
         
+        /* 3.3 顶部图标：hover放大1.05倍效果 */
         .nav-links a:hover img {
-            transform: scale(1.05); /* 4.5 顶部图标：hover 放大 1.05 倍效果 */
+            transform: scale(1.05);
         }
 
         /* 搜索框极简化 - 只保留底边框 */
@@ -89,7 +90,7 @@
             width: 100%;
             padding: 10px 16px;
             border: none;
-            border-bottom: 1px solid #d5d5d3; /* 更柔和的边框色 */
+            border-bottom: 1px solid #d5d5d3; 
             outline: none;
             font-family: inherit;
             font-size: 14px;
@@ -99,33 +100,35 @@
         }
 
         .search-input:focus {
-            border-color: #a8a8a4; /* 更深一些的焦糖色 */
+            border-color: #a8a8a4; 
         }
 
+        /* 2.2 按钮（搜索）：默认背景色#8B4513，文字色#fff，圆角4px */
         .search-btn {
             margin-left: 8px;
-            padding: 8px 16px; /* 4.4 按钮样式：内边距 8px 16px */
-            background: #8B4513; /* 4.4 按钮样式：背景色 #8B4513 */
-            color: white; /* 4.4 按钮样式：文字色 #fff */
+            padding: 8px 16px; 
+            background: #8B4513; 
+            color: white; 
             border: none;
-            border-radius: 4px; /* 4.4 按钮样式：圆角 4px */
+            border-radius: 4px; 
             cursor: pointer;
             font-family: inherit;
-            transition: all 0.3s ease; /* 4.4 按钮样式：过渡效果 */
+            transition: all 0.3s ease; 
         }
 
+        /* 2.2 按钮（搜索）：hover背景色变为#6D3311 */
         .search-btn:hover {
-            background: #6D3311; /* 4.4 按钮样式：悬停态背景色 */
+            background: #6D3311; 
         }
 
         /* ========================================
            主容器布局 - Flexbox + Grid混合布局
            ======================================== */
         .container { 
-            max-width: 1200px; /* 2.1 整体容器：宽度 1200px 居中 */
-            margin: 0 auto; /* 2.1 整体容器：宽度 1200px 居中 */
-            padding: 24px 16px; /* 2.1 整体容器：上下内边距 24px，左右内边距 16px */
-            display: flex; /* 使用flexbox主布局 */
+            max-width: 1200px; /* 2.1 整体容器：宽度1200px居中 */
+            margin: 0 auto; 
+            padding: 24px 16px; /* 2.1 整体容器：上下内边距24px，左右内边距16px */
+            display: flex; 
             flex-direction: column;
             gap: 40px;
         }
@@ -140,23 +143,24 @@
         }
         
         .page-title { 
-            text-align: center; /* 中心对齐标题 */
-            margin-bottom: 20px; /* 减少底部margin */
+            text-align: center; 
+            margin-bottom: 20px; 
             color: #333333; 
         }
+        /* 2.1 主标题：字号28px，字体加粗700，颜色#5C2E10，上下间距16px */
         .page-title h2 { 
-            font-size: 28px; /* 3.1 主标题：字号 28px */
-            font-weight: 700; /* 3.1 主标题：字体加粗 700 */
-            color: #5C2E10; /* 3.1 主标题：颜色 #5C2E10 */
-            margin: 16px 0; /* 3.1 主标题：上下间距 16px */
-            font-family: 'Noto Serif SC', 'Times New Roman', serif; /* 衬线字体标题 */
+            font-size: 28px; 
+            font-weight: 700; 
+            color: #5C2E10; 
+            margin: 16px 0; 
+            font-family: 'Noto Serif SC', 'Times New Roman', serif; 
         } 
         .page-title p { 
-            color: #999; /* 3.2 副标题：颜色 #999 */
-            font-size: 16px; /* 3.2 副标题：字号 16px */
-            font-weight: 400; /* 3.2 副标题：常规字重 400 */
-            margin: 8px 0; /* 3.2 副标题：上下间距 8px */
-            letter-spacing: 3px; /* 增加字间距 */
+            color: #999; 
+            font-size: 16px; 
+            font-weight: 400; 
+            margin: 8px 0; 
+            letter-spacing: 3px; 
         } 
 
         /* 主体内容区域：分类筛选 + 商品展示 */
@@ -169,59 +173,61 @@
         /* ========================================
            分类筛选 - 左侧固定导航栏
            ======================================== */
+        /* 1.1 左侧导航栏：固定宽度200px，使用flex布局 */
         .filter-container {
             display: flex;
-            flex-direction: column; /* 垂直排列 */
-            gap: 12px; /* 2.2 左侧导航：导航项上下间距 12px */
-            flex: 0 0 200px; /* 2.2 左侧导航：固定宽度 200px */
-            position: sticky; /* 固定定位 */
-            top: 100px; /* 考虑顶部导航栏高度 */
-            align-self: start; /* 保持在顶部 */
+            flex-direction: column; 
+            gap: 12px; /* 1.1 左侧导航：导航项上下间距12px */
+            flex: 0 0 200px; /* 1.1 左侧导航：固定宽度200px */
+            position: sticky; 
+            top: 100px; 
+            align-self: start; 
             padding: 15px 10px;
-            background: transparent; /* 透明背景 */
-            border-radius: 0; /* 移除圆角 */
+            background: transparent; 
+            border-radius: 0; 
         }
 
         .filter-btn {
-            padding: 8px 16px; /* 2.2 左侧导航：内边距 8px 16px */
+            padding: 8px 16px; /* 1.1 左侧导航：内边距8px 16px */
             background: transparent;
             border: none;
             cursor: pointer;
             font-size: 16px;
             color: #666666;
-            text-align: right; /* 文字右对齐 */
-            font-weight: 400; /* 默认非加粗 */
+            text-align: right; 
+            font-weight: 400; 
             transition: all 0.2s ease;
-            writing-mode: vertical-lr; /* 竖排文字 */
-            text-orientation: mixed; /* 保持正常的字符方向 */
-            height: 120px; /* 固定高度 */
+            writing-mode: vertical-lr; 
+            text-orientation: mixed; 
+            height: 120px; 
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
-            border-bottom: 1px solid transparent; /* 默认透明边框保持一致高度 */
-            border-radius: 4px; /* 添加圆角 */
+            border-bottom: 1px solid transparent; 
+            border-radius: 4px; 
         }
 
+        /* 2.1 导航选中态：背景色#F5F0E8，文字颜色#8B4513，字体加粗 */
         .filter-btn.active {
-            background-color: #F5F0E8; /* 3.4 左侧导航选中态：背景色 #F5F0E8 */
-            color: #8B4513; /* 3.4 左侧导航选中态：文字颜色 #8B4513 */
-            font-weight: 600; /* 3.4 左侧导航选中态：加粗 600 */
+            background-color: #F5F0E8; 
+            color: #8B4513; 
+            font-weight: 600; 
         }
         
         .filter-btn:hover {
-            color: #8B4513; /* 悬停时文字颜色 */
-            font-weight: 500; /* 适中加粗 */
+            color: #8B4513; 
+            font-weight: 500; 
         }
         
         .filter-btn.active::before {
-            content: ""; /* 朱砂红竖线 */
+            content: ""; 
             position: absolute;
             left: -3px;
             top: 0;
             bottom: 0;
             width: 2px;
-            background: #8B4513; /* 朱砂红色 */
+            background: #8B4513; 
         }
 
         /* ========================================
@@ -229,113 +235,115 @@
            ======================================== */
         .product-grid { 
             display: grid; 
-            grid-template-columns: repeat(3, 1fr); /* 调整为3列网格，更适合当前屏幕 */
+            grid-template-columns: repeat(3, 1fr); 
             grid-auto-rows: minmax(220px, auto);
-            gap: 30px 20px; /* 调整间距，减少上下间距 */
-            flex: 1; /* 让商品网格占据剩余空间 */
+            gap: 30px 20px; 
+            flex: 1; /* 1.2 主内容区：占满剩余宽度（flex: 1） */
         }
         
-        /* 第一个产品（镇店之宝）横跨2列 */
         .product-grid > div:first-child { 
-            grid-column: span 3; /* 横跨3列，成为全宽展示 */
+            grid-column: span 3; 
             grid-row: span 1;
         }
         
-        /* 第3n+1个产品横跨2列，形成更有节奏感的布局 */
         .product-grid > div:nth-child(3n+1):not(:first-child) { 
-            grid-column: span 2; /* 横跨2列 */
+            grid-column: span 2; 
             grid-row: span 1;
         }
 
+        /* 1.3 商品卡片：网格布局，外边距16px，内边距12px，圆角8px */
         /* 产品卡片 - 去掉背景和阴影，实现悬浮效果 */
         .product-card { 
             display: flex;
             flex-direction: column;
-            margin: 16px; /* 2.4 商品卡片：外边距 16px */
-            padding: 12px; /* 2.4 商品卡片：内边距 12px */
-            border-radius: 8px; /* 2.4 商品卡片：圆角 8px */
+            margin: 16px; /* 1.3 商品卡片：外边距16px */
+            padding: 12px; /* 1.3 商品卡片：内边距12px */
+            border-radius: 8px; /* 1.3 商品卡片：圆角8px */
             border: none; 
             box-shadow: none;
             transition: all 0.3s ease;
-            background: transparent; /* 去掉背景 */
+            background: transparent; 
             position: relative;
             overflow: hidden;
         }
 
+        /* 3.2 商品图片：添加圆角8px和阴影效果 */
         /* 产品图片 - 高度统一，防止拉伸 */
         .product-img { 
             width: 100%; 
-            height: 280px; /* 统一高度 */
-            object-fit: cover; /* 防止拉伸变形 */
+            height: 280px; 
+            object-fit: cover; 
             background-color: #f8fafc;
             margin-bottom: 16px;
-            border-radius: 8px; /* 4.2 商品图片：添加圆角 8px */
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08); /* 4.2 商品图片：阴影效果 */
-            filter: sepia(0.1) contrast(1.1); /* 轻微做旧滤镜 */
-            transition: transform 0.3s ease; /* 添加过渡效果 */
+            border-radius: 8px; /* 3.2 商品图片：圆角8px */
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08); /* 3.2 商品图片：阴影效果 */
+            filter: sepia(0.1) contrast(1.1); 
+            transition: transform 0.3s ease; 
         }
         
-        /* 为产品图片添加悬停效果 */
         .product-img:hover {
-            transform: scale(1.05); /* 悬停时稍微放大 */
+            transform: scale(1.05); 
         }
         
-        /* 第一个产品和每4n个产品的图片更高 */
         .product-grid > div:first-child .product-img { 
-            height: 420px; /* 全宽镇店之宝使用更高的图片 */
+            height: 420px; 
         }
         
         .product-grid > div:nth-child(3n+1):not(:first-child) .product-img { 
-            height: 320px; /* 其他横跨2列的商品使用适中高度 */
+            height: 320px; 
         }
 
         /* 卡片内容区 - 左对齐 */
         .card-body { 
             padding: 0; 
-            text-align: left; /* 左对齐文本 */
+            text-align: left; 
         }
 
+        /* 2.1 商品名称：字号16px，颜色#333 */
         .product-name { 
-            font-size: 16px; /* 3.3 商品名称：字号 16px */
-            font-weight: 400; /* 不加粗 */
+            font-size: 16px; 
+            font-weight: 400; 
             margin-bottom: 8px; 
-            color: #33; /* 3.3 商品名称：颜色 #333 */
+            color: #33; 
             line-height: 1.4;
-            font-family: 'Noto Serif SC', 'Times New Roman', serif; /* 衬线字体 */
+            font-family: 'Noto Serif SC', 'Times New Roman', serif; 
         }
 
+        /* 2.1 商品价格：字号18px，字体加粗600，颜色#8B4513 */
         .product-price { 
-            color: #8B4513; /* 3.3 商品价格：颜色 #8B4513 */
-            font-size: 18px; /* 3.3 商品价格：字号 18px */
-            font-weight: 600; /* 3.3 商品价格：加粗 600 */
+            color: #8B4513; 
+            font-size: 18px; 
+            font-weight: 600; 
         }
 
         .product-desc { 
             display: none; 
         } 
 
+        /* 2.2 按钮（加入购物车）：默认背景色#8B4513，文字色#fff，圆角4px */
         /* 购买按钮 - 榫卯式方形按钮 */
         .btn-buy { 
             width: auto; 
-            padding: 8px 16px; /* 4.4 按钮样式：内边距 8px 16px */
-            background: #8B4513; /* 4.4 按钮样式：背景色 #8B4513 */
-            color: #fff; /* 4.4 按钮样式：文字色 #fff */
+            padding: 8px 16px; 
+            background: #8B4513; 
+            color: #fff; 
             border: none; 
-            border-radius: 4px; /* 4.4 按钮样式：圆角 4px */
+            border-radius: 4px; 
             cursor: pointer; 
             font-family: inherit;
             font-size: 14px; 
             margin-top: 16px;
-            transition: all 0.3s ease; /* 4.4 按钮样式：过渡效果 */
-            align-self: flex-start; /* 左对齐按钮 */
+            transition: all 0.3s ease; 
+            align-self: flex-start; 
         }
 
+        /* 2.2 按钮（加入购物车）：hover背景色变为#6D3311 */
         .btn-buy:hover { 
-            background: #6D3311; /* 4.4 按钮样式：悬停态背景色 */
+            background: #6D3311; 
         }
 
         .pagination { 
-            grid-column: 2 / -1; /* 分页在右侧内容区 */
+            grid-column: 2 / -1; 
             text-align: center; 
             margin-top: 60px; 
             display: flex;
@@ -344,17 +352,19 @@
             gap: 12px;
         }
 
+        /* 2.2 按钮（分页）：默认背景色#8B4513，文字色#fff，圆角4px */
         .page-btn { 
-            padding: 8px 16px; /* 4.4 按钮样式：内边距 8px 16px */
-            background: #8B4513; /* 4.4 按钮样式：背景色 #8B4513 */
-            color: white; /* 4.4 按钮样式：文字色 #fff */
+            padding: 8px 16px; 
+            background: #8B4513; 
+            color: white; 
             border: none; 
-            border-radius: 4px; /* 4.4 按钮样式：圆角 4px */
+            border-radius: 4px; 
             cursor: pointer; 
-            transition: all 0.3s ease; /* 4.4 按钮样式：过渡效果 */
+            transition: all 0.3s ease; 
         }
+        /* 2.2 按钮（分页）：hover背景色变为#6D3311 */
         .page-btn:hover:not(:disabled) { 
-            background: #6D3311; /* 4.4 按钮样式：悬停态背景色 */
+            background: #6D3311; 
         }
         .page-btn:disabled { 
             background: #e2e8f0; 
@@ -365,7 +375,7 @@
 
         /* 搜索结果提示 */
         .search-results {
-            grid-column: 2 / -1; /* 搜索结果在右侧内容区 */
+            grid-column: 2 / -1; 
             text-align: center;
             margin: 30px 0;
             color: #718096;
@@ -373,7 +383,7 @@
         }
 
         .no-results {
-            grid-column: 2 / -1; /* 无结果提示在右侧内容区 */
+            grid-column: 2 / -1; 
             text-align: center;
             padding: 80px 20px;
             color: #a0aec0;
@@ -390,8 +400,17 @@
             font-size: 14px;
             text-align: center;
             border: 1px dashed #d5d5d3;
-            border-radius: 8px; /* 4.2 商品图片：添加圆角 8px */
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08); /* 4.2 商品图片：阴影效果 */
+            border-radius: 8px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
+        }
+
+        /* 1.2 主内容区：内边距20px，模块间距24px */
+        .content-area {
+            flex: 1; /* 1.2 主内容区：占满剩余宽度（flex: 1） */
+            padding: 20px; /* 1.2 主内容区：内边距20px */
+            display: flex;
+            flex-direction: column;
+            gap: 24px; /* 1.2 主内容区：模块之间间距24px */
         }
 
         /* ========================================
@@ -459,7 +478,7 @@
             }
             
             .product-grid > div:nth-child(3n+1):not(:first-child) {
-                grid-column: span 1; /* 小屏幕下不再跨列 */
+                grid-column: span 1; 
             }
             
             .pagination,
@@ -476,26 +495,17 @@
             .page-title h2 { font-size: 28px; }
             .container { padding: 15px; }
             .product-grid { 
-                grid-template-columns: 1fr; /* 移动端单列显示 */
+                grid-template-columns: 1fr; 
                 gap: 25px;
             }
             
             .product-grid > div:first-child {
-                grid-column: span 1; /* 移动端不再跨列 */
+                grid-column: span 1; 
             }
             
             .product-grid > div:first-child .product-img {
-                height: 300px; /* 移动端调整图片高度 */
+                height: 300px; 
             }
-        }
-
-        /* 右侧内容区域 */
-        .content-area {
-            flex: 1; /* 2.3 主内容区：flex:1 占剩余宽度 */
-            padding: 20px; /* 2.3 主内容区：内边距 20px */
-            display: flex;
-            flex-direction: column;
-            gap: 24px; /* 2.3 主内容区：模块之间间距 24px */
         }
     </style>
 </head>
@@ -563,11 +573,7 @@
             </div>
         </div>
     </div>
-```
-
-c:\Users\xueru\Desktop\冀遗筑梦1\frontend\index.html
-```html
-<<<<<<< SEARCH
+=======
         @media (max-width: 1024px) {
             .container { 
                 grid-template-columns: 1fr; 
@@ -676,7 +682,7 @@ c:\Users\xueru\Desktop\冀遗筑梦1\frontend\index.html
                 clearTimeout(timeoutId);
                 
                 if (!res.ok) {
-                    throw new Error(`API请求失败: ${res.status} ${res.statusText}`);
+                    throw new Error(\`API请求失败: \${res.status} \${res.statusText}\`);
                 }
                 
                 const data = await res.json();
@@ -786,7 +792,7 @@ c:\Users\xueru\Desktop\冀遗筑梦1\frontend\index.html
                 
                 displayProducts(data.items);
                 
-                document.getElementById('page-info').innerText = `第 ${data.page} 页 / 共 ${data.totalPages} 页`;
+                document.getElementById('page-info').innerText = \`第 \${data.page} 页 / 共 \${data.totalPages} 页\`;
                 document.getElementById('prev-btn').disabled = data.page <= 1;
                 document.getElementById('next-btn').disabled = data.page >= data.totalPages;
                 currentPage = data.page;
@@ -830,15 +836,15 @@ c:\Users\xueru\Desktop\冀遗筑梦1\frontend\index.html
                 const imgName = imgSrc.split('/').pop();
                 
                 // 拼接完整路径
-                imgSrc = `${API_BASE}/images/${imgName}`;
+                imgSrc = \`\${API_BASE}/images/\${imgName}\`;
                 
-                productList.innerHTML += `
+                productList.innerHTML += \`
                     <div class="product-card">
-                        <img src="${imgSrc}" class="product-img" alt="${product.name}" loading="lazy" onerror="this.onerror=null;this.className='product-img placeholder-image';this.innerHTML='<div>无图<br><small>${product.name}</small></div>'; console.error('Failed to load image: ' + this.src);">
+                        <img src="\${imgSrc}" class="product-img" alt="\${product.name}" loading="lazy" onerror="this.onerror=null;this.className='product-img placeholder-image';this.innerHTML='<div>无图<br><small>\${product.name}</small></div>'; console.error('Failed to load image: ' + this.src);">
                         <div class="card-body">
-                            <div class="product-name" onclick="viewProductDetailWithFeedback(${product.id})" style="cursor: pointer;">${product.name}</div>
-                            <div class="product-price">¥${product.price}</div>
-                            <button class="btn-buy" onclick="addToCart(${index})">加入购物车</button>
+                            <div class="product-name" onclick="viewProductDetailWithFeedback(\${product.id})" style="cursor: pointer;">\${product.name}</div>
+                            <div class="product-price">¥\${product.price}</div>
+                            <button class="btn-buy" onclick="addToCart(\${index})">加入购物车</button>
                         </div>
                     </div>
                 `;
@@ -848,10 +854,10 @@ c:\Users\xueru\Desktop\冀遗筑梦1\frontend\index.html
         // 获取占位图片
         function getPlaceholderImage(text) {
             // 创建一个svg占位图，带有非遗风格的样式
-            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200">
+            const svg = \`<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200">
                 <rect width="100%" height="100%" fill="#FDFBF7"/>
-                <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="16" fill="#8B4513">${text || '无图'}</text>
-            </svg>`;
+                <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="16" fill="#8B4513">\${text || '无图'}</text>
+            </svg>\`;
             return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
         }
 
@@ -868,7 +874,7 @@ c:\Users\xueru\Desktop\冀遗筑梦1\frontend\index.html
 
         // 查看商品详情
         function viewProductDetail(id) {
-            window.location.href = `product-detail.html?id=${id}`;
+            window.location.href = \`product-detail.html?id=\${id}\`;
         }
 
         // 翻页处理
@@ -886,7 +892,7 @@ c:\Users\xueru\Desktop\冀遗筑梦1\frontend\index.html
                 
                 if (pageProducts.length > 0) {
                     displayProducts(pageProducts);
-                    document.getElementById('page-info').innerText = `第 ${newPage} 页 / 共 ${Math.ceil(filteredSearchResults.length / 6)} 页`;
+                    document.getElementById('page-info').innerText = \`第 \${newPage} 页 / 共 \${Math.ceil(filteredSearchResults.length / 6)} 页\`;
                     document.getElementById('prev-btn').disabled = newPage <= 1;
                     document.getElementById('next-btn').disabled = newPage >= Math.ceil(filteredSearchResults.length / 6);
                     currentPage = newPage;
@@ -900,7 +906,7 @@ c:\Users\xueru\Desktop\冀遗筑梦1\frontend\index.html
                 
                 if (pageProducts.length > 0 || startIndex < filteredProducts.length) {
                     displayProducts(pageProducts);
-                    document.getElementById('page-info').innerText = `第 ${currentPage + step} 页 / 共 ${Math.ceil(filteredProducts.length / 6)} 页`;
+                    document.getElementById('page-info').innerText = \`第 \${currentPage + step} 页 / 共 \${Math.ceil(filteredProducts.length / 6)} 页\`;
                     document.getElementById('prev-btn').disabled = (currentPage + step) <= 1;
                     document.getElementById('next-btn').disabled = (currentPage + step) >= Math.ceil(filteredProducts.length / 6);
                     currentPage = currentPage + step;
@@ -909,7 +915,7 @@ c:\Users\xueru\Desktop\冀遗筑梦1\frontend\index.html
                 // 正常模式下的翻页
                 loadProducts(currentPage + step);
             }
-            trackUserAction('翻页浏览', `第 ${currentPage + step} 页`);
+            trackUserAction('翻页浏览', \`第 \${currentPage + step} 页\`);
         }
 
         // 添加到购物车
@@ -932,7 +938,7 @@ c:\Users\xueru\Desktop\冀遗筑梦1\frontend\index.html
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
                 
-                const res = await fetch(`${API_BASE}/api/cart/add`, {
+                const res = await fetch(\`\${API_BASE}/api/cart/add\`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username: user, product: product }),
@@ -980,18 +986,18 @@ c:\Users\xueru\Desktop\冀遗筑梦1\frontend\index.html
 
             if (filteredSearchResults.length > 0) {
                 displayProducts(filteredSearchResults);
-                document.getElementById('search-results').innerHTML = `<p>找到 ${filteredSearchResults.length} 个关于 "${searchTerm}" 的结果</p>`;
+                document.getElementById('search-results').innerHTML = \`<p>找到 \${filteredSearchResults.length} 个关于 "\${searchTerm}" 的结果</p>\`;
                 document.getElementById('no-results').style.display = 'none';
                 document.getElementById('pagination').style.display = 'flex';
                 
                 // 设置搜索模式的分页信息
-                document.getElementById('page-info').innerText = `第 1 页 / 共 ${Math.ceil(filteredSearchResults.length / 6)} 页`;
+                document.getElementById('page-info').innerText = \`第 1 页 / 共 \${Math.ceil(filteredSearchResults.length / 6)} 页\`;
                 document.getElementById('prev-btn').disabled = true;
                 document.getElementById('next-btn').disabled = filteredSearchResults.length <= 6;
             } else {
                 document.getElementById('no-results').style.display = 'block';
                 document.getElementById('pagination').style.display = 'none';
-                document.getElementById('search-results').innerHTML = `<p>没有找到关于 "${searchTerm}" 的结果</p>`;
+                document.getElementById('search-results').innerHTML = \`<p>没有找到关于 "\${searchTerm}" 的结果</p>\`;
             }
 
             isSearchMode = true;
@@ -1032,7 +1038,7 @@ c:\Users\xueru\Desktop\冀遗筑梦1\frontend\index.html
             }
             
             // 显示分类筛选的分页信息
-            document.getElementById('page-info').innerText = `第 1 页 / 共 ${Math.ceil(filteredProducts.length / 6)} 页`;
+            document.getElementById('page-info').innerText = \`第 1 页 / 共 \${Math.ceil(filteredProducts.length / 6)} 页\`;
             document.getElementById('prev-btn').disabled = true;
             document.getElementById('next-btn').disabled = filteredProducts.length <= 6;
             document.getElementById('pagination').style.display = 'flex';
@@ -1047,7 +1053,7 @@ c:\Users\xueru\Desktop\冀遗筑梦1\frontend\index.html
         function trackUserAction(action, product) {
             try {
                 const user = localStorage.getItem('currentUser');
-                fetch(`${API_BASE}/api/track`, {
+                fetch(\`\${API_BASE}/api/track\`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username: user, action, product })
