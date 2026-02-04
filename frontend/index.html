@@ -1,228 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>冀遗筑梦————云端商城</title>
+    <style>
+        /* 全局样式重置 */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        /* 极简字体方案 */
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #ffffff; /* 纯白背景 */
+            color: #2d3748; /* 暖灰色文字 */
+            padding-top: 80px; 
+            line-height: 1.6; /* 统一行高 */
+        }
+
+        /* 极简导航栏 - 固定顶部线条式设计 */
+        .navbar {
+            position: fixed; top: 0; left: 0; width: 100%;
+            background: #ffffff; /* 哑光黑背景改为纯白以符合极简风格 */
+            color: #2d3748; /* 暖灰色文字 */
+            padding: 16px 40px;
+            display: flex; justify-content: space-between; align-items: center; z-index: 1000;
+            border-bottom: 1px solid #e2e8f0; /* 微弱分隔线 */
+        }
+
         .nav-links a { 
-            color: #333333; /* 主色调改为墨色 */
+            color: #2d3748; /* 暖灰色 */
             text-decoration: none; 
-            margin-left: 20px; /* 减小导航项间距 */
+            margin-left: 30px; 
             font-weight: 400;
-            letter-spacing: 1px; /* 减小字间距 */
             transition: opacity 0.2s ease;
-            font-size: 14px; /* 减小字体大小 */
-            position: relative;
-            transform-style: preserve-3d;
         }
         .nav-links a:hover { 
             opacity: 0.7; /* 悬停时仅改变透明度 */
-            color: #5a7d7c; /* 改为黛蓝色 */
-            transform: translateY(-3px); /* 添加轻微上浮效果 */
-        }
-
-        .nav-links a::before {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: #5a7d7c; /* 黛蓝色下划线 */
-            transition: width 0.3s ease;
-            transform: translateZ(20px); /* 给下划线一个3D深度 */
-        }
-
-        .nav-links a:hover::before {
-            width: 100%;
+            color: #8b2a2a; /* 赤陶色强调 */
         }
 
         /* 搜索框极简化 */
         .search-container {
             display: flex;
             align-items: center;
-            margin: 0 15px;
+            margin: 0 20px;
             flex: 1;
-            max-width: 300px; /* 减小搜索框最大宽度 */
+            max-width: 400px;
         }
 
         .search-input {
             width: 100%;
-            padding: 8px 12px; /* 减小内边距 */
-            border: none;
-            border-bottom: 1px solid #cbd5e0; /* 只保留底部边框 */
+            padding: 10px 16px;
+            border: 1px solid #e2e8f0; /* 暖灰色边框 */
+            border-radius: 4px;
             outline: none;
             font-family: inherit;
-            font-size: 13px; /* 减小字体大小 */
-            background: transparent; /* 背景透明 */
+            font-size: 14px;
             transition: border-color 0.2s ease;
         }
 
         .search-input:focus {
-            border-color: #5a7d7c; /* 焦点时边框颜色改为黛蓝色 */
+            border-color: #cbd5e0; /* 焦点时边框颜色 */
         }
 
         .search-btn {
-            margin-left: 6px; /* 减小左边距 */
-            padding: 8px 12px; /* 减小按钮内边距 */
-            background: #333333; /* 改为墨色按钮 */
+            margin-left: 8px;
+            padding: 10px 16px;
+            background: #8b2a2a; /* 赤陶色按钮 */
             color: white;
             border: none;
-            border-radius: 0; /* 去掉圆角，保持简洁 */
+            border-radius: 4px;
             cursor: pointer;
             font-family: inherit;
-            font-size: 13px; /* 减小字体大小 */
             transition: opacity 0.2s ease;
-            position: relative;
-            overflow: hidden;
-            transform: translateZ(0);
         }
 
         .search-btn:hover {
             opacity: 0.9;
-            transform: translateY(-3px); /* 添加轻微上浮效果 */
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); /* 添加轻微阴影增强3D感 */
         }
 
-        .search-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: 0.5s;
-        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 40px; }
 
-        .search-btn:hover::before {
-            left: 100%;
-        }
+        .page-title { text-align: center; margin-bottom: 50px; color: #2d3748; }
+        .page-title h2 { font-size: 36px; font-weight: 700; margin-bottom: 12px; } /* 加粗标题 */
+        .page-title p { color: #718096; font-size: 18px; } /* 暖灰色副标题 */
 
-        .container { 
-            max-width: 1200px; 
-            margin: 0 auto; 
-            padding: 100px 20px 30px 20px; /* 调整顶部内边距以容纳固定导航 */
-        }
-
-        .page-title { 
-            text-align: center; 
-            margin-bottom: 60px; /* 减少外边距 */
-            color: #333333; 
-            position: relative;
-            overflow: hidden;
-        }
-        .page-title h2 { 
-            font-size: 36px; /* 减小标题字号 */
-            font-weight: 300; /* 使用较细字重 */
-            margin-bottom: 10px; 
-            font-family: 'Noto Serif SC', 'Songti SC', serif; /* 标题使用衬线体 */
-            opacity: 0;
-            transform: translateY(20px);
-            animation: fadeInUp 0.8s forwards 0.3s;
-        }
-        .page-title p { 
-            color: #a0aec0; /* 浅灰色 */
-            font-size: 14px; /* 缩小字号 */
-            letter-spacing: 2px; /* 减少字间距 */
-            font-family: 'Inter', sans-serif; /* 正文使用无衬线体 */
-            opacity: 0;
-            transform: translateY(20px);
-            animation: fadeInUp 0.8s forwards 0.5s;
-        }
-
-        /* Hero区域入场动画 */
-        @keyframes fadeInUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* 产品网格 - 非对称布局 */
-        .product-grid { 
-            display: grid; 
-            grid-template-columns: repeat(4, 1fr); /* 4列网格，用于实现跨列效果 */
-            gap: 25px; 
-            margin-top: 20px;
-        }
-
-        /* 第1个产品：横跨2列，放大 */
-        .product-grid > div:nth-child(1) {
-            grid-column: span 2;
-        }
-        .product-grid > div:nth-child(1) .product-img-container {
-            height: 300px;
-        }
-
-        /* 第4个产品：横跨2列，靠右 */
-        .product-grid > div:nth-child(4) {
-            grid-column: span 2;
-        }
+        /* 产品网格 - 大留白设计 */
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 40px; }
 
         /* 极简产品卡片 - 去掉边框和阴影 */
         .product-card { 
-            background: #F5F5F0; /* 微妙色差背景，增强对比度 */
-            padding-bottom: 0; /* 去掉底部填充 */
-            border-bottom: none; /* 去掉边框 */
+            background: #ffffff;
+            padding-bottom: 20px; /* 底部分隔线区域 */
+            border-bottom: 1px solid #edf2f7; /* 微弱底部分隔线 */
             transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start; /* 左对齐 */
-            position: relative;
-            overflow: hidden;
-            transform-style: preserve-3d;
-            perspective: 1000px;
         }
 
         .product-card:hover { 
-            transform: translateY(-3px); /* 悬停时轻微上移，减小移动距离 */
+            border-bottom: 1px solid #cbd5e0; /* 悬停时加强分隔线 */
         }
 
-        /* 产品图片容器 - 添加溢出隐藏 */
-        .product-img-container {
-            width: 100%;
-            height: 200px; /* 减小图片高度 */
-            overflow: hidden;
-            margin-bottom: 20px; /* 减小底部边距 */
-            border-radius: 8px; /* 减少圆角大小 */
-            position: relative;
-            transition: transform 0.4s ease;
-            opacity: 0; /* 初始透明度为0，等待动画 */
-            transform: translateY(20px); /* 初始位置稍微向下偏移 */
-        }
-        
-        /* 产品图片 */
+        /* 产品图片 - 占比70% */
         .product-img { 
             width: 100%; 
-            height: 100%;
+            height: 280px; /* 调整高度以符合70%比例 */
             object-fit: contain;
-            background-color: transparent; 
-            transition: transform 0.5s ease;
-            opacity: 1;
-        }
-        
-        .product-card:hover .product-img {
-            transform: scale(1.05);
+            background-color: #f8fafc;
+            margin-bottom: 20px;
         }
 
-        /* 卡片内容区 - 左对齐 */
-        .card-body { 
-            padding: 0; 
-            width: 100%;
-            text-align: left; /* 左对齐 */
-            position: relative;
-        }
+        /* 卡片内容区 */
+        .card-body { padding: 0; }
 
         .product-name { 
-            font-size: 16px; /* 减小字体大小 */
-            font-weight: 400; /* 不再加粗 */
-            margin-bottom: 6px; /* 减小底部边距 */
-            color: #333333; /* 增加颜色深度 */
-            line-height: 1.4; /* 减小行高 */
-            font-family: 'Noto Serif SC', 'Songti SC', serif; /* 使用衬线体 */
-            text-align: left; /* 左对齐 */
+            font-size: 18px; 
+            font-weight: 700; /* 加粗标题 */
+            margin-bottom: 8px; 
+            color: #1a202c; /* 深灰色 */
+            line-height: 1.5;
         }
 
         .product-price { 
-            color: #5a7d7c; /* 改为黛蓝色价格 */ 
-            font-size: 18px; /* 减小字体大小 */
-            font-weight: 400; /* 不再加粗 */
-            text-align: left; /* 左对齐 */
+            color: #8b2a2a; /* 赤陶色价格 */ 
+            font-size: 20px; 
+            font-weight: 700; /* 加粗价格 */
         }
 
         .product-desc { display: none; } /* 隐藏描述以实现极简 */
@@ -230,163 +131,103 @@
         /* 购买按钮 - 纯色填充 */
         .btn-buy { 
             width: 100%; 
-            padding: 10px; /* 减小内边距 */
-            background: #333333; /* 改为墨色按钮 */
+            padding: 12px; 
+            background: #8b2a2a; /* 赤陶色按钮 */
             color: white; 
             border: none; 
-            border-radius: 0; /* 去掉圆角 */
+            border-radius: 4px; /* 小圆角 */
             cursor: pointer; 
             font-family: inherit;
-            font-size: 13px; /* 减小字体大小 */
-            margin-top: 15px; /* 减小上边距 */
+            font-size: 16px; 
+            margin-top: 16px;
             transition: opacity 0.2s ease;
-            opacity: 0;
-            transform: translateY(10px);
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            backdrop-filter: blur(10px); /* 毛玻璃效果 */
-            background: rgba(51, 51, 51, 0.7);
-        }
-
-        .product-card:hover .btn-buy {
-            opacity: 1;
-            transform: translateY(0);
-            transition: all 0.3s ease 0.1s;
         }
 
         .btn-buy:hover { 
             opacity: 0.9; /* 悬停时仅改变透明度 */
-            transform: translateY(-3px); /* 添加轻微上浮效果 */
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); /* 添加轻微阴影增强3D感 */
         }
 
         .pagination { 
             text-align: center; 
-            margin-top: 50px; /* 减少上边距 */
+            margin-top: 60px; 
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 10px; /* 减少间隔 */
+            gap: 12px;
         }
 
         .page-btn { 
-            padding: 8px 16px; /* 减小内边距 */
-            background: #333333; /* 改为墨色按钮 */
+            padding: 10px 20px; 
+            background: #8b2a2a; /* 赤陶色按钮 */
             color: white;
             border: none; 
-            border-radius: 0; /* 去掉圆角 */
+            border-radius: 4px; 
             cursor: pointer; 
             transition: opacity 0.2s ease;
-            font-size: 13px; /* 减小字体大小 */
-            position: relative;
-            overflow: hidden;
-            transform: translateZ(0);
         }
-        .page-btn:hover:not(:disabled) { 
-            opacity: 0.9; 
-            transform: translateY(-3px); /* 添加轻微上浮效果 */
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); /* 添加轻微阴影增强3D感 */
-        }
+        .page-btn:hover:not(:disabled) { opacity: 0.9; }
         .page-btn:disabled { 
             background: #e2e8f0; 
             color: #a0aec0;
             cursor: not-allowed; 
         }
-        .page-info { margin: 0 10px; color: #718096; font-size: 14px; } /* 减小字体大小 */
+        .page-info { margin: 0 15px; color: #718096; }
 
         /* 搜索结果提示 */
         .search-results {
             text-align: center;
-            margin: 20px 0 40px; /* 减少外边距 */
+            margin: 30px 0;
             color: #718096;
-            font-size: 14px;
+            font-size: 16px;
         }
 
         .no-results {
             text-align: center;
-            padding: 50px 20px; /* 减少内边距 */
+            padding: 80px 20px;
             color: #a0aec0;
-            font-size: 16px;
+            font-size: 18px;
         }
 
-        /* 自定义光标样式 */
-        .custom-cursor {
-            position: fixed;
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(90, 125, 124, 0.7);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-            z-index: 9999;
-            transition: all 0.1s ease;
-            mix-blend-mode: difference;
-        }
-        
-        .custom-cursor.hover {
-            width: 40px;
-            height: 40px;
-            background: rgba(90, 125, 124, 0.2);
-            border-color: rgba(90, 125, 124, 0.3);
+        /* 分类筛选极简化 */
+        .filter-container {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0 50px;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
-        /* 分类按钮3D效果 */
         .filter-btn {
-            padding: 8px 0 8px 20px; /* 左边距用于小黑点 */
-            background: transparent; /* 去掉背景 */
-            border: none; /* 去掉边框 */
+            padding: 8px 20px;
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
             cursor: pointer;
-            font-size: 14px; /* 字体大小 */
+            font-size: 14px;
             color: #4a5568;
-            position: relative; /* 为小黑点定位 */
             transition: all 0.2s ease;
-            font-weight: 500; /* 字体加粗 */
-            text-align: left; /* 左对齐 */
-            transform-style: preserve-3d;
-            transform: translateZ(0);
-            margin: 8px 0;
-        }
-
-        .filter-btn::before {
-            content: '•'; /* 小黑点 */
-            position: absolute;
-            left: 10px;
-            color: #333333;
-            opacity: 0; /* 默认隐藏 */
-            transform: translateZ(20px); /* 给小黑点一个3D深度 */
-        }
-
-        .filter-btn.active::before, .filter-btn:hover::before {
-            opacity: 1; /* 选中或悬停时显示 */
         }
 
         .filter-btn.active, .filter-btn:hover {
-            color: #333333; /* 增加颜色深度 */
-            background: transparent;
-            transform: translateY(-3px); /* 添加轻微上浮效果 */
-            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08); /* 添加轻微阴影增强3D感 */
+            background: #8b2a2a;
+            color: white;
+            border-color: #8b2a2a;
         }
 
         /* 响应式设计 */
         @media (max-width: 768px) {
-            .navbar { padding: 12px 16px; }
-            .container { padding: 20px 15px; }
-            .product-grid { gap: 25px; } /* 移动端稍小的间距 */
-            .page-title { margin-bottom: 40px; }
-            .filter-container { margin: 15px 0 35px; }
-            .page-title h2 { font-size: 26px; } /* 移动端标题稍小 */
-            .pagination { margin-top: 40px; }
+            .navbar { padding: 16px 20px; }
+            .container { padding: 20px; }
+            .product-grid { gap: 30px; }
+            .page-title { margin-bottom: 30px; }
+            .filter-container { margin: 20px 0 30px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- 自定义光标 -->
-    <div class="custom-cursor"></div>
-
     <nav class="navbar">
-        <div style="font-size: 18px; font-weight: 500; color: #333333; font-family: 'Noto Serif SC', 'Songti SC', serif;">🏛️ 冀遗筑梦</div>
+        <div style="font-size: 22px; font-weight: 700; color: #1a202c;">🏛️ 冀遗筑梦</div>
         
         <!-- 搜索框 -->
         <div class="search-container">
@@ -399,50 +240,44 @@
         </div>
     </nav>
 
-    <div class="main-layout">
-        <!-- 侧边栏 -->
-        <aside class="sidebar">
-            <div class="filter-container" id="filter-container">
-                <span class="filter-indicator" id="filter-indicator"></span>
-                <button class="filter-btn active" data-category="all">全部商品</button>
-                <button class="filter-btn" data-category="工艺品">工艺品</button>
-                <button class="filter-btn" data-category="剪纸">剪纸</button>
-                <button class="filter-btn" data-category="雕塑">雕塑</button>
-                <button class="filter-btn" data-category="陶瓷">陶瓷</button>
-                <button class="filter-btn" data-category="皮影">皮影</button>
-                <button class="filter-btn" data-category="雕刻">雕刻</button>
-                <button class="filter-btn" data-category="文房四宝">文房四宝</button>
-                <button class="filter-btn" data-category="年画">年画</button>
-                <button class="filter-btn" data-category="金银器">金银器</button>
-                <button class="filter-btn" data-category="内画">内画</button>
-                <button class="filter-btn" data-category="泥塑">泥塑</button>
-                <button class="filter-btn" data-category="乐器">乐器</button>
-            </div>
-        </aside>
+    <div class="container">
+        <div class="page-title">
+            <h2>传承非遗 · 筑梦河北</h2>
+            <p>精选燕赵大地文化瑰宝</p>
+        </div>
 
-        <!-- 主内容区 -->
-        <main class="container">
-            <div class="page-title">
-                <h2>传承非遗 · 筑梦河北</h2>
-                <p>精选燕赵大地文化瑰宝</p>
-            </div>
+        <!-- 分类筛选 -->
+        <div class="filter-container" id="filter-container">
+            <button class="filter-btn active" data-category="all">全部</button>
+            <button class="filter-btn" data-category="工艺品">工艺品</button>
+            <button class="filter-btn" data-category="剪纸">剪纸</button>
+            <button class="filter-btn" data-category="雕塑">雕塑</button>
+            <button class="filter-btn" data-category="陶瓷">陶瓷</button>
+            <button class="filter-btn" data-category="皮影">皮影</button>
+            <button class="filter-btn" data-category="雕刻">雕刻</button>
+            <button class="filter-btn" data-category="文房四宝">文房四宝</button>
+            <button class="filter-btn" data-category="年画">年画</button>
+            <button class="filter-btn" data-category="金银器">金银器</button>
+            <button class="filter-btn" data-category="内画">内画</button>
+            <button class="filter-btn" data-category="泥塑">泥塑</button>
+            <button class="filter-btn" data-category="乐器">乐器</button>
+        </div>
 
-            <!-- 搜索结果提示 -->
-            <div class="search-results" id="search-results"></div>
+        <!-- 搜索结果提示 -->
+        <div class="search-results" id="search-results"></div>
 
-            <div class="product-grid" id="product-list"></div>
+        <div class="product-grid" id="product-list"></div>
 
-            <!-- 无结果提示 -->
-            <div class="no-results" id="no-results" style="display: none;">
-                没有找到相关商品，请尝试其他关键词
-            </div>
+        <!-- 无结果提示 -->
+        <div class="no-results" id="no-results" style="display: none;">
+            没有找到相关商品，请尝试其他关键词
+        </div>
 
-            <div class="pagination" id="pagination">
-                <button class="page-btn" id="prev-btn" onclick="changePage(-1)">上一页</button>
-                <span class="page-info" id="page-info">第 1 页</span>
-                <button class="page-btn" id="next-btn" onclick="changePage(1)">下一页</button>
-            </div>
-        </main>
+        <div class="pagination" id="pagination">
+            <button class="page-btn" id="prev-btn" onclick="changePage(-1)">上一页</button>
+            <span class="page-info" id="page-info">第 1 页</span>
+            <button class="page-btn" id="next-btn" onclick="changePage(1)">下一页</button>
+        </div>
     </div>
 
     <script>
@@ -458,205 +293,6 @@
         let currentSearchTerm = ''; // 新增：当前搜索关键词
         let filteredProducts = []; // 新增：分类筛选后的商品
         let currentCategory = 'all'; // 新增：当前分类
-
-        // 平滑滚动功能
-        /*
-        let targetY = window.scrollY;
-        let currentY = window.scrollY;
-        let ticking = false;
-
-        // 检测是否为触摸设备或滚轮事件
-        let isWheeling = false;
-        let wheelTimeout;
-
-        window.addEventListener("scroll", () => {
-            // 如果是鼠标滚轮事件，则不使用平滑滚动
-            if (!isWheeling) {
-                targetY = window.scrollY;
-            }
-        });
-
-        // 监听滚轮事件
-        window.addEventListener("wheel", () => {
-            isWheeling = true;
-            clearTimeout(wheelTimeout);
-            
-            wheelTimeout = setTimeout(() => {
-                isWheeling = false;
-            }, 150); // 150ms内无新事件则认为结束
-        }, { passive: true });
-
-        function lerp(start, end, t) {
-            return start * (1 - t) + end * t;
-        }
-
-        function updateScroll() {
-            if (!isWheeling) {
-                currentY = lerp(currentY, targetY, 0.1);
-                window.scrollTo(0, currentY);
-
-                if (Math.abs(targetY - currentY) < 0.5) {
-                    currentY = targetY;
-                }
-            }
-
-            ticking = false;
-        }
-
-        function requestTick() {
-            if (!ticking) {
-                requestAnimationFrame(updateScroll);
-                ticking = true;
-            }
-        }
-
-        function smoothScroll() {
-            requestTick();
-            setTimeout(smoothScroll, 1000 / 60); // ~60fps
-        }
-
-        // 启动平滑滚动
-        smoothScroll();
-        */
-
-        // 自定义光标功能
-        const cursor = document.querySelector('.custom-cursor');
-        document.addEventListener('mousemove', (e) => {
-            const { clientX, clientY } = e;
-            cursor.style.left = `${clientX}px`;
-            cursor.style.top = `${clientY}px`;
-        });
-
-        // 光标悬停效果
-        const hoverElements = [...document.querySelectorAll('a'), ...document.querySelectorAll('button'), ...document.querySelectorAll('.product-card')];
-        hoverElements.forEach(element => {
-            element.addEventListener('mouseenter', () => {
-                cursor.classList.add('hover');
-            });
-            
-            element.addEventListener('mouseleave', () => {
-                cursor.classList.remove('hover');
-            });
-        });
-
-        // 分类标签滑动效果
-        const filterBtns = document.querySelectorAll('.filter-btn');
-        const indicator = document.getElementById('filter-indicator');
-
-        // 初始化指示器位置
-        const activeBtn = document.querySelector('.filter-btn.active');
-        if(activeBtn) {
-            indicator.style.height = `${activeBtn.offsetHeight}px`;
-            indicator.style.top = `${activeBtn.offsetTop}px`;
-        }
-
-        filterBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                // 移除所有激活状态
-                filterBtns.forEach(b => b.classList.remove('active'));
-                // 添加激活状态到当前按钮
-                btn.classList.add('active');
-                
-                // 更新指示器位置
-                indicator.style.height = `${btn.offsetHeight}px`;
-                indicator.style.top = `${btn.offsetTop}px`;
-            });
-            
-            // 鼠标悬停时的指示器动画
-            btn.addEventListener('mouseover', () => {
-                if(!btn.classList.contains('active')) {
-                    indicator.style.top = `${btn.offsetTop}px`;
-                    indicator.style.opacity = '0.6';
-                }
-            });
-            
-            btn.addEventListener('mouseout', () => {
-                if(!btn.classList.contains('active')) {
-                    indicator.style.opacity = '0';
-                    // 恢复到活动按钮的位置
-                    setTimeout(() => {
-                        const activeBtn = document.querySelector('.filter-btn.active');
-                        if(activeBtn) {
-                            indicator.style.height = `${activeBtn.offsetHeight}px`;
-                            indicator.style.top = `${activeBtn.offsetTop}px`;
-                            indicator.style.opacity = '1';
-                        }
-                    }, 300);
-                }
-            });
-        });
-
-        // 产品卡片倾斜效果
-        document.querySelectorAll('.product-card').forEach(card => {
-            card.addEventListener('mousemove', (e) => {
-                const cardRect = card.getBoundingClientRect();
-                const x = e.clientX - cardRect.left;
-                const y = e.clientY - cardRect.top;
-                
-                const centerX = cardRect.width / 2;
-                const centerY = cardRect.height / 2;
-                
-                const rotateY = (x - centerX) / 25; // 控制X轴旋转强度
-                const rotateX = (centerY - y) / 25; // 控制Y轴旋转强度
-                
-                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-3px)`;
-            });
-            
-            card.addEventListener('mouseleave', () => {
-                card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)';
-            });
-            
-            // 添加图片预加载和渐入效果
-            const imgContainer = card.querySelector('.product-img-container');
-            const img = card.querySelector('.product-img');
-            
-            // 创建加载占位符
-            const placeholder = document.createElement('div');
-            placeholder.className = 'img-placeholder';
-            placeholder.style.cssText = `
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: #f0f0f0;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                transition: opacity 0.3s ease;
-            `;
-            
-            // 添加加载指示器
-            const loader = document.createElement('div');
-            loader.className = 'img-loader';
-            loader.innerHTML = '...';
-            loader.style.cssText = `
-                color: #ccc;
-                font-size: 14px;
-            `;
-            
-            placeholder.appendChild(loader);
-            imgContainer.appendChild(placeholder);
-            
-            // 图片加载完成后淡入
-            img.onload = function() {
-                placeholder.style.opacity = '0';
-                setTimeout(() => {
-                    placeholder.style.display = 'none';
-                }, 300);
-                
-                // 添加淡入效果
-                img.style.opacity = '0';
-                img.style.transition = 'opacity 0.5s ease';
-                setTimeout(() => {
-                    img.style.opacity = '1';
-                }, 10);
-            };
-            
-            img.onerror = function() {
-                placeholder.innerHTML = '<div style="color:#999;font-size:12px;text-align:center;padding:20px;">图片加载失败</div>';
-            };
-        });
 
         window.onload = function() {
             checkLoginStatus();
@@ -742,15 +378,6 @@
                 const buttons = document.querySelectorAll('.filter-btn');
                 buttons.forEach(btn => btn.classList.remove('active'));
                 document.querySelector('.filter-btn[data-category="all"]').classList.add('active');
-                
-                // 更新指示器位置
-                const activeBtn = document.querySelector('.filter-btn.active');
-                if(activeBtn) {
-                    const rect = activeBtn.getBoundingClientRect();
-                    const containerRect = activeBtn.parentElement.getBoundingClientRect();
-                    indicator.style.width = `${rect.width}px`;
-                    indicator.style.left = `${rect.left - containerRect.left}px`;
-                }
             } catch (err) { console.error(err); }
         }
 
@@ -776,9 +403,7 @@
                 
                 productList.innerHTML += `
                     <div class="product-card">
-                        <div class="product-img-container">
-                            <img src="${imgSrc}" class="product-img" alt="${product.name}" onerror="this.onerror=null;this.src='https://placehold.co/300x200?text=No+Image'; console.error('Failed to load image: ' + this.src);">
-                        </div>
+                        <img src="${imgSrc}" class="product-img" alt="${product.name}" onerror="this.onerror=null;this.src='https://placehold.co/300x200?text=No+Image'; console.error('Failed to load image: ' + this.src);">
                         <div class="card-body">
                             <div class="product-name" onclick="viewProductDetail(${product.id})" style="cursor: pointer;">${product.name}</div>
                             <div class="product-price">¥${product.price}</div>
@@ -786,69 +411,6 @@
                         </div>
                     </div>
                 `;
-            });
-            
-            // 为每个图片添加悬停旋转效果
-            document.querySelectorAll('.product-img').forEach(img => {
-                img.addEventListener('mouseenter', function() {
-                    // 使用GSAP创建连续旋转动画
-                    gsap.to(this, {
-                        rotation: 360,      // 旋转360度
-                        duration: 2,        // 2秒完成一圈
-                        ease: "none",       // 线性匀速运动
-                        repeat: -1,         // 无限重复
-                        yoyo: true,         // 来回旋转效果
-                        yoyoEase: true      // 往返时的缓动效果
-                    });
-                });
-                
-                img.addEventListener('mouseleave', function() {
-                    // 停止旋转动画
-                    gsap.killTweensOf(this);
-                    // 重置旋转角度
-                    gsap.set(this, { rotation: 0 });
-                });
-            });
-            
-            // 重新添加倾斜效果到新的卡片
-            document.querySelectorAll('.product-card').forEach(card => {
-                card.addEventListener('mousemove', (e) => {
-                    const cardRect = card.getBoundingClientRect();
-                    const x = e.clientX - cardRect.left;
-                    const y = e.clientY - cardRect.top;
-                    
-                    const centerX = cardRect.width / 2;
-                    const centerY = cardRect.height / 2;
-                    
-                    const rotateY = (x - centerX) / 25;
-                    const rotateX = (centerY - y) / 25;
-                    
-                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-3px)`;
-                });
-                
-                card.addEventListener('mouseleave', () => {
-                    card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)';
-                });
-            });
-        }
-
-        // 为产品图片添加动画效果
-        function animateProductImages() {
-            const imgContainers = document.querySelectorAll('.product-img-container');
-            
-            // 使用GSAP为每个图片容器添加动画
-            imgContainers.forEach((container, index) => {
-                // 使用gsap.fromTo为每个图片容器添加动画
-                gsap.fromTo(container, {
-                    opacity: 0,
-                    y: 20
-                }, {
-                    opacity: 1,
-                    y: 0,
-                    duration: 0.6,
-                    delay: index * 0.1, // 每个元素延迟0.1秒，依次显示
-                    ease: "power2.out"
-                });
             });
         }
 
@@ -963,13 +525,6 @@
             
             // 隐藏分页，因为分类筛选不使用分页
             document.getElementById('pagination').style.display = 'none';
-            
-            // 更新指示器位置
-            const activeBtn = document.querySelector('.filter-btn.active');
-            if(activeBtn) {
-                indicator.style.height = `${activeBtn.offsetHeight}px`;
-                indicator.style.top = `${activeBtn.offsetTop}px`;
-            }
         }
 
         function trackUserAction(action, product) {
@@ -978,7 +533,7 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username: user, action, product })
-            }).catch(() => {}); /* 忽略错误 */
+            }).catch(() => {}); // 忽略错误
         }
     </script>
 </body>

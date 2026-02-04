@@ -1,608 +1,296 @@
 <script>
-    // 新增：自定义光标逻辑
-    const cursor = document.createElement('div');
-    cursor.classList.add('custom-cursor');
-    document.body.appendChild(cursor);
+        // 设置API基础URL，以便在部署时调整
+        const isDeployed = window.location.hostname.includes('onrender.com');
+        // 修改API_BASE地址为正确的后端地址
+        const API_BASE = isDeployed ? 'https://jiyi-zhumeng.onrender.com' : 'http://localhost:3000';
+        let currentPage = 1;
+        let productsCache = []; 
+        let allProducts = []; // 新增：存储所有商品用于搜索
+        let isSearchMode = false; // 新增：搜索模式标志
+        let currentSearchTerm = ''; // 新增：当前搜索关键词
+        let filteredProducts = []; // 新增：分类筛选后的商品
+        let currentCategory = 'all'; // 新增：当前分类
 
-    document.addEventListener('mousemove', (e) => {
-        cursor.style.left = e.clientX + 'px';
-        cursor.style.top = e.clientY + 'px';
+        window.onload = function() {
+            checkLoginStatus();
+            loadAllProducts(); // 新增：加载所有商品用于搜索
+            trackUserAction('访问首页', '浏览商品列表');
             
-            // 检查是否悬停在可交互元素上
-            const hoverElement = document.elementFromPoint(e.clientX, e.clientY);
-            if (hoverElement && (hoverElement.tagName === 'A' || hoverElement.classList.contains('btn-buy') || hoverElement.classList.contains('btn-favorite'))) {
-                cursor.classList.add('hover');
+            // 添加事件监听器到筛选按钮
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    filterProducts(this.getAttribute('data-category'));
+                });
+            });
+        };
+
+        function checkLoginStatus() {
+            const user = localStorage.getItem('currentUser');
+            const authSection = document.getElementById('auth-section');
+            if (user) {
+                authSection.innerHTML = `
+                    <span>欢迎, ${user}</span>
+                    <a href="cart.html">🛒 购物车</a>
+                    <a href="favorites.html">❤️ 收藏</a>
+                    <a onclick="logout()">退出</a>
+                `;
             } else {
-                cursor.classList.remove('hover');
-            }
-        });
-
-        // 新增：平滑滚动逻辑（模拟Lenis效果）
-        let scrollPosition = window.pageYOffset;
-        let lastScrollPosition = scrollPosition;
-        let scrollDirection = 0;
-
-        function smoothScroll() {
-            const currentScroll = window.pageYOffset;
-            const delta = currentScroll - scrollPosition;
-            scrollDirection = delta > 0 ? 1 : -1;
-            
-            // 使用指数衰减来模拟阻尼效果
-            const dampingFactor = 0.1;
-            const newScrollPosition = scrollPosition + delta * dampingFactor;
-            
-            window.scrollTo(0, newScrollPosition);
-            
-            // 更新位置
-            scrollPosition = newScrollPosition;
-            
-            // 触发视差效果
-            triggerParallax();
-            
-            requestAnimationFrame(smoothScroll);
-        }
-
-        // 启动平滑滚动
-        window.addEventListener('scroll', () => {
-            lastScrollPosition = scrollPosition;
-        });
-
-        // 新增：视差效果触发器
-        function triggerParallax() {
-            const heroSection = document.querySelector('.page-title');
-            if (heroSection) {
-                const scrollTop = window.pageYOffset;
-                const offset = scrollTop * 0.2;
-                heroSection.style.transform = `translateY(${offset}px)`;
+                authSection.innerHTML = `
+                    <a href="login.html">登录</a>
+                    <a href="register.html">注册</a>
+                `;
             }
         }
 
-        // 新增：Hero区域文字入场动画
-        function animateHeroText() {
-            const title = document.querySelector('.page-title h2');
-            const words = title.textContent.split('');
-            title.textContent = '';
-            
-            words.forEach((word, index) => {
-                const span = document.createElement('span');
-                span.textContent = word;
-                span.style.opacity = '0';
-                span.style.transform = 'translateY(20px)';
-                span.style.transition = `all 0.5s cubic-bezier(0.16, 1, 0.3, 1) ${index * 0.1}s`;
-                title.appendChild(span);
+        function logout() {
+            trackUserAction('用户登出', '-');
+            localStorage.removeItem('currentUser');
+            window.location.reload();
+        }
+
+        // 新增：加载所有商品
+        async function loadAllProducts() {
+            try {
+                const res = await fetch(`${API_BASE}/api/products?page=1`);
+                const data = await res.json();
+                allProducts = data.items;
                 
-                // 等待所有文字加载后统一显示
-                setTimeout(() => {
-                    span.style.opacity = '1';
-                    span.style.transform = 'translateY(0)';
-                }, 100);
-            });
-        }
-
-        // 新增：分类标签流体交互
-        function setupFilterAnimation() {
-            const filterBtns = document.querySelectorAll('.filter-btn');
-            const highlight = document.createElement('div');
-            highlight.classList.add('filter-highlight');
-            highlight.style.position = 'absolute';
-            highlight.style.bottom = '0';
-            highlight.style.left = '0';
-            highlight.style.width = '0';
-            highlight.style.height = '2px';
-            highlight.style.backgroundColor = '#5a7d7c';
-            highlight.style.transition = 'width 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
-            document.getElementById('filter-container').appendChild(highlight);
-            
-            filterBtns.forEach(btn => {
-                btn.addEventListener('mouseenter', () => {
-                    const rect = btn.getBoundingClientRect();
-                    const containerRect = document.getElementById('filter-container').getBoundingClientRect();
-                    const left = rect.left - containerRect.left;
-                    const width = rect.width;
-                    
-                    highlight.style.width = `${width}px`;
-                    highlight.style.left = `${left}px`;
-                });
-            });
-        }
-
-        // 新增：产品卡片高级悬停反馈
-        function setupProductCardAnimation() {
-            const productCards = document.querySelectorAll('.product-card');
-            
-            productCards.forEach(card => {
-                const img = card.querySelector('.product-img');
-                const buyBtn = card.querySelector('.btn-buy');
+                // 如果有第二页，加载第二页商品
+                if (data.totalPages > 1) {
+                    const res2 = await fetch(`${API_BASE}/api/products?page=2`);
+                    const data2 = await res2.json();
+                    allProducts = allProducts.concat(data2.items);
+                }
                 
-                card.addEventListener('mouseenter', () => {
-                    // 图片缩放
-                    img.style.transform = 'scale(1.05)';
-                    img.style.transition = 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
-                    
-                    // 信息浮现
-                    buyBtn.style.opacity = '1';
-                    buyBtn.style.transform = 'translateY(0)';
-                    buyBtn.style.transition = 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
-                    
-                    // 3D倾斜效果
-                    card.style.transform = 'perspective(1000px) rotateX(5deg) rotateY(5deg)';
-                });
+                loadProducts(currentPage);
+            } catch (err) { 
+                console.error('加载商品失败:', err);
+                loadProducts(currentPage);
+            }
+        }
+
+        async function loadProducts(page) {
+            try {
+                const res = await fetch(`${API_BASE}/api/products?page=${page}`);
+                const data = await res.json();
+                productsCache = data.items; 
                 
-                card.addEventListener('mouseleave', () => {
-                    // 图片恢复
-                    img.style.transform = 'scale(1)';
-                    
-                    // 信息隐藏
-                    buyBtn.style.opacity = '0';
-                    buyBtn.style.transform = 'translateY(10px)';
-                    
-                    // 3D倾斜效果恢复
-                    card.style.transform = 'perspective(1000px)';
-                });
-            });
-        }
-
-        // 新增：图片加载完成后的淡入动画
-        function setupImageFadeIn() {
-            const images = document.querySelectorAll('.product-img');
-            images.forEach(img => {
-                img.style.opacity = '0';
-                img.style.transition = 'opacity 0.8s ease-in-out';
+                displayProducts(data.items);
                 
-                // 监听图片加载完成
-                img.onload = function() {
-                    this.style.opacity = '1';
-                };
+                document.getElementById('page-info').innerText = `第 ${data.page} 页 / 共 ${data.totalPages} 页`;
+                document.getElementById('prev-btn').disabled = data.page <= 1;
+                document.getElementById('next-btn').disabled = data.page >= data.totalPages;
+                currentPage = data.page;
                 
-                // 如果图片加载失败，设置默认占位图
-                img.onerror = function() {
-                    this.src = 'https://via.placeholder.com/300x200?text=图片加载失败';
-                    this.style.opacity = '1';
-                };
-            });
-        }
-
-        // 新增：光标悬停在图片上的旋转效果
-        function setupImageRotation() {
-            const productImages = document.querySelectorAll('.product-img');
-            
-            productImages.forEach(img => {
-                img.addEventListener('mouseenter', () => {
-                    // 设置较大的旋转角度
-                    gsap.to(img, {
-                        rotation: 360,
-                        duration: 2,
-                        ease: "power1.inOut",
-                        repeat: -1,
-                        yoyo: true
-                    });
-                });
+                // 重置搜索状态
+                isSearchMode = false;
+                currentSearchTerm = '';
+                currentCategory = 'all';
+                document.getElementById('search-results').innerHTML = '';
+                document.getElementById('no-results').style.display = 'none';
+                document.getElementById('pagination').style.display = 'flex';
                 
-                img.addEventListener('mouseleave', () => {
-                    // 停止旋转
-                    gsap.killTweensOf(img);
-                    img.style.rotation = '0';
-                });
-            });
+                // 重置分类按钮状态
+                const buttons = document.querySelectorAll('.filter-btn');
+                buttons.forEach(btn => btn.classList.remove('active'));
+                document.querySelector('.filter-btn[data-category="all"]').classList.add('active');
+            } catch (err) { console.error(err); }
         }
 
-        // 新增：初始化所有交互效果
-        function initInteractions() {
-            // 初始化自定义光标
-            setupCustomCursor();
-            
-            // 初始化分类标签动画
-            setupFilterAnimation();
-            
-            // 初始化产品卡片动画
-            setupProductCardAnimation();
-            
-            // 初始化图片淡入动画
-            setupImageFadeIn();
-            
-            // 初始化图片旋转效果
-            setupImageRotation();
-            
-            // 初始化Hero文字动画
-            animateHeroText();
-            
-            // 启动平滑滚动
-            smoothScroll();
-        }
+        // 新增：显示商品列表
+        function displayProducts(products) {
+            const productList = document.getElementById('product-list');
+            productList.innerHTML = ''; 
 
-        // 新增：自定义光标样式
-        function setupCustomCursor() {
-            const cursor = document.querySelector('.custom-cursor');
-            cursor.style.position = 'fixed';
-            cursor.style.width = '20px';
-            cursor.style.height = '20px';
-            cursor.style.border = '1px solid #333';
-            cursor.style.borderRadius = '50%';
-            cursor.style.pointerEvents = 'none';
-            cursor.style.zIndex = '99999';
-            cursor.style.transition = 'all 0.1s ease';
-            
-            // 添加悬停状态样式
-            cursor.classList.add('hover');
-        }
+            if (products.length === 0) {
+                document.getElementById('no-results').style.display = 'block';
+                document.getElementById('pagination').style.display = 'none';
+                return;
+            }
 
-        // 页面加载完成后初始化所有交互效果
-        window.addEventListener('DOMContentLoaded', () => {
-            // 添加"全部商品"导航栏
-            const navLinks = document.getElementById('auth-section');
-            const allProductsLink = document.createElement('a');
-            allProductsLink.href = '#';
-            allProductsLink.textContent = '全部商品';
-            allProductsLink.style.marginLeft = '20px';
-            allProductsLink.style.color = '#333333';
-            allProductsLink.style.textDecoration = 'none';
-            allProductsLink.style.transition = 'opacity 0.2s ease';
-            allProductsLink.style.fontSize = '14px';
-            allProductsLink.style.fontWeight = '400';
-            allProductsLink.style.letterSpacing = '1px';
-            allProductsLink.style.display = 'inline-block';
-            allProductsLink.style.padding = '0 10px';
-            allProductsLink.style.borderBottom = '2px solid transparent';
-            allProductsLink.style.cursor = 'pointer';
-            
-            allProductsLink.addEventListener('mouseenter', () => {
-                allProductsLink.style.borderBottomColor = '#5a7d7c';
-                allProductsLink.style.opacity = '0.7';
-            });
-            
-            allProductsLink.addEventListener('mouseleave', () => {
-                allProductsLink.style.borderBottomColor = 'transparent';
-                allProductsLink.style.opacity = '1';
-            });
-            
-            navLinks.insertBefore(allProductsLink, navLinks.firstChild);
-            
-            // 调整色差
-            const sidebar = document.querySelector('.sidebar');
-            sidebar.style.background = '#FDFBF7'; // 更浅的米白色
-            
-            const productCards = document.querySelectorAll('.product-card');
-            productCards.forEach((card, index) => {
-                // 交替使用两种微妙的色差背景
-                card.style.background = index % 2 === 0 ? '#F5F5F0' : '#FDFBF7';
-            });
-            
-            // 初始化所有交互效果
-            initInteractions();
-        });
-    </script>
-<style>
-    /* 极简导航栏 - 固定顶部线条式设计 */
-    .navbar {
-        position: fixed; top: 0; left: 0; width: 100%;
-        background: rgba(253, 251, 247, 0.9); /* 稍微加深背景颜色 */
-        color: #333333;
-        padding: 12px 24px;
-        display: flex; justify-content: space-between; align-items: center; z-index: 1000;
-        backdrop-filter: blur(10px);
-        border-bottom: none;
-    }
-
-    /* 高级搜索框样式 */
-    .search-container {
-        display: flex;
-        align-items: center;
-        margin: 0 15px;
-        flex: 1;
-        max-width: 300px;
-    }
-
-    .search-input {
-        width: 100%;
-        padding: 10px 16px;
-        border: none;
-        background: transparent;
-        font-family: inherit;
-        font-size: 14px;
-        color: #333333;
-        transition: all 0.3s ease;
-        position: relative;
-        z-index: 1;
-    }
-
-    .search-input::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.5));
-        transform: scaleX(0);
-        transform-origin: left;
-        transition: transform 0.3s ease;
-        z-index: -1;
-    }
-
-    .search-input:focus::before {
-        transform: scaleX(1);
-    }
-
-    .search-btn {
-        margin-left: 6px;
-        padding: 10px 16px;
-        background: #333333;
-        color: white;
-        border: none;
-        border-radius: 0;
-        cursor: pointer;
-        font-family: inherit;
-        font-size: 14px;
-        transition: opacity 0.2s ease;
-        position: relative;
-        z-index: 1;
-    }
-
-    .search-btn::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.5));
-        transform: scaleY(0);
-        transform-origin: top;
-        transition: transform 0.3s ease;
-        z-index: -1;
-    }
-
-    .search-btn:hover::before {
-        transform: scaleY(1);
-    }
-
-    /* Hero区域样式 */
-    .page-title {
-        position: relative;
-        height: 100vh;
-        background: url('https://via.placeholder.com/1920x1080') no-repeat center center/cover;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        color: white;
-        text-align: center;
-        font-family: 'Noto Serif SC', 'Songti SC', serif;
-        font-size: 48px;
-        font-weight: 700;
-        text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-    }
-
-    /* 分类标签样式 */
-    .filter-container {
-        display: flex;
-        justify-content: center;
-        margin: 24px 0;
-        background: #f9f9f9; /* 背景稍微添加一点点色差 */
-    }
-
-    .filter-btn {
-        padding: 10px 24px;
-        background: transparent;
-        color: #333333;
-        border: 1px solid #e2e8f0;
-        border-radius: 24px;
-        cursor: pointer;
-        font-family: inherit;
-        font-size: 14px;
-        margin: 0 8px;
-        transition: background 0.2s ease, color 0.2s ease;
-    }
-
-    .filter-btn:hover {
-        background: #5a7d7c;
-        color: white;
-    }
-
-    /* 产品卡片样式 */
-    .product-card {
-        width: 300px;
-        background: #ffffff; /* 纯白色背景 */
-        border: 1px solid #eaeaea; /* 添加轻微边框 */
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
-        overflow: hidden;
-        margin: 12px;
-        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .product-img {
-        width: 100%;
-        height: 200px;
-        object-fit: cover;
-        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .product-info {
-        padding: 16px;
-        text-align: center;
-    }
-
-    .product-name {
-        font-size: 18px;
-        font-weight: 500;
-        margin-bottom: 8px;
-    }
-
-    .product-price {
-        font-size: 16px;
-        color: #5a7d7c;
-        margin-bottom: 12px;
-    }
-
-    .btn-buy {
-        padding: 10px 24px;
-        background: #5a7d7c;
-        color: white;
-        border: none;
-        border-radius: 24px;
-        cursor: pointer;
-        font-family: inherit;
-        font-size: 14px;
-        opacity: 0;
-        transform: translateY(10px);
-        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .btn-buy:hover {
-        background: #4a6d6c;
-    }
-
-    /* 自定义光标样式 */
-    .custom-cursor {
-        position: fixed;
-        width: 20px;
-        height: 20px;
-        background: #5a7d7c;
-        border-radius: 50%;
-        pointer-events: none;
-        transition: transform 0.1s ease, background 0.1s ease;
-        z-index: 1000;
-    }
-
-    .custom-cursor.hover {
-        transform: scale(1.5);
-        background: #4a6d6c;
-    }
-
-    /* 分类标签高亮样式 */
-    .filter-highlight {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 0;
-        height: 2px;
-        background: #5a7d7c;
-        transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    /* 修改侧边栏样式 */
-    .sidebar {
-        background: #ffffff; /* 改为纯白色背景 */
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
-    }
-
-    /* 商品分类背景添加色差 */
-    .filter-container {
-        background: #f9f9f9; /* 背景稍微添加一点点色差 */
-    }
-
-    /* 每个商品背景也有一点点色差 */
-    .product-card {
-        background: #ffffff; /* 纯白色背景 */
-        border: 1px solid #eaeaea; /* 添加轻微边框 */
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
-    }
-
-    /* 大的颜色背景 */
-    .main-layout {
-        background: #f5f5f5; /* 设置一个大的颜色背景 */
-    }
-
-    /* 搜索框3D效果和动态特效 */
-    .search-input {
-        width: 100%;
-        padding: 10px 16px;
-        border: none;
-        background: transparent;
-        font-family: inherit;
-        font-size: 14px;
-        color: #333333;
-        transition: all 0.3s ease;
-        position: relative;
-        z-index: 1;
-    }
-
-    .search-input::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.5));
-        transform: scaleX(0);
-        transform-origin: left;
-        transition: transform 0.3s ease;
-        z-index: -1;
-    }
-
-    .search-input:focus::before {
-        transform: scaleX(1);
-    }
-
-    .search-btn {
-        margin-left: 6px;
-        padding: 10px 16px;
-        background: #333333;
-        color: white;
-        border: none;
-        border-radius: 0;
-        cursor: pointer;
-        font-family: inherit;
-        font-size: 14px;
-        transition: opacity 0.2s ease;
-        position: relative;
-        z-index: 1;
-    }
-
-    .search-btn::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.5));
-        transform: scaleY(0);
-        transform-origin: top;
-        transition: transform 0.3s ease;
-        z-index: -1;
-    }
-
-    .search-btn:hover::before {
-        transform: scaleY(1);
-    }
-</style>
-
-<body>
-    <div class="main-layout">
-        <div class="sidebar">
-            <!-- 左侧导航栏内容 -->
-        </div>
-        <div class="container">
-            <div class="navbar">
-                <div style="font-size: 18px; font-weight: 500; color: #333333; font-family: 'Noto Serif SC', 'Songti SC', serif;">🏛️ 冀遗筑梦</div>
-                <div class="nav-links" id="auth-section">
-                    <!-- JS填充 -->
-                </div>
-            </div>
-            <div class="search-container">
-                <input type="text" class="search-input" placeholder="搜索商品...">
-                <button class="search-btn">搜索</button>
-            </div>
-            <div class="page-title">
-                <h2>欢迎来到冀遗筑梦</h2>
-            </div>
-            <div class="filter-container" id="filter-container">
-                <button class="filter-btn">全部</button>
-                <button class="filter-btn">古籍</button>
-                <button class="filter-btn">艺术品</button>
-                <button class="filter-btn">手工艺品</button>
-            </div>
-            <div class="product-list" id="product-list">
-                <div class="product-card">
-                    <img src="/path/to/correct/image.jpg" alt="商品描述" class="product-img">
-                    <div class="product-info">
-                        <div class="product-name">商品名称</div>
-                        <div class="product-price">¥100.00</div>
-                        <button class="btn-buy">购买</button>
+            products.forEach((product, index) => {
+                // 修复图片路径处理逻辑 - 完全从后端获取
+                let imgSrc = product.img;
+                
+                // 确保图片URL是完整的，如果只是相对路径则拼接API基础URL
+                if (!imgSrc.startsWith('http') && !imgSrc.startsWith('/')) {
+                    imgSrc = `${API_BASE}/${imgSrc}`;
+                }
+                
+                productList.innerHTML += `
+                    <div class="product-card">
+                        <img src="${imgSrc}" class="product-img" alt="${product.name}" onerror="this.onerror=null;this.src='https://placehold.co/300x200?text=No+Image'; console.error('Failed to load image: ' + this.src);">
+                        <div class="card-body">
+                            <div class="product-name" onclick="viewProductDetail(${product.id})" style="cursor: pointer;">${product.name}</div>
+                            <div class="product-price">¥${product.price}</div>
+                            <div class="product-desc">${product.desc}</div>
+                            <button class="btn-buy" onclick="addToCart(${index})">加入购物车</button>
+                        </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</body>
+                `;
+            });
+        }
+
+        function changePage(step) {
+            if (isSearchMode) {
+                // 搜索模式下的翻页
+                const newPage = currentPage + step;
+                const startIndex = (newPage - 1) * 6;
+                const endIndex = startIndex + 6;
+                const pageProducts = searchResults.slice(startIndex, endIndex);
+                
+                if (pageProducts.length > 0) {
+                    displayProducts(pageProducts);
+                    document.getElementById('page-info').innerText = `第 ${newPage} 页 / 共 ${Math.ceil(searchResults.length / 6)} 页`;
+                    document.getElementById('prev-btn').disabled = newPage <= 1;
+                    document.getElementById('next-btn').disabled = newPage >= Math.ceil(searchResults.length / 6);
+                    currentPage = newPage;
+                }
+            } else if (currentCategory !== 'all') {
+                // 分类筛选模式下的翻页（暂不支持）
+                alert('分类筛选模式下不支持翻页');
+            } else {
+                // 正常模式下的翻页
+                loadProducts(currentPage + step);
+            }
+            trackUserAction('翻页浏览', `第 ${currentPage + step} 页`);
+        }
+
+        // 新增：搜索功能
+        function performSearch() {
+            const searchTerm = document.getElementById('search-input').value.trim();
+            if (!searchTerm) {
+                loadProducts(1);
+                return;
+            }
+            
+            currentSearchTerm = searchTerm;
+            isSearchMode = true;
+            
+            // 执行搜索
+            const searchResults = allProducts.filter(product => 
+                product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                product.desc.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            
+            // 显示搜索结果
+            displaySearchResults(searchResults, searchTerm);
+            trackUserAction('搜索商品', `关键词: ${searchTerm}`);
+        }
+
+        // 新增：显示搜索结果
+        function displaySearchResults(results, searchTerm) {
+            searchResults = results; // 存储搜索结果用于翻页
+            
+            if (results.length === 0) {
+                document.getElementById('product-list').innerHTML = '';
+                document.getElementById('no-results').style.display = 'block';
+                document.getElementById('search-results').innerHTML = `搜索 "<strong>${searchTerm}</strong>" 没有找到相关商品`;
+                document.getElementById('pagination').style.display = 'none';
+                return;
+            }
+            
+            // 显示第一页结果
+            const pageProducts = results.slice(0, 6);
+            displayProducts(pageProducts);
+            
+            // 更新搜索提示
+            document.getElementById('search-results').innerHTML = 
+                `搜索 "<strong>${searchTerm}</strong>" 找到 ${results.length} 个相关商品`;
+            
+            // 更新分页
+            if (results.length > 6) {
+                document.getElementById('page-info').innerText = `第 1 页 / 共 ${Math.ceil(results.length / 6)} 页`;
+                document.getElementById('prev-btn').disabled = true;
+                document.getElementById('next-btn').disabled = results.length <= 6;
+                document.getElementById('pagination').style.display = 'flex';
+            } else {
+                document.getElementById('pagination').style.display = 'none';
+            }
+            
+            currentPage = 1;
+        }
+
+        // 新增：回车键搜索
+        function handleSearchKeypress(event) {
+            if (event.key === 'Enter') {
+                performSearch();
+            }
+        }
+
+        // 新增：清除搜索
+        function clearSearch() {
+            document.getElementById('search-input').value = '';
+            loadProducts(1);
+        }
+
+        // 新增：商品详情页跳转
+        function viewProductDetail(productId) {
+            window.location.href = `product-detail.html?id=${productId}`;
+        }
+
+        // 新增：分类筛选功能
+        function filterProducts(category) {
+            currentCategory = category;
+            const buttons = document.querySelectorAll('.filter-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (category === 'all') {
+                displayProducts(allProducts);
+                document.getElementById('pagination').style.display = 'flex';
+            } else {
+                filteredProducts = allProducts.filter(product => product.category === category);
+                displayProducts(filteredProducts);
+                document.getElementById('pagination').style.display = 'none';
+                
+                // 更新搜索结果提示
+                document.getElementById('search-results').innerHTML = 
+                    `显示分类 "<strong>${category}</strong>" 的 ${filteredProducts.length} 个商品`;
+            }
+        }
+
+        async function addToCart(index) {
+            const user = localStorage.getItem('currentUser');
+            if(!user) {
+                alert('请先登录后再购买！');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const product = currentCategory !== 'all' ? 
+                filteredProducts[index] : 
+                (isSearchMode ? searchResults[index] : productsCache[index]);
+                
+            try {
+                const res = await fetch(`${API_BASE}/api/cart/add`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user, product: product })
+                });
+                const data = await res.json();
+                if(data.success) {
+                    alert(`✅ [${product.name}] 已加入购物车！`);
+                }
+            } catch(e) {
+                alert('添加失败');
+            }
+        }
+
+        async function trackUserAction(action, product) {
+            const currentUser = localStorage.getItem('currentUser') || '未登录游客';
+            try {
+                await fetch(`${API_BASE}/api/track`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: currentUser,
+                        action: action,
+                        product: product
+                    })
+                });
+            } catch (e) {}
+        }
+    </script>
+</```
