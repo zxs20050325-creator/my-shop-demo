@@ -149,7 +149,8 @@
         /* 主体内容区域：分类筛选 + 商品展示 */
         .main-content {
             display: flex;
-            gap: 40px;
+            gap: 30px;
+            align-items: flex-start;
         }
 
         /* ========================================
@@ -158,12 +159,12 @@
         .filter-container {
             display: flex;
             flex-direction: column; /* 垂直排列 */
-            gap: 24px;
-            flex: 0 0 240px; /* 固定宽度240px */
+            gap: 20px;
+            flex: 0 0 180px; /* 调整为更窄的180px宽度 */
             position: sticky; /* 固定定位 */
             top: 100px; /* 考虑顶部导航栏高度 */
             align-self: start; /* 保持在顶部 */
-            padding: 20px 15px;
+            padding: 15px 10px;
             background: transparent; /* 透明背景 */
             border-radius: 0; /* 移除圆角 */
         }
@@ -208,19 +209,20 @@
            ======================================== */
         .product-grid { 
             display: grid; 
-            grid-template-columns: repeat(4, 1fr); /* 4列网格 */
+            grid-template-columns: repeat(3, 1fr); /* 调整为3列网格，更适合当前屏幕 */
             grid-auto-rows: minmax(220px, auto);
-            gap: 40px 25px; /* 调整间距 */
+            gap: 30px 20px; /* 调整间距，减少上下间距 */
+            flex: 1; /* 让商品网格占据剩余空间 */
         }
         
         /* 第一个产品（镇店之宝）横跨2列 */
         .product-grid > div:first-child { 
-            grid-column: span 2; /* 横跨2列 */
+            grid-column: span 3; /* 横跨3列，成为全宽展示 */
             grid-row: span 1;
         }
         
-        /* 第4n个产品也横跨2列 */
-        .product-grid > div:nth-child(4n) { 
+        /* 第3n+1个产品横跨2列，形成更有节奏感的布局 */
+        .product-grid > div:nth-child(3n+1):not(:first-child) { 
             grid-column: span 2; /* 横跨2列 */
             grid-row: span 1;
         }
@@ -273,9 +275,12 @@
         }
         
         /* 第一个产品和每4n个产品的图片更高 */
-        .product-grid > div:first-child .product-img, 
-        .product-grid > div:nth-child(4n) .product-img { 
-            height: 380px; /* 更高的图片 */
+        .product-grid > div:first-child .product-img { 
+            height: 420px; /* 全宽镇店之宝使用更高的图片 */
+        }
+        
+        .product-grid > div:nth-child(3n+1):not(:first-child) .product-img { 
+            height: 320px; /* 其他横跨2列的商品使用适中高度 */
         }
 
         /* 卡片内容区 - 左对齐 */
@@ -387,16 +392,22 @@
                 grid-template-columns: repeat(3, 1fr); 
             }
             
-            .product-grid > div:first-child, 
-            .product-grid > div:nth-child(4n) { 
+            .product-grid > div:first-child { 
+                grid-column: span 3; 
+            }
+            
+            .product-grid > div:nth-child(3n+1):not(:first-child) { 
                 grid-column: span 2; 
             }
         }
         
         @media (max-width: 1024px) {
             .container { 
-                grid-template-columns: 1fr; 
-                padding: 20px; 
+                padding: 20px;
+            }
+            
+            .main-content {
+                flex-direction: column;
             }
             
             .filter-container {
@@ -407,6 +418,8 @@
                 top: 80px;
                 padding: 15px;
                 border-right: none;
+                width: 100%;
+                flex: none;
             }
             
             .filter-btn {
@@ -435,6 +448,10 @@
                 grid-column: span 2; 
             }
             
+            .product-grid > div:nth-child(3n+1):not(:first-child) {
+                grid-column: span 1; /* 小屏幕下不再跨列 */
+            }
+            
             .pagination,
             .search-results,
             .no-results { 
@@ -446,9 +463,20 @@
             .navbar { padding: 16px 20px; }
             .page-title { margin-bottom: 20px; }
             .filter-container { margin: 20px 0 30px; }
-            .page-title h2 { font-size: 32px; }
-            .container { padding: 20px; }
-            .product-grid { gap: 25px 15px; }
+            .page-title h2 { font-size: 28px; }
+            .container { padding: 15px; }
+            .product-grid { 
+                grid-template-columns: 1fr; /* 移动端单列显示 */
+                gap: 25px;
+            }
+            
+            .product-grid > div:first-child {
+                grid-column: span 1; /* 移动端不再跨列 */
+            }
+            
+            .product-grid > div:first-child .product-img {
+                height: 300px; /* 移动端调整图片高度 */
+            }
         }
     </style>
 </head>
