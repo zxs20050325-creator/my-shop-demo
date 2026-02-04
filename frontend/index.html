@@ -720,7 +720,7 @@
                             </div>
                             <div class="p-price">¥${item.price}</div>
                         </div>
-                        <button class="btn-add-cart" onclick="addToCart(event, ${item.id})">ADD TO COLLECTION +</button>
+                        <button class="btn-add-cart" onclick="addToCart(event, ${item.id})">ADD TO CART +</button>
                     </div>
                 `;
                 container.innerHTML += card;
@@ -753,7 +753,14 @@
             // UI 更新
             const btns = document.querySelectorAll('#category-filters button');
             btns.forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
+            // 修复：检查event是否有效
+            if(event && event.target) {
+                event.target.classList.add('active');
+            } else {
+                // 如果没有事件，则查找对应分类的按钮并添加active类
+                const targetBtn = [...btns].find(btn => btn.textContent.trim() === category);
+                if(targetBtn) targetBtn.classList.add('active');
+            }
 
             loadProductsByPage(1);
         }
