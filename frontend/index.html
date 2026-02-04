@@ -20,26 +20,26 @@
         /* 极简导航栏 - 固定顶部线条式设计 */
         .navbar {
             position: fixed; top: 0; left: 0; width: 100%;
-            background: #ffffff; /* 哑光黑背景改为纯白以符合极简风格 */
-            color: #2d3748; /* 暖灰色文字 */
+            background: #ffffff; 
+            color: #2d3748; 
             padding: 16px 40px;
             display: flex; justify-content: space-between; align-items: center; z-index: 1000;
-            border-bottom: 1px solid #e2e8f0; /* 微弱分隔线 */
+            border-bottom: 1px solid #e2e8f0; 
         }
 
         .nav-links a { 
-            color: #2d3748; /* 暖灰色 */
+            color: #2d3748; 
             text-decoration: none; 
             margin-left: 30px; 
             font-weight: 400;
             transition: opacity 0.2s ease;
         }
         .nav-links a:hover { 
-            opacity: 0.7; /* 悬停时仅改变透明度 */
-            color: #8b2a2a; /* 赤陶色强调 */
+            opacity: 0.7; 
+            color: #8b2a2a; 
         }
 
-        /* 搜索框极简化 */
+        /* 搜索框极简化 - 只保留底边框 */
         .search-container {
             display: flex;
             align-items: center;
@@ -51,22 +51,24 @@
         .search-input {
             width: 100%;
             padding: 10px 16px;
-            border: 1px solid #e2e8f0; /* 暖灰色边框 */
-            border-radius: 4px;
+            border: none;
+            border-bottom: 1px solid #e2e8f0; /* 只保留底边框 */
             outline: none;
             font-family: inherit;
             font-size: 14px;
+            background: transparent;
             transition: border-color 0.2s ease;
         }
 
         .search-input:focus {
-            border-color: #cbd5e0; /* 焦点时边框颜色 */
+            border-color: #cbd5e0; 
+            box-shadow: 0 1px 0 0 #cbd5e0; /* 增加焦点时的下划线效果 */
         }
 
         .search-btn {
             margin-left: 8px;
             padding: 10px 16px;
-            background: #8b2a2a; /* 赤陶色按钮 */
+            background: #8b2a2a; 
             color: white;
             border: none;
             border-radius: 4px;
@@ -79,75 +81,177 @@
             opacity: 0.9;
         }
 
-        .container { max-width: 1200px; margin: 0 auto; padding: 40px; }
+        /* 主容器使用Grid布局 - 侧边栏+内容区 */
+        .container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            padding: 40px; 
+            display: grid;
+            grid-template-columns: 250px 1fr; /* 左侧边栏250px，右侧内容区域剩余空间 */
+            gap: 40px;
+        }
 
-        .page-title { text-align: center; margin-bottom: 50px; color: #2d3748; }
-        .page-title h2 { font-size: 36px; font-weight: 700; margin-bottom: 12px; } /* 加粗标题 */
-        .page-title p { color: #718096; font-size: 18px; } /* 暖灰色副标题 */
+        .page-title { 
+            grid-column: 1 / -1; /* 标题跨越整个网格 */
+            text-align: center; 
+            margin-bottom: 30px; 
+            color: #2d3748; 
+        }
+        .page-title h2 { font-size: 36px; font-weight: 700; margin-bottom: 12px; } 
+        .page-title p { color: #718096; font-size: 18px; } 
 
-        /* 产品网格 - 大留白设计 */
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 40px; }
+        /* 分类筛选 - 左侧固定导航栏 */
+        .filter-container {
+            display: flex;
+            flex-direction: column; /* 垂直排列 */
+            gap: 12px;
+            position: sticky; /* 固定定位 */
+            top: 120px; /* 考虑顶部导航栏高度 */
+            align-self: start; /* 保持在顶部 */
+            padding: 20px;
+            background: #f8fafc; /* 淡色背景 */
+            border-radius: 8px;
+            border-left: 3px solid #8b2a2a; /* 左侧装饰线 */
+        }
 
-        /* 极简产品卡片 - 去掉边框和阴影 */
+        .filter-btn {
+            padding: 14px 16px;
+            background: transparent;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            color: #4a5568;
+            text-align: left; /* 左对齐文本 */
+            font-weight: 500;
+            transition: all 0.2s ease;
+            writing-mode: vertical-lr; /* 竖排文字 */
+            text-orientation: mixed; /* 保持正常的字符方向 */
+            height: 120px; /* 固定高度 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .filter-btn.active, .filter-btn:hover {
+            background: #8b2a2a;
+            color: white;
+            border-color: #8b2a2a;
+            position: relative;
+        }
+        
+        .filter-btn.active::before {
+            content: "•"; /* 左侧小黑点 */
+            position: absolute;
+            left: -8px;
+            color: #8b2a2a;
+            font-size: 24px;
+            background: white;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        /* 非对称产品网格 - 右侧内容区 */
+        .product-grid { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); /* 三列网格 */
+            gap: 30px; 
+        }
+        
+        /* 第1个产品 - 横跨2列 */
+        .product-grid > div:nth-child(1) { 
+            grid-column: span 2; 
+            display: flex;
+            align-items: center;
+        }
+        
+        /* 第4个产品 - 横跨2列，靠右对齐 */
+        .product-grid > div:nth-child(4n) { 
+            grid-column: 2 / -1; 
+            display: flex;
+            align-items: center;
+        }
+        
+        /* 产品卡片 - 去掉背景和阴影，实现悬浮效果 */
         .product-card { 
-            background: #ffffff;
-            padding-bottom: 20px; /* 底部分隔线区域 */
-            border-bottom: 1px solid #edf2f7; /* 微弱底部分隔线 */
+            display: flex;
+            flex-direction: column;
+            padding: 0; 
+            border: none; 
+            box-shadow: none;
+            border-bottom: 1px solid #edf2f7; 
+            padding-bottom: 20px;
             transition: all 0.3s ease;
+            background: transparent; /* 去掉背景 */
         }
 
         .product-card:hover { 
-            border-bottom: 1px solid #cbd5e0; /* 悬停时加强分隔线 */
+            border-bottom: 1px solid #cbd5e0; 
         }
 
-        /* 产品图片 - 占比70% */
+        /* 产品图片 - 调整尺寸适应非对称网格 */
         .product-img { 
             width: 100%; 
-            height: 280px; /* 调整高度以符合70%比例 */
+            height: 320px; 
             object-fit: contain;
             background-color: #f8fafc;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
+        }
+        
+        /* 第1个和第4n个产品的图片更大 */
+        .product-grid > div:nth-child(1) .product-img,
+        .product-grid > div:nth-child(4n) .product-img { 
+            height: 400px; 
         }
 
-        /* 卡片内容区 */
-        .card-body { padding: 0; }
+        /* 卡片内容区 - 左对齐 */
+        .card-body { 
+            padding: 0; 
+            text-align: left; /* 左对齐文本 */
+        }
 
         .product-name { 
-            font-size: 18px; 
-            font-weight: 700; /* 加粗标题 */
+            font-size: 20px; 
+            font-weight: 700; 
             margin-bottom: 8px; 
-            color: #1a202c; /* 深灰色 */
-            line-height: 1.5;
+            color: #1a202c; 
+            line-height: 1.4;
         }
 
         .product-price { 
-            color: #8b2a2a; /* 赤陶色价格 */ 
-            font-size: 20px; 
-            font-weight: 700; /* 加粗价格 */
+            color: #8b2a2a; 
+            font-size: 22px; 
+            font-weight: 700; 
         }
 
-        .product-desc { display: none; } /* 隐藏描述以实现极简 */
+        .product-desc { display: none; } 
 
-        /* 购买按钮 - 纯色填充 */
+        /* 购买按钮 - 左对齐 */
         .btn-buy { 
-            width: 100%; 
-            padding: 12px; 
-            background: #8b2a2a; /* 赤陶色按钮 */
+            width: auto; 
+            padding: 12px 24px; 
+            background: #8b2a2a; 
             color: white; 
             border: none; 
-            border-radius: 4px; /* 小圆角 */
+            border-radius: 4px; 
             cursor: pointer; 
             font-family: inherit;
             font-size: 16px; 
             margin-top: 16px;
             transition: opacity 0.2s ease;
+            align-self: flex-start; /* 左对齐按钮 */
         }
 
         .btn-buy:hover { 
-            opacity: 0.9; /* 悬停时仅改变透明度 */
+            opacity: 0.9; 
         }
 
         .pagination { 
+            grid-column: 2 / -1; /* 分页在右侧内容区 */
             text-align: center; 
             margin-top: 60px; 
             display: flex;
@@ -158,7 +262,7 @@
 
         .page-btn { 
             padding: 10px 20px; 
-            background: #8b2a2a; /* 赤陶色按钮 */
+            background: #8b2a2a; 
             color: white;
             border: none; 
             border-radius: 4px; 
@@ -175,6 +279,7 @@
 
         /* 搜索结果提示 */
         .search-results {
+            grid-column: 2 / -1; /* 搜索结果在右侧内容区 */
             text-align: center;
             margin: 30px 0;
             color: #718096;
@@ -182,44 +287,60 @@
         }
 
         .no-results {
+            grid-column: 2 / -1; /* 无结果提示在右侧内容区 */
             text-align: center;
             padding: 80px 20px;
             color: #a0aec0;
             font-size: 18px;
         }
 
-        /* 分类筛选极简化 */
-        .filter-container {
-            display: flex;
-            justify-content: center;
-            margin: 30px 0 50px;
-            gap: 12px;
-            flex-wrap: wrap;
+        /* 响应式设计 - 小屏幕时恢复原始布局 */
+        @media (max-width: 1024px) {
+            .container { 
+                grid-template-columns: 1fr; 
+                padding: 20px; 
+            }
+            
+            .filter-container {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 12px;
+                top: 80px;
+                padding: 15px;
+                border-left: none;
+            }
+            
+            .filter-btn {
+                writing-mode: horizontal-tb;
+                text-orientation: upright;
+                height: auto;
+                padding: 8px 20px;
+            }
+            
+            .filter-btn.active::before {
+                display: none;
+            }
+            
+            .product-grid { 
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            }
+            
+            .product-grid > div:nth-child(1),
+            .product-grid > div:nth-child(4n) { 
+                grid-column: span 1; 
+            }
+            
+            .pagination,
+            .search-results,
+            .no-results { 
+                grid-column: 1; 
+            }
         }
-
-        .filter-btn {
-            padding: 8px 20px;
-            background: #f7fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 14px;
-            color: #4a5568;
-            transition: all 0.2s ease;
-        }
-
-        .filter-btn.active, .filter-btn:hover {
-            background: #8b2a2a;
-            color: white;
-            border-color: #8b2a2a;
-        }
-
-        /* 响应式设计 */
+        
         @media (max-width: 768px) {
             .navbar { padding: 16px 20px; }
-            .container { padding: 20px; }
-            .product-grid { gap: 30px; }
-            .page-title { margin-bottom: 30px; }
+            .page-title { margin-bottom: 20px; }
             .filter-container { margin: 20px 0 30px; }
         }
     </style>
@@ -246,18 +367,18 @@
             <p>精选燕赵大地文化瑰宝</p>
         </div>
 
-        <!-- 分类筛选 -->
+        <!-- 分类筛选 - 现在在左侧 -->
         <div class="filter-container" id="filter-container">
             <button class="filter-btn active" data-category="all">全部</button>
-            <button class="filter-btn" data-category="工艺品">工艺品</button>
+            <button class="filter-btn" data-category="工艺品">工艺</button>
             <button class="filter-btn" data-category="剪纸">剪纸</button>
             <button class="filter-btn" data-category="雕塑">雕塑</button>
             <button class="filter-btn" data-category="陶瓷">陶瓷</button>
             <button class="filter-btn" data-category="皮影">皮影</button>
             <button class="filter-btn" data-category="雕刻">雕刻</button>
-            <button class="filter-btn" data-category="文房四宝">文房四宝</button>
+            <button class="filter-btn" data-category="文房四宝">文房</button>
             <button class="filter-btn" data-category="年画">年画</button>
-            <button class="filter-btn" data-category="金银器">金银器</button>
+            <button class="filter-btn" data-category="金银器">金银</button>
             <button class="filter-btn" data-category="内画">内画</button>
             <button class="filter-btn" data-category="泥塑">泥塑</button>
             <button class="filter-btn" data-category="乐器">乐器</button>
@@ -433,12 +554,10 @@
                 // 分类筛选模式下的翻页（暂不支持）
                 alert('分类筛选模式下不支持翻页');
             } else {
-                // 正常翻页
-                const newPage = currentPage + step;
-                if(newPage >= 1 && newPage <= Math.ceil(allProducts.length / 6)) {
-                    loadProducts(newPage);
-                }
+                // 正常模式下的翻页
+                loadProducts(currentPage + step);
             }
+            trackUserAction('翻页浏览', `第 ${currentPage + step} 页`);
         }
 
         function viewProductDetail(id) {
