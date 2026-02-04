@@ -1,4 +1,3 @@
-index.html
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -231,6 +230,265 @@ index.html
         }
 
         /* ========================================
+           核心功能展示区（新增）
+           ======================================== */
+        .core-features {
+            width: 100%;
+            padding: 40px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .features-title {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .features-title h3 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #5C2E10;
+            margin-bottom: 8px;
+            font-family: 'Noto Serif SC', serif;
+        }
+
+        .features-title p {
+            color: #999;
+            font-size: 16px;
+            letter-spacing: 1px;
+        }
+
+        .features-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .feature-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 16px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #f0ebe4;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+        }
+
+        .feature-icon {
+            width: 64px;
+            height: 64px;
+            background: #F5F0E8;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #8B4513;
+            font-size: 24px;
+        }
+
+        .feature-content h4 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .feature-content p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .feature-demo {
+            margin-top: 12px;
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid #8B4513;
+            color: #8B4513;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .feature-demo:hover {
+            background: #8B4513;
+            color: #fff;
+        }
+
+        /* 模态框样式 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: #fff;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 24px;
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: transparent;
+            border: none;
+            font-size: 24px;
+            color: #666;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .close-modal:hover {
+            color: #8B4513;
+        }
+
+        .demo-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .demo-header {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .demo-header h4 {
+            font-size: 20px;
+            color: #5C2E10;
+            margin-bottom: 8px;
+        }
+
+        .demo-media {
+            width: 100%;
+            height: 300px;
+            background: #f9f6f0;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .demo-media img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .ar-scan-demo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 120px;
+            border: 4px solid #8B4513;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ar-scan-demo-inner {
+            width: 80px;
+            height: 80px;
+            border: 2px solid #8B4513;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #8B4513;
+            font-size: 24px;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.1);
+                opacity: 0.7;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .demo-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .demo-step {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .step-number {
+            width: 24px;
+            height: 24px;
+            background: #8B4513;
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 14px;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-content h5 {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .step-content p {
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* ========================================
            产品网格 - 非对称布局
            ======================================== */
         .product-grid { 
@@ -264,6 +522,19 @@ index.html
             background: transparent; 
             position: relative;
             overflow: hidden;
+        }
+
+        /* 产品标签（新增） */
+        .product-tag {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            padding: 4px 8px;
+            background: #8B4513;
+            color: #fff;
+            font-size: 12px;
+            border-radius: 4px;
+            z-index: 1;
         }
 
         /* 产品图片 - 高度统一，防止拉伸 */
@@ -302,9 +573,24 @@ index.html
             font-size: 16px; /* 3.3 商品名称：字号 16px */
             font-weight: 400; /* 不加粗 */
             margin-bottom: 8px; 
-            color: #33; /* 3.3 商品名称：颜色 #333 */
+            color: #333; /* 3.3 商品名称：颜色 #333 */
             line-height: 1.4;
             font-family: 'Noto Serif SC', 'Times New Roman', serif; 
+        }
+
+        /* 产品功能标签（新增） */
+        .product-features {
+            display: flex;
+            gap: 8px;
+            margin: 8px 0;
+        }
+
+        .product-feature-tag {
+            padding: 2px 8px;
+            background: #F5F0E8;
+            color: #8B4513;
+            font-size: 12px;
+            border-radius: 12px;
         }
 
         /* 2.1 商品价格：字号18px，字体加粗600，颜色#8B4513 */
@@ -474,6 +760,10 @@ index.html
             .no-results { 
                 grid-column: 1; 
             }
+
+            .features-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
         
         @media (max-width: 768px) {
@@ -493,6 +783,14 @@ index.html
             
             .product-grid > div:first-child .product-img {
                 height: 300px; 
+            }
+
+            .features-container {
+                grid-template-columns: 1fr;
+            }
+
+            .demo-media {
+                height: 200px;
             }
         }
 
@@ -555,6 +853,49 @@ index.html
                 <!-- 搜索结果提示 -->
                 <div class="search-results" id="search-results"></div>
 
+                <!-- 核心功能展示区（新增） -->
+                <div class="core-features">
+                    <div class="features-title">
+                        <h3>科技赋能 · 非遗新生</h3>
+                        <p>3D打印 · AR互动 · 磁吸拼接</p>
+                    </div>
+                    <div class="features-container">
+                        <!-- 3D打印功能 -->
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <<i class="fa fa-cube"></</i>
+                            </div>
+                            <div class="feature-content">
+                                <h4>高精度3D打印</h4>
+                                <p>还原古建筑檐角、斗拱、雕刻等细节，误差≤0.1mm，环保树脂材质不易磨损</p>
+                                <button class="feature-demo" onclick="openModal('3d-demo')">查看演示</button>
+                            </div>
+                        </div>
+                        <!-- AR互动功能 -->
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <<i class="fa fa-mobile"></</i>
+                            </div>
+                            <div class="feature-content">
+                                <h4>AR动态互动</h4>
+                                <p>微信扫码解锁建筑历史语音讲解、360°结构展示，无需额外下载APP</p>
+                                <button class="feature-demo" onclick="openModal('ar-demo')">体验互动</button>
+                            </div>
+                        </div>
+                        <!-- 磁吸拼接功能 -->
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <<i class="fa fa-puzzle-piece"></</i>
+                            </div>
+                            <div class="feature-content">
+                                <h4>磁吸拼接设计</h4>
+                                <p>同风格建筑模型可自由组合，形成微观建筑群，反复拼接10次仍牢固</p>
+                                <button class="feature-demo" onclick="openModal('magnet-demo')">查看效果</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="product-grid" id="product-list"></div>
 
                 <!-- 无结果提示 -->
@@ -566,6 +907,125 @@ index.html
                     <button class="page-btn" id="prev-btn" onclick="changePage(-1)">上一页</button>
                     <span class="page-info" id="page-info">第 1 页</span>
                     <button class="page-btn" id="next-btn" onclick="changePage(1)">下一页</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3D打印演示模态框 -->
+    <div class="modal" id="3d-demo">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('3d-demo')">&times;</button>
+            <div class="demo-container">
+                <div class="demo-header">
+                    <h4>3D打印高精度还原演示</h4>
+                </div>
+                <div class="demo-media">
+                    <img src="https://picsum.photos/id/1076/800/450" alt="3D打印模型细节">
+                </div>
+                <div class="demo-steps">
+                    <div class="demo-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h5>实地走访建模</h5>
+                            <p>对娲皇宫、正定隆兴寺等建筑进行实地扫描，获取精准数据</p>
+                        </div>
+                    </div>
+                    <div class="demo-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h5>细节精准还原</h5>
+                            <p>还原唐代建筑逐层收分的塔檐、简洁的壁面门窗等特征，误差≤0.1mm</p>
+                        </div>
+                    </div>
+                    <div class="demo-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h5>环保材质加工</h5>
+                            <p>采用环保树脂材质，通过高精度3D打印+喷漆加工，质感细腻不易磨损</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AR互动演示模态框 -->
+    <div class="modal" id="ar-demo">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('ar-demo')">&times;</button>
+            <div class="demo-container">
+                <div class="demo-header">
+                    <h4>AR动态互动体验</h4>
+                </div>
+                <div class="demo-media">
+                    <img src="https://picsum.photos/id/1040/800/450" alt="AR互动演示">
+                    <div class="ar-scan-demo">
+                        <div class="ar-scan-demo-inner">
+                            <<i class="fa fa-qrcode"></</i>
+                        </div>
+                    </div>
+                </div>
+                <div class="demo-steps">
+                    <div class="demo-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h5>扫描模型</h5>
+                            <p>打开微信小程序，扫描3D模型即可触发AR互动</p>
+                        </div>
+                    </div>
+                    <div class="demo-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h5>解锁功能</h5>
+                            <p>查看建筑360°立体结构，聆听专业讲解员录制的历史文化讲解</p>
+                        </div>
+                    </div>
+                    <div class="demo-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h5>线下打卡</h5>
+                            <p>获取景区隐藏打卡点信息，完成任务可解锁限定周边</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 磁吸拼接演示模态框 -->
+    <div class="modal" id="magnet-demo">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('magnet-demo')">&times;</button>
+            <div class="demo-container">
+                <div class="demo-header">
+                    <h4>磁吸拼接功能展示</h4>
+                </div>
+                <div class="demo-media">
+                    <img src="https://picsum.photos/id/1061/800/450" alt="磁吸拼接效果">
+                </div>
+                <div class="demo-steps">
+                    <div class="demo-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h5>磁吸设计</h5>
+                            <p>模型底部内置强磁配件，拼接后无松动，稳固性强</p>
+                        </div>
+                    </div>
+                    <div class="demo-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h5>自由组合</h5>
+                            <p>同区域或同风格的不同建筑模型可自由拼接，形成微观建筑群</p>
+                        </div>
+                    </div>
+                    <div class="demo-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h5>重复使用</h5>
+                            <p>反复拼接10次仍牢固，可根据喜好随时调整组合方式</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -601,6 +1061,11 @@ index.html
                     filterProducts(this.getAttribute('data-category'));
                 });
             });
+
+            // 引入Font Awesome图标库（用于功能图标）
+            const fontAwesomeScript = document.createElement('script');
+            fontAwesomeScript.src = 'https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css';
+            document.head.appendChild(fontAwesomeScript);
         };
 
         // 登录状态检查
@@ -665,7 +1130,7 @@ index.html
                     allProducts = allProducts.concat(data2.items);
                 }
                 
-                // 如果没有商品数据，生成示例数据
+                // 如果没有商品数据，生成示例数据（新增盲盒相关商品）
                 if (!allProducts || allProducts.length === 0) {
                     console.warn('后端返回空数据，使用示例数据');
                     allProducts = generateExampleProducts();
@@ -682,7 +1147,7 @@ index.html
             }
         }
 
-        // 生成示例非遗商品数据
+        // 生成示例非遗商品数据（新增盲盒相关商品）
         function generateExampleProducts() {
             return [
                 {
@@ -691,7 +1156,8 @@ index.html
                     price: 88,
                     category: "剪纸",
                     img: "001.jpg",
-                    desc: "河北蔚县传统剪纸艺术，精美绝伦"
+                    desc: "河北蔚县传统剪纸艺术，精美绝伦",
+                    features: ["传统工艺", "文化收藏"]
                 },
                 {
                     id: 2,
@@ -699,7 +1165,8 @@ index.html
                     price: 298,
                     category: "雕刻",
                     img: "002.jpg",
-                    desc: "曲阳石雕工艺，千年传承技艺"
+                    desc: "曲阳石雕工艺，千年传承技艺",
+                    features: ["传统工艺", "家居摆件"]
                 },
                 {
                     id: 3,
@@ -707,7 +1174,8 @@ index.html
                     price: 568,
                     category: "陶瓷",
                     img: "003.jpg",
-                    desc: "宋代定窑瓷器，温润如玉"
+                    desc: "宋代定窑瓷器，温润如玉",
+                    features: ["实用器具", "文化传承"]
                 },
                 {
                     id: 4,
@@ -715,7 +1183,8 @@ index.html
                     price: 198,
                     category: "内画",
                     img: "004.jpg",
-                    desc: "国家级非遗，方寸之间见天地"
+                    desc: "国家级非遗，方寸之间见天地",
+                    features: ["工艺收藏", "文化礼品"]
                 },
                 {
                     id: 5,
@@ -723,7 +1192,8 @@ index.html
                     price: 158,
                     category: "皮影",
                     img: "005.jpg",
-                    desc: "光影艺术，民间戏曲瑰宝"
+                    desc: "光影艺术，民间戏曲瑰宝",
+                    features: ["传统艺术", "互动体验"]
                 },
                 {
                     id: 6,
@@ -731,7 +1201,49 @@ index.html
                     price: 128,
                     category: "年画",
                     img: "006.jpg",
-                    desc: "中国四大年画之一，色彩鲜艳"
+                    desc: "中国四大年画之一，色彩鲜艳",
+                    features: ["民俗文化", "装饰收藏"]
+                },
+                // 新增盲盒相关商品
+                {
+                    id: 7,
+                    name: "正定隆兴寺盲盒（基础款）",
+                    price: 49,
+                    category: "工艺品",
+                    img: "007.jpg",
+                    desc: "高精度3D打印，还原唐代建筑形制，支持AR互动",
+                    features: ["3D打印", "AR互动", "可收藏"],
+                    isBlindBox: true
+                },
+                {
+                    id: 8,
+                    name: "娲皇宫盲盒（拼接款）",
+                    price: 59,
+                    category: "工艺品",
+                    img: "008.jpg",
+                    desc: "悬空古建奇观，磁吸组合设计，可与其他模型拼接",
+                    features: ["磁吸拼接", "3D打印", "AR讲解"],
+                    isBlindBox: true
+                },
+                {
+                    id: 9,
+                    name: "隆兴寺·夜景隐藏款盲盒",
+                    price: 89,
+                    category: "工艺品",
+                    img: "009.jpg",
+                    desc: "发光底座设计，概率1/60，限量发售",
+                    features: ["隐藏款", "发光设计", "收藏级"],
+                    isBlindBox: true
+                },
+                {
+                    id: 10,
+                    name: "开元寺须弥塔盲盒",
+                    price: 49,
+                    category: "工艺品",
+                    img: "010.jpg",
+                    desc: "九级密檐式砖塔，细节精准还原，环保树脂材质",
+                    features: ["历史还原", "3D打印", "桌面摆件"],
+                    isBlindBox: true
                 }
             ];
         }
@@ -758,12 +1270,17 @@ index.html
                 const data = await res.json();
                 productsCache = data.items; 
                 
-                displayProducts(data.items);
+                // 如果后端返回空数据，使用示例数据
+                if (!productsCache || productsCache.length === 0) {
+                    productsCache = generateExampleProducts().slice((page-1)*6, page*6);
+                }
                 
-                document.getElementById('page-info').innerText = `第 ${data.page} 页 / 共 ${data.totalPages} 页`;
-                document.getElementById('prev-btn').disabled = data.page <= 1;
-                document.getElementById('next-btn').disabled = data.page >= data.totalPages;
-                currentPage = data.page;
+                displayProducts(productsCache);
+                
+                document.getElementById('page-info').innerText = `第 ${page} 页 / 共 ${Math.ceil(allProducts.length / 6)} 页`;
+                document.getElementById('prev-btn').disabled = page <= 1;
+                document.getElementById('next-btn').disabled = page >= Math.ceil(allProducts.length / 6);
+                currentPage = page;
                 
                 // 重置搜索状态
                 isSearchMode = false;
@@ -783,7 +1300,7 @@ index.html
             }
         }
 
-        // 显示商品列表
+        // 显示商品列表（优化：添加功能标签和盲盒标识）
         function displayProducts(products) {
             const productList = document.getElementById('product-list');
             productList.innerHTML = ''; 
@@ -806,11 +1323,26 @@ index.html
                 // 拼接完整路径
                 imgSrc = `${API_BASE}/images/${imgName}`;
                 
+                // 构建功能标签HTML
+                let featuresHtml = '';
+                if (product.features && product.features.length > 0) {
+                    featuresHtml = '<div class="product-features">';
+                    product.features.forEach(feature => {
+                        featuresHtml += `<span class="product-feature-tag">${feature}</span>`;
+                    });
+                    featuresHtml += '</div>';
+                }
+                
+                // 盲盒标签
+                const blindBoxTag = product.isBlindBox ? '<div class="product-tag">盲盒</div>' : '';
+                
                 productList.innerHTML += `
                     <div class="product-card">
+                        ${blindBoxTag}
                         <img src="${imgSrc}" class="product-img" alt="${product.name}" loading="lazy" onerror="this.onerror=null;this.className='product-img placeholder-image';this.innerHTML='<div>无图<br><small>${product.name}</small></div>'; console.error('Failed to load image: ' + this.src);">
                         <div class="card-body">
                             <div class="product-name" onclick="viewProductDetailWithFeedback(${product.id})" style="cursor: pointer;">${product.name}</div>
+                            ${featuresHtml}
                             <div class="product-price">¥${product.price}</div>
                             <button class="btn-buy" onclick="addToCart(${index})">加入购物车</button>
                         </div>
@@ -828,6 +1360,28 @@ index.html
             </svg>`;
             return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
         }
+
+        // 模态框操作函数（新增）
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // 点击模态框外部关闭（新增）
+        window.addEventListener('click', function(event) {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    modal.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+        });
 
         // 有点击反馈的商品详情查看
         function viewProductDetailWithFeedback(id) {
