@@ -50,6 +50,18 @@ app.get('/api/products', (req, res) => {
     });
 });
 
+// 获取单个商品信息
+app.get('/api/products/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const product = MOCK_PRODUCTS.find(p => p.id === id);
+    
+    if (product) {
+        res.json(product);
+    } else {
+        res.status(404).json({ error: '商品不存在' });
+    }
+});
+
 app.post('/api/register', (req, res) => {
     const { username, password } = req.body;
     if (users.find(u => u.username === username)) return res.status(400).json({ success: false, message: '用户已存在' });
