@@ -8,11 +8,11 @@
         /* 全局样式重置 */
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        /* 极简字体方案 */
+        /* 新中式极简字体方案 */
         body { 
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #ffffff; /* 纯白背景 */
-            color: #2d3748; /* 暖灰色文字 */
+            background: #FDFBF7; /* 米白色/宣纸色背景 */
+            color: #333333; /* 墨色文字 */
             padding-top: 80px; 
             line-height: 1.6; /* 统一行高 */
         }
@@ -20,23 +20,25 @@
         /* 极简导航栏 - 固定顶部线条式设计 */
         .navbar {
             position: fixed; top: 0; left: 0; width: 100%;
-            background: #ffffff; 
-            color: #2d3748; 
+            background: rgba(253, 251, 247, 0.9); /* 半透明白色背景 */
+            backdrop-filter: blur(10px); /* 磨砂玻璃效果 */
+            color: #333333; 
             padding: 16px 40px;
             display: flex; justify-content: space-between; align-items: center; z-index: 1000;
-            border-bottom: 1px solid #e2e8f0; 
+            border-bottom: 1px solid rgba(218, 215, 209, 0.5); /* 浅边框 */
         }
 
         .nav-links a { 
-            color: #2d3748; 
+            color: #333333; 
             text-decoration: none; 
             margin-left: 30px; 
             font-weight: 400;
+            letter-spacing: 1px; /* 增加字间距 */
             transition: opacity 0.2s ease;
         }
         .nav-links a:hover { 
             opacity: 0.7; 
-            color: #8b2a2a; 
+            color: #5a5a5a; /* 更柔和的悬停色 */
         }
 
         /* 搜索框极简化 - 只保留底边框 */
@@ -52,23 +54,23 @@
             width: 100%;
             padding: 10px 16px;
             border: none;
-            border-bottom: 1px solid #e2e8f0; /* 只保留底边框 */
+            border-bottom: 1px solid #d5d5d3; /* 更柔和的边框色 */
             outline: none;
             font-family: inherit;
             font-size: 14px;
             background: transparent;
             transition: border-color 0.2s ease;
+            color: #333333;
         }
 
         .search-input:focus {
-            border-color: #cbd5e0; 
-            box-shadow: 0 1px 0 0 #cbd5e0; /* 增加焦点时的下划线效果 */
+            border-color: #a8a8a4; /* 更深一些的焦糖色 */
         }
 
         .search-btn {
             margin-left: 8px;
             padding: 10px 16px;
-            background: #8b2a2a; 
+            background: #5a5a5a; /* 黛蓝色按钮 */
             color: white;
             border: none;
             border-radius: 4px;
@@ -93,36 +95,45 @@
 
         .page-title { 
             grid-column: 2 / -1; /* 标题只在右侧内容区 */
-            text-align: left; /* 改为左对齐 */
+            text-align: center; /* 中心对齐标题 */
             align-self: start; /* 顶部对齐 */
-            padding-top: 20px; /* 增加顶部padding */
-            margin-bottom: 30px; 
-            color: #2d3748; 
+            padding-top: 60px; /* 增加更多顶部padding */
+            margin-bottom: 60px; /* 增加更多底部margin */
+            color: #333333; 
         }
-        .page-title h2 { font-size: 36px; font-weight: 700; margin-bottom: 12px; } 
-        .page-title p { color: #718096; font-size: 18px; } 
+        .page-title h2 { 
+            font-size: 48px; /* 更大的标题 */
+            font-weight: 300; /* 极细字体 */
+            margin-bottom: 20px; 
+            font-family: 'Noto Serif SC', 'Times New Roman', serif; /* 衬线字体标题 */
+        } 
+        .page-title p { 
+            color: #a0a0a0; /* 浅灰色副标题 */
+            font-size: 16px; /* 更小的字号 */
+            letter-spacing: 3px; /* 增加字间距 */
+            font-weight: 300;
+        } 
 
         /* 分类筛选 - 左侧固定导航栏 */
         .filter-container {
             display: flex;
             flex-direction: column; /* 垂直排列 */
-            gap: 12px;
+            gap: 24px;
             position: sticky; /* 固定定位 */
             top: 100px; /* 考虑顶部导航栏高度 */
             align-self: start; /* 保持在顶部 */
             padding: 20px 15px;
-            background: #fdfbf7; /* 微妙背景色差 */
+            background: transparent; /* 透明背景 */
             border-radius: 0; /* 移除圆角 */
-            border-right: 1px solid #eaeaea; /* 浅灰色竖线 */
         }
 
         .filter-btn {
-            padding: 14px 16px;
+            padding: 14px 0;
             background: transparent;
             border: none;
             cursor: pointer;
             font-size: 16px;
-            color: #4a5568;
+            color: #666666;
             text-align: right; /* 文字右对齐 */
             font-weight: 400; /* 默认非加粗 */
             transition: all 0.2s ease;
@@ -133,21 +144,22 @@
             align-items: center;
             justify-content: center;
             position: relative;
+            border-bottom: 1px solid transparent; /* 默认透明边框保持一致高度 */
         }
 
         .filter-btn.active, .filter-btn:hover {
-            background: #f5f5f0; /* 背景色 */
-            color: #1a202c; /* 深墨色文字 */
-            font-weight: 700; /* 加粗文字 */
+            color: #333333; /* 深墨色文字 */
+            font-weight: 500; /* 适中加粗 */
+            border-bottom: 1px solid #333333; /* 底部边框表示选中状态 */
         }
         
         .filter-btn.active::before {
             content: "•"; /* 左侧小黑点 */
             position: absolute;
             left: -3px;
-            color: #8b2a2a; /* 赤陶色小点 */
+            color: #8B4513; /* 赤陶色小点 */
             font-size: 16px;
-            background: white;
+            background: #FDFBF7;
             width: 12px;
             height: 12px;
             display: flex;
@@ -156,16 +168,24 @@
             border-radius: 50%;
         }
 
-        /* 产品网格修复 */
+        /* 产品网格 - 非对称布局 */
         .product-grid { 
             display: grid; 
-            grid-template-columns: repeat(3, 1fr); /* 强制分为3列 */
-            gap: 40px 30px; /* 拉开卡片间距 */
+            grid-template-columns: repeat(4, 1fr); /* 4列网格 */
+            grid-auto-rows: minmax(200px, auto);
+            gap: 40px 25px; /* 调整间距 */
         }
         
         /* 第一个产品（镇店之宝）横跨2列 */
         .product-grid > div:first-child { 
             grid-column: span 2; /* 横跨2列 */
+            grid-row: span 1;
+        }
+        
+        /* 第4n个产品也横跨2列 */
+        .product-grid > div:nth-child(4n) { 
+            grid-column: span 2; /* 横跨2列 */
+            grid-row: span 1;
         }
 
         /* 产品卡片 - 去掉背景和阴影，实现悬浮效果 */
@@ -175,28 +195,40 @@
             padding: 0; 
             border: none; 
             box-shadow: none;
-            border-bottom: 1px solid #edf2f7; 
-            padding-bottom: 20px;
             transition: all 0.3s ease;
             background: transparent; /* 去掉背景 */
+            position: relative;
         }
 
-        .product-card:hover { 
-            border-bottom: 1px solid #cbd5e0; 
+        .product-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: #333;
+            transition: width 0.3s ease;
+        }
+
+        .product-card:hover::after { 
+            width: 100%;
         }
 
         /* 产品图片 - 高度统一，防止拉伸 */
         .product-img { 
             width: 100%; 
-            height: 380px; /* 统一高度 */
+            height: 280px; /* 统一高度 */
             object-fit: cover; /* 防止拉伸变形 */
             background-color: #f8fafc;
             margin-bottom: 16px;
+            border-radius: 8px; /* 圆角 */
         }
         
-        /* 第一个产品的图片更大 */
-        .product-grid > div:first-child .product-img { 
-            height: 500px; /* 第一个产品图片更高 */
+        /* 第一个产品和每4n个产品的图片更高 */
+        .product-grid > div:first-child .product-img, 
+        .product-grid > div:nth-child(4n) .product-img { 
+            height: 380px; /* 更高的图片 */
         }
 
         /* 卡片内容区 - 左对齐 */
@@ -206,32 +238,33 @@
         }
 
         .product-name { 
-            font-size: 20px; 
-            font-weight: 700; 
+            font-size: 18px; /* 适中字号 */
+            font-weight: 400; /* 不加粗 */
             margin-bottom: 8px; 
-            color: #1a202c; 
+            color: #333333; 
             line-height: 1.4;
+            font-family: 'Noto Serif SC', 'Times New Roman', serif; /* 衬线字体 */
         }
 
         .product-price { 
-            color: #8b2a2a; 
-            font-size: 22px; 
-            font-weight: 700;
+            color: #5a5a5a; /* 更柔和的价格颜色 */
+            font-size: 20px; 
+            font-weight: 400; /* 不加粗 */
         }
 
         .product-desc { display: none; } 
 
-        /* 购买按钮 - 左对齐 */
+        /* 购买按钮 - 墨色风格 */
         .btn-buy { 
             width: auto; 
-            padding: 12px 24px; 
-            background: #8b2a2a; 
+            padding: 10px 20px; 
+            background: #333333; /* 墨色按钮 */
             color: white; 
             border: none; 
-            border-radius: 4px; 
+            border-radius: 0; /* 方形按钮符合极简风格 */
             cursor: pointer; 
             font-family: inherit;
-            font-size: 16px; 
+            font-size: 14px; 
             margin-top: 16px;
             transition: opacity 0.2s ease;
             align-self: flex-start; /* 左对齐按钮 */
@@ -253,10 +286,10 @@
 
         .page-btn { 
             padding: 10px 20px; 
-            background: #8b2a2a; 
+            background: #333333; /* 墨色按钮 */
             color: white;
             border: none; 
-            border-radius: 4px; 
+            border-radius: 0; /* 方形按钮 */
             cursor: pointer; 
             transition: opacity 0.2s ease;
         }
@@ -339,7 +372,7 @@
 <body>
 
     <nav class="navbar">
-        <div style="font-size: 22px; font-weight: 700; color: #1a202c;">🏛️ 冀遗筑梦</div>
+        <div style="font-size: 22px; font-weight: 700; color: #333333;">🏛️ 冀遗筑梦</div>
         
         <!-- 搜索框 -->
         <div class="search-container">
