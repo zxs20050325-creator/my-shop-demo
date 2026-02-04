@@ -1104,6 +1104,76 @@
             });
         }
 
+        // 添加到购物车功能
+        async function addToCart(event, productId) {
+            event.stopPropagation(); // 阻止事件冒泡
+            
+            // 根据productId找到商品信息
+            let productToAdd;
+            if(currentCategory !== 'all' && filteredProducts.length > 0) {
+                productToAdd = filteredProducts.find(p => p.id === productId);
+            } else if(isSearchMode && filteredSearchResults.length > 0) {
+                productToAdd = filteredSearchResults.find(p => p.id === productId);
+            } else {
+                productToAdd = allProducts.find(p => p.id === productId);
+            }
+
+            if(!productToAdd) {
+                alert('找不到商品信息');
+                return;
+            }
+
+            try {
+                const user = localStorage.getItem('currentUser');
+                if(!user) {
+                    alert('请先登录后再添加购物车！');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                // 向后端发送添加购物车请求
+                const res = await fetch(`${API_BASE}/api/cart/add`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        username: user, 
+                        product: productToAdd
+                    })
+                });
+
+                const data = await res.json();
+                if(data.success) {
+                    // 更新浮动购物车图标上的数量
+                    updateFloatingCartCount(data.count);
+                    alert(`✅ [${productToAdd.name}] 已加入购物车！`);
+                } else {
+                    alert('添加购物车失败: ' + (data.message || '未知错误'));
+                }
+            } catch(e) {
+                console.error('添加购物车失败:', e);
+                alert('网络错误，请稍后重试');
+            }
+        }
+
+        // 更新浮动购物车图标上的数量
+        async function updateFloatingCartCount(count) {
+            if(count !== undefined) {
+                document.getElementById('floatingCartCount').textContent = count;
+            } else {
+                // 如果没有传入count，则重新获取
+                try {
+                    const user = localStorage.getItem('currentUser');
+                    if(user) {
+                        const res = await fetch(`${API_BASE}/api/cart?username=${user}`);
+                        const cartItems = await res.json();
+                        document.getElementById('floatingCartCount').textContent = cartItems.length;
+                    }
+                } catch(e) {
+                    console.error('更新购物车数量失败:', e);
+                }
+            }
+        }
+
         // 快速预览功能
         function quickViewProduct(id, name, price, category, img) {
             // 创建模态框
