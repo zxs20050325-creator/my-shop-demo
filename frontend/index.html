@@ -17,8 +17,8 @@
         /* 新中式极简字体方案 */
         body { 
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #F9F7F3; /* 米白基底 - 替换原来的#FDFBF7 */
-            color: #1A365D; /* 做旧靛蓝色文字 - 替换原来的#333333 */
+            background: #ccbfa7; /* 米白基底 - 替换原来的#FDFBF7 */
+            color: #5e993650; /* 做旧靛蓝色文字 - 替换原来的#333333 */
             padding-top: 80px; 
             line-height: 1.6; /* 统一行高 */
         }
@@ -31,16 +31,16 @@
             top: 0; 
             left: 0; 
             width: 100%;
-            background: linear-gradient(to bottom, rgba(249, 247, 243, 0.95), rgba(249, 247, 243, 0.85)); /* 米白基底的渐变 */
+            background: linear-gradient(to bottom, rgba(214, 200, 172, 0.95), rgba(249, 247, 243, 0.85)); /* 米白基底的渐变 */
             backdrop-filter: blur(10px); /* 磨砂玻璃效果 */
-            color: #1A365D; /* 做旧靛蓝色 */
+            color: #43944139; /* 做旧靛蓝色 */
             padding: 16px 40px;
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
             z-index: 1000;
-            border-bottom: 1px solid #E2D9C8; /* 浅木色边框 */
-            box-shadow: 0 2px 10px rgba(139, 70, 70, 0.05); /* 轻微阴影增强层次 */
+            border-bottom: 1px solid #b0a184; /* 浅木色边框 */
+            box-shadow: 0 2px 10px rgba(186, 166, 166, 0.05); /* 轻微阴影增强层次 */
         }
 
         .logo {
@@ -70,35 +70,37 @@
             align-items: center;
             margin: 0 20px;
             flex: 1;
-            max-width: 400px;
+            max-width: 30%; /* 调整宽度为30% */
         }
 
         .search-input {
             width: 100%;
-            padding: 10px 16px;
-            border: none;
-            border-bottom: 1px solid #d5d5d3; /* 更柔和的边框色 */
+            height: 28px; /* 高度压缩至28px */
+            padding: 0 10px; /* 调整padding以适应高度 */
+            border: 1px solid #E5E7EB; /* 浅灰色边框 */
             outline: none;
             font-family: inherit;
-            font-size: 14px;
+            font-size: 13px; /* 输入文字大小13px */
             background: transparent;
             transition: border-color 0.2s ease;
             color: #1A365D; /* 做旧靛蓝色 */
         }
 
         .search-input:focus {
-            border-color: #a8a8a4; /* 更深一些的焦糖色 */
+            border-color: #1A365D; /* 搜索框聚焦时边框颜色改为低饱和靛蓝色 */
         }
 
         .search-btn {
             margin-left: 8px;
-            padding: 10px 16px;
-            background: #D69E2E; /* 土黄色按钮 - 替换了原来的#8B4513朱砂红色 */
+            height: 28px; /* 按钮高度设为28px */
+            width: 50px; /* 按钮宽度设为50px */
+            background: #D69E2E; /* 黄色按钮 */
             color: white;
-            border: none;
-            border-radius: 0; /* 榫卯式方形按钮 */
+            border: 1px solid #E5E7EB; /* 与输入框一致的边框 */
+            border-radius: 0; /* 保持方形设计 */
             cursor: pointer;
             font-family: inherit;
+            font-size: 13px; /* 缩小字体 */
             transition: opacity 0.2s ease;
         }
 
@@ -116,34 +118,36 @@
             display: flex; /* 使用flexbox主布局 */
             flex-direction: column;
             gap: 40px;
-            background: #F9F7F3; /* 米白基底 */
+            background: #acbdbd; /* 米白基底 */
         }
 
-        /* 页面标题区域 */
+        /* 页面标题区域 - 移动到导航栏中 */
         .header-section {
             display: flex;
-            justify-content: center;
+            justify-content: flex-start;
             align-items: center;
-            flex-direction: column;
-            padding: 20px 0;
+            padding: 0;
+            margin-left: 20px; /* 与logo间隔 */
         }
         
         .page-title { 
-            text-align: center; /* 中心对齐标题 */
-            margin-bottom: 20px; /* 减少底部margin */
+            text-align: left; /* 左对齐标题 */
+            margin-left: 20px; /* 与logo的间距 */
             color: #1A365D; /* 做旧靛蓝色 */
         }
         .page-title h2 { 
-            font-size: 48px; /* 更大的标题 */
-            font-weight: 300; /* 极细字体 */
-            margin-bottom: 20px; 
+            font-size: 16px; /* 调整为16px */
+            font-weight: 500; /* 适中字重 */
+            margin-bottom: 4px; /* 与副标题间距 */
+            color: #1A365D; /* 低饱和靛蓝色 */
             font-family: 'Noto Serif SC', 'Times New Roman', serif; /* 衬线字体标题 */
         } 
         .page-title p { 
-            color: #7a7a7a; /* 调整副标题颜色 */
-            font-size: 16px; /* 更小的字号 */
-            letter-spacing: 3px; /* 增加字间距 */
+            color: #8B7355; /* 浅棕色副标题 */
+            font-size: 12px; /* 调整为12px */
+            letter-spacing: 1px; /* 适当调整字间距 */
             font-weight: 300;
+            margin: 0;
         } 
 
         /* 主体内容区域：分类筛选 + 商品展示 */
@@ -159,17 +163,14 @@
             display: flex;
             flex-direction: column; /* 垂直排列 */
             gap: 24px;
-            flex: 0 0 240px; /* 固定宽度240px */
+            flex: 0 0 120px; /* 固定宽度120px（之前已调整） */
             position: sticky; /* 固定定位 */
             top: 100px; /* 考虑顶部导航栏高度 */
             align-self: start; /* 保持在顶部 */
             padding: 20px 15px;
-            background: transparent; /* 透明背景 */
+            background: #f2c876; /* 背景色与页面一致 */
             border-radius: 0; /* 移除圆角 */
-            /* 添加细线条纹理边框 */
-            border: 1px solid #E2D9C8; /* 纹理边框 */
-            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAALUlEQVQ4T2N88uTJfwY0wMjIKPWPAQkwhgwZ8v8/w1SDWAw0NTUVY2hoqMwwBgARkwK0YqZnlwAAAABJRU5ErkJggg==');
-            background-repeat: repeat;
+            border-right: 1px solid #eac787; /* 添加右侧边框 */
         }
 
         .filter-btn {
@@ -193,7 +194,7 @@
         }
 
         .filter-btn.active, .filter-btn:hover {
-            color: #1A365D; /* 做旧靛蓝色 */
+            color: #c6ced8; /* 做旧靛蓝色 */
             font-weight: 500; /* 适中加粗 */
         }
         
@@ -401,28 +402,29 @@
         }
         
         @media (max-width: 1024px) {
-            .container { 
-                grid-template-columns: 1fr; 
-                padding: 20px; 
+            .main-content { 
+                flex-direction: column; /* 小屏时垂直排列 */
             }
             
             .filter-container {
-                display: flex;
+                order: 2; /* 分类筛选移到下方 */
+                flex-direction: row; /* 水平排列 */
                 flex-wrap: wrap;
                 justify-content: center;
-                gap: 8px;
+                gap: 12px;
                 top: 80px;
-                padding: 10px;
+                padding: 15px;
                 border-right: none;
-                border-bottom: 1px solid #E5E7EB; /* 底部边框 */
                 width: 100%;
                 flex: none;
             }
             
             .filter-btn {
-                height: 36px;
-                font-size: 13px;
-                padding: 8px;
+                writing-mode: horizontal-tb;
+                text-orientation: upright;
+                height: auto;
+                padding: 8px 20px;
+                text-align: center;
             }
             
             .page-title {
@@ -435,31 +437,34 @@
             .navbar { 
                 padding: 16px 20px; 
                 flex-wrap: wrap;
+                flex-direction: column;
                 align-items: flex-start;
             }
             
+            .logo {
+                margin-bottom: 10px;
+            }
+            
+            .page-title {
+                margin: 0 0 15px 0; /* 标题与logo改为纵向排列 */
+            }
+            
             .search-container {
-                max-width: 60%; /* 在小屏幕上调整搜索框宽度 */
-                margin: 10px 0 0 0;
-                order: 2; /* 将搜索框移到第二行 */
+                max-width: 100%; /* 在小屏幕上调整搜索框宽度 */
+                margin: 0 0 15px 0;
             }
             
             .nav-links {
-                order: 3; /* 将导航链接移到第三行 */
-                margin-top: 10px;
                 width: 100%;
-                justify-content: flex-end;
+                justify-content: space-between;
             }
             
             .page-title { 
                 margin-bottom: 10px; 
-                width: 100%; /* 全屏宽度 */
-                top: 0;
-                padding: 6px 0;
             }
             
             .filter-container { 
-                margin: 15px 0; 
+                margin: 20px 0 30px; 
                 flex-direction: row;
                 flex-wrap: wrap;
                 width: 100%;
