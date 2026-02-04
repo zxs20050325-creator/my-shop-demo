@@ -41,5 +41,4 @@ backend/*.log
 
 # Frontend build artifacts (if any)
 frontend/build/
-frontend/dist/Users/
-my-shop-demo/
+frontend/dist/

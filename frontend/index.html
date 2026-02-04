@@ -17,7 +17,7 @@
         /* 新中式极简字体方案 */
         body { 
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #FDFBF7; /* 米白色/宣纸色背景 */
+            background: #F9F6F0; /* 4.1 页面背景：统一设为米白色 */
             color: #333333; /* 墨色文字 */
             padding-top: 80px; 
             line-height: 1.6; /* 统一行高 */
@@ -31,7 +31,7 @@
             top: 0; 
             left: 0; 
             width: 100%;
-            background: linear-gradient(to bottom, rgba(253, 251, 247, 0.95), rgba(253, 251, 247, 0.85));
+            background: linear-gradient(to bottom, rgba(249, 246, 240, 0.95), rgba(249, 246, 240, 0.85)); /* 4.1 页面背景同步 */
             backdrop-filter: blur(10px); /* 磨砂玻璃效果 */
             color: #333333; 
             padding: 16px 40px;
@@ -64,6 +64,17 @@
             opacity: 0.7; 
             color: #5a5a5a; /* 更柔和的悬停色 */
         }
+        
+        /* 4.5 顶部图标样式 */
+        .nav-links img {
+            width: 24px;
+            height: 24px;
+            transition: transform 0.3s ease;
+        }
+        
+        .nav-links a:hover img {
+            transform: scale(1.05); /* 4.5 顶部图标：hover 放大 1.05 倍效果 */
+        }
 
         /* 搜索框极简化 - 只保留底边框 */
         .search-container {
@@ -93,27 +104,27 @@
 
         .search-btn {
             margin-left: 8px;
-            padding: 10px 16px;
-            background: #8B4513; /* 朱砂红色按钮 */
-            color: white;
+            padding: 8px 16px; /* 4.4 按钮样式：内边距 8px 16px */
+            background: #8B4513; /* 4.4 按钮样式：背景色 #8B4513 */
+            color: white; /* 4.4 按钮样式：文字色 #fff */
             border: none;
-            border-radius: 0; /* 榫卯式方形按钮 */
+            border-radius: 4px; /* 4.4 按钮样式：圆角 4px */
             cursor: pointer;
             font-family: inherit;
-            transition: opacity 0.2s ease;
+            transition: all 0.3s ease; /* 4.4 按钮样式：过渡效果 */
         }
 
         .search-btn:hover {
-            opacity: 0.9;
+            background: #6D3311; /* 4.4 按钮样式：悬停态背景色 */
         }
 
         /* ========================================
            主容器布局 - Flexbox + Grid混合布局
            ======================================== */
         .container { 
-            max-width: 1400px; 
-            margin: 0 auto; 
-            padding: 40px; 
+            max-width: 1200px; /* 2.1 整体容器：宽度 1200px 居中 */
+            margin: 0 auto; /* 2.1 整体容器：宽度 1200px 居中 */
+            padding: 24px 16px; /* 2.1 整体容器：上下内边距 24px，左右内边距 16px */
             display: flex; /* 使用flexbox主布局 */
             flex-direction: column;
             gap: 40px;
@@ -134,16 +145,18 @@
             color: #333333; 
         }
         .page-title h2 { 
-            font-size: 48px; /* 更大的标题 */
-            font-weight: 300; /* 极细字体 */
-            margin-bottom: 20px; 
+            font-size: 28px; /* 3.1 主标题：字号 28px */
+            font-weight: 700; /* 3.1 主标题：字体加粗 700 */
+            color: #5C2E10; /* 3.1 主标题：颜色 #5C2E10 */
+            margin: 16px 0; /* 3.1 主标题：上下间距 16px */
             font-family: 'Noto Serif SC', 'Times New Roman', serif; /* 衬线字体标题 */
         } 
         .page-title p { 
-            color: #a0a0a0; /* 浅灰色副标题 */
-            font-size: 16px; /* 更小的字号 */
+            color: #999; /* 3.2 副标题：颜色 #999 */
+            font-size: 16px; /* 3.2 副标题：字号 16px */
+            font-weight: 400; /* 3.2 副标题：常规字重 400 */
+            margin: 8px 0; /* 3.2 副标题：上下间距 8px */
             letter-spacing: 3px; /* 增加字间距 */
-            font-weight: 300;
         } 
 
         /* 主体内容区域：分类筛选 + 商品展示 */
@@ -159,8 +172,8 @@
         .filter-container {
             display: flex;
             flex-direction: column; /* 垂直排列 */
-            gap: 20px;
-            flex: 0 0 180px; /* 调整为更窄的180px宽度 */
+            gap: 12px; /* 2.2 左侧导航：导航项上下间距 12px */
+            flex: 0 0 200px; /* 2.2 左侧导航：固定宽度 200px */
             position: sticky; /* 固定定位 */
             top: 100px; /* 考虑顶部导航栏高度 */
             align-self: start; /* 保持在顶部 */
@@ -170,7 +183,7 @@
         }
 
         .filter-btn {
-            padding: 14px 0;
+            padding: 8px 16px; /* 2.2 左侧导航：内边距 8px 16px */
             background: transparent;
             border: none;
             cursor: pointer;
@@ -187,10 +200,17 @@
             justify-content: center;
             position: relative;
             border-bottom: 1px solid transparent; /* 默认透明边框保持一致高度 */
+            border-radius: 4px; /* 添加圆角 */
         }
 
-        .filter-btn.active, .filter-btn:hover {
-            color: #333333; /* 深墨色文字 */
+        .filter-btn.active {
+            background-color: #F5F0E8; /* 3.4 左侧导航选中态：背景色 #F5F0E8 */
+            color: #8B4513; /* 3.4 左侧导航选中态：文字颜色 #8B4513 */
+            font-weight: 600; /* 3.4 左侧导航选中态：加粗 600 */
+        }
+        
+        .filter-btn:hover {
+            color: #8B4513; /* 悬停时文字颜色 */
             font-weight: 500; /* 适中加粗 */
         }
         
@@ -231,30 +251,15 @@
         .product-card { 
             display: flex;
             flex-direction: column;
-            padding: 0; 
+            margin: 16px; /* 2.4 商品卡片：外边距 16px */
+            padding: 12px; /* 2.4 商品卡片：内边距 12px */
+            border-radius: 8px; /* 2.4 商品卡片：圆角 8px */
             border: none; 
             box-shadow: none;
             transition: all 0.3s ease;
             background: transparent; /* 去掉背景 */
             position: relative;
             overflow: hidden;
-        }
-
-        .product-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to bottom, rgba(245, 245, 240, 0.3), rgba(245, 245, 240, 0.1));
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            z-index: -1;
-        }
-
-        .product-card:hover::before { 
-            opacity: 1;
         }
 
         /* 产品图片 - 高度统一，防止拉伸 */
@@ -264,7 +269,8 @@
             object-fit: cover; /* 防止拉伸变形 */
             background-color: #f8fafc;
             margin-bottom: 16px;
-            border-radius: 8px; /* 圆角 */
+            border-radius: 8px; /* 4.2 商品图片：添加圆角 8px */
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08); /* 4.2 商品图片：阴影效果 */
             filter: sepia(0.1) contrast(1.1); /* 轻微做旧滤镜 */
             transition: transform 0.3s ease; /* 添加过渡效果 */
         }
@@ -290,18 +296,18 @@
         }
 
         .product-name { 
-            font-size: 18px; /* 适中字号 */
+            font-size: 16px; /* 3.3 商品名称：字号 16px */
             font-weight: 400; /* 不加粗 */
             margin-bottom: 8px; 
-            color: #333333; 
+            color: #33; /* 3.3 商品名称：颜色 #333 */
             line-height: 1.4;
             font-family: 'Noto Serif SC', 'Times New Roman', serif; /* 衬线字体 */
         }
 
         .product-price { 
-            color: #8B4513; /* 朱砂红色价格 */
-            font-size: 20px; 
-            font-weight: 400; /* 不加粗 */
+            color: #8B4513; /* 3.3 商品价格：颜色 #8B4513 */
+            font-size: 18px; /* 3.3 商品价格：字号 18px */
+            font-weight: 600; /* 3.3 商品价格：加粗 600 */
         }
 
         .product-desc { 
@@ -311,21 +317,21 @@
         /* 购买按钮 - 榫卯式方形按钮 */
         .btn-buy { 
             width: auto; 
-            padding: 10px 20px; 
-            background: #8B4513; /* 朱砂红色按钮 */
-            color: white; 
+            padding: 8px 16px; /* 4.4 按钮样式：内边距 8px 16px */
+            background: #8B4513; /* 4.4 按钮样式：背景色 #8B4513 */
+            color: #fff; /* 4.4 按钮样式：文字色 #fff */
             border: none; 
-            border-radius: 0; /* 榫卯式方形按钮 */
+            border-radius: 4px; /* 4.4 按钮样式：圆角 4px */
             cursor: pointer; 
             font-family: inherit;
             font-size: 14px; 
             margin-top: 16px;
-            transition: opacity 0.2s ease;
+            transition: all 0.3s ease; /* 4.4 按钮样式：过渡效果 */
             align-self: flex-start; /* 左对齐按钮 */
         }
 
         .btn-buy:hover { 
-            opacity: 0.9; 
+            background: #6D3311; /* 4.4 按钮样式：悬停态背景色 */
         }
 
         .pagination { 
@@ -339,15 +345,17 @@
         }
 
         .page-btn { 
-            padding: 10px 20px; 
-            background: #8B4513; /* 朱砂红色按钮 */
-            color: white;
+            padding: 8px 16px; /* 4.4 按钮样式：内边距 8px 16px */
+            background: #8B4513; /* 4.4 按钮样式：背景色 #8B4513 */
+            color: white; /* 4.4 按钮样式：文字色 #fff */
             border: none; 
-            border-radius: 0; /* 榫卯式方形按钮 */
+            border-radius: 4px; /* 4.4 按钮样式：圆角 4px */
             cursor: pointer; 
-            transition: opacity 0.2s ease;
+            transition: all 0.3s ease; /* 4.4 按钮样式：过渡效果 */
         }
-        .page-btn:hover:not(:disabled) { opacity: 0.9; }
+        .page-btn:hover:not(:disabled) { 
+            background: #6D3311; /* 4.4 按钮样式：悬停态背景色 */
+        }
         .page-btn:disabled { 
             background: #e2e8f0; 
             color: #a0aec0;
@@ -382,6 +390,8 @@
             font-size: 14px;
             text-align: center;
             border: 1px dashed #d5d5d3;
+            border-radius: 8px; /* 4.2 商品图片：添加圆角 8px */
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08); /* 4.2 商品图片：阴影效果 */
         }
 
         /* ========================================
@@ -477,6 +487,15 @@
             .product-grid > div:first-child .product-img {
                 height: 300px; /* 移动端调整图片高度 */
             }
+        }
+
+        /* 右侧内容区域 */
+        .content-area {
+            flex: 1; /* 2.3 主内容区：flex:1 占剩余宽度 */
+            padding: 20px; /* 2.3 主内容区：内边距 20px */
+            display: flex;
+            flex-direction: column;
+            gap: 24px; /* 2.3 主内容区：模块之间间距 24px */
         }
     </style>
 </head>
@@ -1038,5 +1057,7 @@ c:\Users\xueru\Desktop\冀遗筑梦1\frontend\index.html
             }
         }
     </script>
+</body>
+</html>
 </body>
 </html>
