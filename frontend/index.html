@@ -87,13 +87,15 @@
             margin: 0 auto; 
             padding: 40px; 
             display: grid;
-            grid-template-columns: 250px 1fr; /* 左侧边栏250px，右侧内容区域剩余空间 */
+            grid-template-columns: 240px 1fr; /* 左侧边栏240px，右侧内容区域剩余空间 */
             gap: 40px;
         }
 
         .page-title { 
-            grid-column: 1 / -1; /* 标题跨越整个网格 */
-            text-align: center; 
+            grid-column: 2 / -1; /* 标题只在右侧内容区 */
+            text-align: left; /* 改为左对齐 */
+            align-self: start; /* 顶部对齐 */
+            padding-top: 20px; /* 增加顶部padding */
             margin-bottom: 30px; 
             color: #2d3748; 
         }
@@ -106,24 +108,23 @@
             flex-direction: column; /* 垂直排列 */
             gap: 12px;
             position: sticky; /* 固定定位 */
-            top: 120px; /* 考虑顶部导航栏高度 */
+            top: 100px; /* 考虑顶部导航栏高度 */
             align-self: start; /* 保持在顶部 */
-            padding: 20px;
-            background: #f8fafc; /* 淡色背景 */
-            border-radius: 8px;
-            border-left: 3px solid #8b2a2a; /* 左侧装饰线 */
+            padding: 20px 15px;
+            background: #fdfbf7; /* 微妙背景色差 */
+            border-radius: 0; /* 移除圆角 */
+            border-right: 1px solid #eaeaea; /* 浅灰色竖线 */
         }
 
         .filter-btn {
             padding: 14px 16px;
             background: transparent;
-            border: 1px solid #e2e8f0;
-            border-radius: 4px;
+            border: none;
             cursor: pointer;
             font-size: 16px;
             color: #4a5568;
-            text-align: left; /* 左对齐文本 */
-            font-weight: 500;
+            text-align: right; /* 文字右对齐 */
+            font-weight: 400; /* 默认非加粗 */
             transition: all 0.2s ease;
             writing-mode: vertical-lr; /* 竖排文字 */
             text-orientation: mixed; /* 保持正常的字符方向 */
@@ -131,51 +132,42 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
         }
 
         .filter-btn.active, .filter-btn:hover {
-            background: #8b2a2a;
-            color: white;
-            border-color: #8b2a2a;
-            position: relative;
+            background: #f5f5f0; /* 背景色 */
+            color: #1a202c; /* 深墨色文字 */
+            font-weight: 700; /* 加粗文字 */
         }
         
         .filter-btn.active::before {
             content: "•"; /* 左侧小黑点 */
             position: absolute;
-            left: -8px;
-            color: #8b2a2a;
-            font-size: 24px;
+            left: -3px;
+            color: #8b2a2a; /* 赤陶色小点 */
+            font-size: 16px;
             background: white;
-            width: 20px;
-            height: 20px;
+            width: 12px;
+            height: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
         }
 
-        /* 非对称产品网格 - 右侧内容区 */
+        /* 产品网格修复 */
         .product-grid { 
             display: grid; 
-            grid-template-columns: repeat(3, 1fr); /* 三列网格 */
-            gap: 30px; 
+            grid-template-columns: repeat(3, 1fr); /* 强制分为3列 */
+            gap: 40px 30px; /* 拉开卡片间距 */
         }
         
-        /* 第1个产品 - 横跨2列 */
-        .product-grid > div:nth-child(1) { 
-            grid-column: span 2; 
-            display: flex;
-            align-items: center;
+        /* 第一个产品（镇店之宝）横跨2列 */
+        .product-grid > div:first-child { 
+            grid-column: span 2; /* 横跨2列 */
         }
-        
-        /* 第4个产品 - 横跨2列，靠右对齐 */
-        .product-grid > div:nth-child(4n) { 
-            grid-column: 2 / -1; 
-            display: flex;
-            align-items: center;
-        }
-        
+
         /* 产品卡片 - 去掉背景和阴影，实现悬浮效果 */
         .product-card { 
             display: flex;
@@ -193,19 +185,18 @@
             border-bottom: 1px solid #cbd5e0; 
         }
 
-        /* 产品图片 - 调整尺寸适应非对称网格 */
+        /* 产品图片 - 高度统一，防止拉伸 */
         .product-img { 
             width: 100%; 
-            height: 320px; 
-            object-fit: contain;
+            height: 380px; /* 统一高度 */
+            object-fit: cover; /* 防止拉伸变形 */
             background-color: #f8fafc;
             margin-bottom: 16px;
         }
         
-        /* 第1个和第4n个产品的图片更大 */
-        .product-grid > div:nth-child(1) .product-img,
-        .product-grid > div:nth-child(4n) .product-img { 
-            height: 400px; 
+        /* 第一个产品的图片更大 */
+        .product-grid > div:first-child .product-img { 
+            height: 500px; /* 第一个产品图片更高 */
         }
 
         /* 卡片内容区 - 左对齐 */
@@ -225,7 +216,7 @@
         .product-price { 
             color: #8b2a2a; 
             font-size: 22px; 
-            font-weight: 700; 
+            font-weight: 700;
         }
 
         .product-desc { display: none; } 
@@ -308,7 +299,7 @@
                 gap: 12px;
                 top: 80px;
                 padding: 15px;
-                border-left: none;
+                border-right: none;
             }
             
             .filter-btn {
@@ -316,6 +307,7 @@
                 text-orientation: upright;
                 height: auto;
                 padding: 8px 20px;
+                text-align: center;
             }
             
             .filter-btn.active::before {
@@ -326,8 +318,7 @@
                 grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
             }
             
-            .product-grid > div:nth-child(1),
-            .product-grid > div:nth-child(4n) { 
+            .product-grid > div:first-child { 
                 grid-column: span 1; 
             }
             
