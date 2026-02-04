@@ -18,8 +18,8 @@ index.html
         /* 新中式极简字体方案 */
         body { 
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #F9F6F0; /* 3.1 页面背景色：柔和米白色 */
-            color: #333333; 
+            background: #F9F6F0; /* 4.1 页面背景：统一设为米白色 */
+            color: #333333; /* 墨色文字 */
             padding-top: 80px; 
             line-height: 1.6; 
         }
@@ -32,8 +32,8 @@ index.html
             top: 0; 
             left: 0; 
             width: 100%;
-            background: linear-gradient(to bottom, rgba(249, 246, 240, 0.95), rgba(249, 246, 240, 0.85)); 
-            backdrop-filter: blur(10px); 
+            background: linear-gradient(to bottom, rgba(249, 246, 240, 0.95), rgba(249, 246, 240, 0.85)); /* 4.1 页面背景同步 */
+            backdrop-filter: blur(10px); /* 磨砂玻璃效果 */
             color: #333333; 
             padding: 16px 40px;
             display: flex; 
@@ -65,7 +65,7 @@ index.html
             color: #5a5a5a; 
         }
         
-        /* 3.3 顶部图标样式：尺寸调整为24px*24px */
+        /* 4.5 顶部图标样式 */
         .nav-links img {
             width: 24px;
             height: 24px;
@@ -74,7 +74,7 @@ index.html
         
         /* 3.3 顶部图标：hover放大1.05倍效果 */
         .nav-links a:hover img {
-            transform: scale(1.05);
+            transform: scale(1.05); /* 4.5 顶部图标：hover 放大 1.05 倍效果 */
         }
 
         /* 搜索框极简化 - 只保留底边框 */
@@ -106,29 +106,29 @@ index.html
         /* 2.2 按钮（搜索）：默认背景色#8B4513，文字色#fff，圆角4px */
         .search-btn {
             margin-left: 8px;
-            padding: 8px 16px; 
-            background: #8B4513; 
-            color: white; 
+            padding: 8px 16px; /* 4.4 按钮样式：内边距 8px 16px */
+            background: #8B4513; /* 4.4 按钮样式：背景色 #8B4513 */
+            color: white; /* 4.4 按钮样式：文字色 #fff */
             border: none;
-            border-radius: 4px; 
+            border-radius: 4px; /* 4.4 按钮样式：圆角 4px */
             cursor: pointer;
             font-family: inherit;
-            transition: all 0.3s ease; 
+            transition: all 0.3s ease; /* 4.4 按钮样式：过渡效果 */
         }
 
         /* 2.2 按钮（搜索）：hover背景色变为#6D3311 */
         .search-btn:hover {
-            background: #6D3311; 
+            background: #6D3311; /* 4.4 按钮样式：悬停态背景色 */
         }
 
         /* ========================================
            主容器布局 - Flexbox + Grid混合布局
            ======================================== */
         .container { 
-            max-width: 1200px; /* 2.1 整体容器：宽度1200px居中 */
-            margin: 0 auto; 
-            padding: 24px 16px; /* 2.1 整体容器：上下内边距24px，左右内边距16px */
-            display: flex; 
+            max-width: 1200px; /* 2.1 整体容器：宽度 1200px 居中 */
+            margin: 0 auto; /* 2.1 整体容器：宽度 1200px 居中 */
+            padding: 24px 16px; /* 2.1 整体容器：上下内边距 24px，左右内边距 16px */
+            display: flex; /* 使用flexbox主布局 */
             flex-direction: column;
             gap: 40px;
         }
@@ -149,18 +149,18 @@ index.html
         }
         /* 2.1 主标题：字号28px，字体加粗700，颜色#5C2E10，上下间距16px */
         .page-title h2 { 
-            font-size: 28px; 
-            font-weight: 700; 
-            color: #5C2E10; 
-            margin: 16px 0; 
-            font-family: 'Noto Serif SC', 'Times New Roman', serif; 
+            font-size: 28px; /* 3.1 主标题：字号 28px */
+            font-weight: 700; /* 3.1 主标题：字体加粗 700 */
+            color: #5C2E10; /* 3.1 主标题：颜色 #5C2E10 */
+            margin: 16px 0; /* 3.1 主标题：上下间距 16px */
+            font-family: 'Noto Serif SC', 'Times New Roman', serif; /* 衬线字体标题 */
         } 
         .page-title p { 
-            color: #999; 
-            font-size: 16px; 
-            font-weight: 400; 
-            margin: 8px 0; 
-            letter-spacing: 3px; 
+            color: #999; /* 3.2 副标题：颜色 #999 */
+            font-size: 16px; /* 3.2 副标题：字号 16px */
+            font-weight: 400; /* 3.2 副标题：常规字重 400 */
+            margin: 8px 0; /* 3.2 副标题：上下间距 8px */
+            letter-spacing: 3px; /* 增加字间距 */
         } 
 
         /* 主体内容区域：分类筛选 + 商品展示 */
@@ -176,19 +176,19 @@ index.html
         /* 1.1 左侧导航栏：固定宽度200px，使用flex布局 */
         .filter-container {
             display: flex;
-            flex-direction: column; 
-            gap: 12px; /* 1.1 左侧导航：导航项上下间距12px */
-            flex: 0 0 200px; /* 1.1 左侧导航：固定宽度200px */
-            position: sticky; 
-            top: 100px; 
-            align-self: start; 
+            flex-direction: column; /* 垂直排列 */
+            gap: 12px; /* 2.2 左侧导航：导航项上下间距 12px */
+            flex: 0 0 200px; /* 2.2 左侧导航：固定宽度 200px */
+            position: sticky; /* 固定定位 */
+            top: 100px; /* 考虑顶部导航栏高度 */
+            align-self: start; /* 保持在顶部 */
             padding: 15px 10px;
             background: transparent; 
             border-radius: 0; 
         }
 
         .filter-btn {
-            padding: 8px 16px; /* 1.1 左侧导航：内边距8px 16px */
+            padding: 8px 16px; /* 2.2 左侧导航：内边距 8px 16px */
             background: transparent;
             border: none;
             cursor: pointer;
@@ -210,9 +210,9 @@ index.html
 
         /* 2.1 导航选中态：背景色#F5F0E8，文字颜色#8B4513，字体加粗 */
         .filter-btn.active {
-            background-color: #F5F0E8; 
-            color: #8B4513; 
-            font-weight: 600; 
+            background-color: #F5F0E8; /* 3.4 左侧导航选中态：背景色 #F5F0E8 */
+            color: #8B4513; /* 3.4 左侧导航选中态：文字颜色 #8B4513 */
+            font-weight: 600; /* 3.4 左侧导航选中态：加粗 600 */
         }
         
         .filter-btn:hover {
@@ -235,10 +235,10 @@ index.html
            ======================================== */
         .product-grid { 
             display: grid; 
-            grid-template-columns: repeat(3, 1fr); 
+            grid-template-columns: repeat(3, 1fr); /* 调整为3列网格，更适合当前屏幕 */
             grid-auto-rows: minmax(220px, auto);
-            gap: 30px 20px; 
-            flex: 1; /* 1.2 主内容区：占满剩余宽度（flex: 1） */
+            gap: 30px 20px; /* 调整间距，减少上下间距 */
+            flex: 1; /* 让商品网格占据剩余空间 */
         }
         
         .product-grid > div:first-child { 
@@ -251,14 +251,13 @@ index.html
             grid-row: span 1;
         }
 
-        /* 1.3 商品卡片：网格布局，外边距16px，内边距12px，圆角8px */
         /* 产品卡片 - 去掉背景和阴影，实现悬浮效果 */
         .product-card { 
             display: flex;
             flex-direction: column;
-            margin: 16px; /* 1.3 商品卡片：外边距16px */
-            padding: 12px; /* 1.3 商品卡片：内边距12px */
-            border-radius: 8px; /* 1.3 商品卡片：圆角8px */
+            margin: 16px; /* 2.4 商品卡片：外边距 16px */
+            padding: 12px; /* 2.4 商品卡片：内边距 12px */
+            border-radius: 8px; /* 2.4 商品卡片：圆角 8px */
             border: none; 
             box-shadow: none;
             transition: all 0.3s ease;
@@ -267,7 +266,6 @@ index.html
             overflow: hidden;
         }
 
-        /* 3.2 商品图片：添加圆角8px和阴影效果 */
         /* 产品图片 - 高度统一，防止拉伸 */
         .product-img { 
             width: 100%; 
@@ -275,10 +273,10 @@ index.html
             object-fit: cover; 
             background-color: #f8fafc;
             margin-bottom: 16px;
-            border-radius: 8px; /* 3.2 商品图片：圆角8px */
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08); /* 3.2 商品图片：阴影效果 */
-            filter: sepia(0.1) contrast(1.1); 
-            transition: transform 0.3s ease; 
+            border-radius: 8px; /* 4.2 商品图片：添加圆角 8px */
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08); /* 4.2 商品图片：阴影效果 */
+            filter: sepia(0.1) contrast(1.1); /* 轻微做旧滤镜 */
+            transition: transform 0.3s ease; /* 添加过渡效果 */
         }
         
         .product-img:hover {
@@ -301,45 +299,44 @@ index.html
 
         /* 2.1 商品名称：字号16px，颜色#333 */
         .product-name { 
-            font-size: 16px; 
-            font-weight: 400; 
+            font-size: 16px; /* 3.3 商品名称：字号 16px */
+            font-weight: 400; /* 不加粗 */
             margin-bottom: 8px; 
-            color: #33; 
+            color: #33; /* 3.3 商品名称：颜色 #333 */
             line-height: 1.4;
             font-family: 'Noto Serif SC', 'Times New Roman', serif; 
         }
 
         /* 2.1 商品价格：字号18px，字体加粗600，颜色#8B4513 */
         .product-price { 
-            color: #8B4513; 
-            font-size: 18px; 
-            font-weight: 600; 
+            color: #8B4513; /* 3.3 商品价格：颜色 #8B4513 */
+            font-size: 18px; /* 3.3 商品价格：字号 18px */
+            font-weight: 600; /* 3.3 商品价格：加粗 600 */
         }
 
         .product-desc { 
             display: none; 
         } 
 
-        /* 2.2 按钮（加入购物车）：默认背景色#8B4513，文字色#fff，圆角4px */
         /* 购买按钮 - 榫卯式方形按钮 */
         .btn-buy { 
             width: auto; 
-            padding: 8px 16px; 
-            background: #8B4513; 
-            color: #fff; 
+            padding: 8px 16px; /* 4.4 按钮样式：内边距 8px 16px */
+            background: #8B4513; /* 4.4 按钮样式：背景色 #8B4513 */
+            color: #fff; /* 4.4 按钮样式：文字色 #fff */
             border: none; 
-            border-radius: 4px; 
+            border-radius: 4px; /* 4.4 按钮样式：圆角 4px */
             cursor: pointer; 
             font-family: inherit;
             font-size: 14px; 
             margin-top: 16px;
-            transition: all 0.3s ease; 
-            align-self: flex-start; 
+            transition: all 0.3s ease; /* 4.4 按钮样式：过渡效果 */
+            align-self: flex-start; /* 左对齐按钮 */
         }
 
         /* 2.2 按钮（加入购物车）：hover背景色变为#6D3311 */
         .btn-buy:hover { 
-            background: #6D3311; 
+            background: #6D3311; /* 4.4 按钮样式：悬停态背景色 */
         }
 
         .pagination { 
@@ -354,17 +351,17 @@ index.html
 
         /* 2.2 按钮（分页）：默认背景色#8B4513，文字色#fff，圆角4px */
         .page-btn { 
-            padding: 8px 16px; 
-            background: #8B4513; 
-            color: white; 
+            padding: 8px 16px; /* 4.4 按钮样式：内边距 8px 16px */
+            background: #8B4513; /* 4.4 按钮样式：背景色 #8B4513 */
+            color: white; /* 4.4 按钮样式：文字色 #fff */
             border: none; 
-            border-radius: 4px; 
+            border-radius: 4px; /* 4.4 按钮样式：圆角 4px */
             cursor: pointer; 
-            transition: all 0.3s ease; 
+            transition: all 0.3s ease; /* 4.4 按钮样式：过渡效果 */
         }
         /* 2.2 按钮（分页）：hover背景色变为#6D3311 */
         .page-btn:hover:not(:disabled) { 
-            background: #6D3311; 
+            background: #6D3311; /* 4.4 按钮样式：悬停态背景色 */
         }
         .page-btn:disabled { 
             background: #e2e8f0; 
@@ -400,17 +397,8 @@ index.html
             font-size: 14px;
             text-align: center;
             border: 1px dashed #d5d5d3;
-            border-radius: 8px; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
-        }
-
-        /* 1.2 主内容区：内边距20px，模块间距24px */
-        .content-area {
-            flex: 1; /* 1.2 主内容区：占满剩余宽度（flex: 1） */
-            padding: 20px; /* 1.2 主内容区：内边距20px */
-            display: flex;
-            flex-direction: column;
-            gap: 24px; /* 1.2 主内容区：模块之间间距24px */
+            border-radius: 8px; /* 4.2 商品图片：添加圆角 8px */
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08); /* 4.2 商品图片：阴影效果 */
         }
 
         /* ========================================
@@ -495,7 +483,7 @@ index.html
             .page-title h2 { font-size: 28px; }
             .container { padding: 15px; }
             .product-grid { 
-                grid-template-columns: 1fr; 
+                grid-template-columns: 1fr; /* 移动端单列显示 */
                 gap: 25px;
             }
             
@@ -506,6 +494,15 @@ index.html
             .product-grid > div:first-child .product-img {
                 height: 300px; 
             }
+        }
+
+        /* 右侧内容区域 */
+        .content-area {
+            flex: 1; /* 2.3 主内容区：flex:1 占剩余宽度 */
+            padding: 20px; /* 2.3 主内容区：内边距 20px */
+            display: flex;
+            flex-direction: column;
+            gap: 24px; /* 2.3 主内容区：模块之间间距 24px */
         }
     </style>
 </head>
@@ -573,35 +570,6 @@ index.html
             </div>
         </div>
     </div>
-=======
-        @media (max-width: 1024px) {
-            .container { 
-                grid-template-columns: 1fr; 
-                padding: 20px; 
-            }
-            
-            .filter-container {
-                display: flex;
-                flex-wrap: wrap;
-                justify-content: center;
-                gap: 12px;
-                top: 80px;
-                padding: 15px;
-                border-right: none;
-            }
-        @media (max-width: 1024px) {
-            .main-content { 
-                flex-direction: column; /* 小屏时垂直排列 */
-            }
-            
-            .filter-container {
-                order: 2; /* 分类筛选移到下方 */
-                flex-direction: row; /* 水平排列 */
-                flex-wrap: wrap;
-                justify-content: center;
-                gap: 12px;
-                top: 80px;
-            }
 
     <script>
         // 设置API基础URL，以便在部署时调整
@@ -1063,7 +1031,5 @@ index.html
             }
         }
     </script>
-</body>
-</html>
 </body>
 </html>
