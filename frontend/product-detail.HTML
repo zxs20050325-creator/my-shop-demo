@@ -188,3 +188,199 @@
         // 修改为实际的后端服务地址
         const API_BASE = isDeployed ? 'https://jiyi-zhumeng.onrender.com' : 'http://localhost:3000';
         let currentProduct = null;
+
+        // 页面加载完成后获取商品详情
+        window.onload = function() {
+            checkLoginStatus();
+            loadProductDetail();
+        };
+
+        // 检查登录状态
+        function checkLoginStatus() {
+            try {
+                const user = localStorage.getItem('currentUser');
+                const authSection = document.getElementById('auth-section');
+                if (user) {
+                    authSection.innerHTML = `
+                        <span style="margin-right: 20px;">欢迎, ${user}</span>
+                        <a href="cart.html">🛒 购物车</a>
+                        <a href="favorites.html">❤️ 收藏</a>
+                        <a onclick="logout()">退出</a>
+                    `;
+                } else {
+                    authSection.innerHTML = `
+                        <a href="login.html">登录</a>
+                        <a href="register.html">注册</a>
+                    `;
+                }
+            } catch (e) {
+                console.warn('无法访问localStorage，可能是隐私模式');
+            }
+        }
+
+        // 登出
+        function logout() {
+            try {
+                localStorage.removeItem('currentUser');
+            } catch (e) {
+                console.warn('无法访问localStorage');
+            }
+            window.location.reload();
+        }
+
+        // 加载商品详情
+        async function loadProductDetail() {
+            // 从URL参数中获取商品ID
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get('id');
+
+            if (!productId) {
+                document.getElementById('product-name').innerText = '商品不存在';
+                return;
+            }
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                
+                const res = await fetch(`${API_BASE}/api/products/${productId}`, {
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+                
+                if (!res.ok) {
+                    throw new Error(`API请求失败: ${res.status} ${res.statusText}`);
+                }
+                
+                const product = await res.json();
+                currentProduct = product;
+                
+                // 填充商品信息
+                document.getElementById('product-name').innerText = product.name;
+                document.getElementById('product-price').innerText = `¥${product.price}`;
+                document.getElementById('product-desc').innerText = product.desc;
+                document.getElementById('product-category').innerText = product.category || '工艺品';
+                
+                // 处理图片
+                let imgSrc = product.img;
+                const imgName = imgSrc.split('/').pop();
+                imgSrc = `${API_BASE}/images/${imgName}`;
+                document.getElementById('product-img').src = imgSrc;
+                document.getElementById('product-img').alt = product.name;
+            } catch (err) {
+                console.error('加载商品详情失败:', err);
+                document.getElementById('product-name').innerText = '加载失败，请稍后重试';
+            }
+        }
+
+        // 添加到购物车
+        async function addToCart() {
+            const button = document.querySelector('.btn-buy');
+            const originalText = button.textContent;
+            button.disabled = true;
+            button.textContent = '添加中...';
+
+            try {
+                const user = localStorage.getItem('currentUser');
+                if(!user) {
+                    alert('请先登录后再购买！');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                if(!currentProduct) {
+                    alert('当前商品信息无效');
+                    return;
+                }
+
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                
+                const res = await fetch(`${API_BASE}/api/cart/add`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        username: user, 
+                        product: currentProduct
+                    }),
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+                
+                const data = await res.json();
+                if(data.success) {
+                    button.textContent = '已加入购物车!';
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                        button.disabled = false;
+                    }, 1000);
+                } else {
+                    button.textContent = originalText;
+                    button.disabled = false;
+                    alert('添加失败: ' + (data.message || '未知错误'));
+                }
+            } catch(e) {
+                button.textContent = originalText;
+                button.disabled = false;
+                alert('网络错误，请稍后重试');
+            }
+        }
+
+        // 切换收藏状态
+        async function toggleFavorite() {
+            const button = document.querySelector('.btn-favorite');
+            const originalText = button.textContent;
+            button.disabled = true;
+            button.textContent = currentProduct.isFavorite ? '取消中...' : '收藏中...';
+
+            try {
+                const user = localStorage.getItem('currentUser');
+                if(!user) {
+                    alert('请先登录后再收藏！');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                if(!currentProduct) {
+                    alert('当前商品信息无效');
+                    return;
+                }
+
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                
+                const action = currentProduct.isFavorite ? 'remove' : 'add';
+                const res = await fetch(`${API_BASE}/api/favorites/${action}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        username: user, 
+                        product: currentProduct
+                    }),
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+                
+                const data = await res.json();
+                if(data.success) {
+                    currentProduct.isFavorite = !currentProduct.isFavorite;
+                    button.textContent = currentProduct.isFavorite ? '❤️ 已收藏' : '🤍 收藏商品';
+                    
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                        button.disabled = false;
+                    }, 1000);
+                } else {
+                    button.textContent = originalText;
+                    button.disabled = false;
+                    alert('操作失败: ' + (data.message || '未知错误'));
+                }
+            } catch(e) {
+                button.textContent = originalText;
+                button.disabled = false;
+                alert('网络错误，请稍后重试');
+            }
+        }
+    </script>
+</body>
+</html>
