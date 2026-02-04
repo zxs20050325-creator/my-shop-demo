@@ -17,8 +17,8 @@
         /* 新中式极简字体方案 */
         body { 
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #ccbfa7; /* 米白基底 - 替换原来的#FDFBF7 */
-            color: #5e993650; /* 做旧靛蓝色文字 - 替换原来的#333333 */
+            background: #F9F7F3; /* 米白基底 - 替换原来的#FDFBF7 */
+            color: #1A365D; /* 做旧靛蓝色文字 - 替换原来的#333333 */
             padding-top: 80px; 
             line-height: 1.6; /* 统一行高 */
         }
@@ -31,16 +31,16 @@
             top: 0; 
             left: 0; 
             width: 100%;
-            background: linear-gradient(to bottom, rgba(214, 200, 172, 0.95), rgba(249, 247, 243, 0.85)); /* 米白基底的渐变 */
+            background: linear-gradient(to bottom, rgba(249, 247, 243, 0.95), rgba(249, 247, 243, 0.85)); /* 米白基底的渐变 */
             backdrop-filter: blur(10px); /* 磨砂玻璃效果 */
-            color: #43944139; /* 做旧靛蓝色 */
+            color: #1A365D; /* 做旧靛蓝色 */
             padding: 16px 40px;
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
             z-index: 1000;
-            border-bottom: 1px solid #b0a184; /* 浅木色边框 */
-            box-shadow: 0 2px 10px rgba(186, 166, 166, 0.05); /* 轻微阴影增强层次 */
+            border-bottom: 1px solid #E2D9C8; /* 浅木色边框 */
+            box-shadow: 0 2px 10px rgba(139, 70, 70, 0.05); /* 轻微阴影增强层次 */
         }
 
         .logo {
@@ -70,37 +70,35 @@
             align-items: center;
             margin: 0 20px;
             flex: 1;
-            max-width: 30%; /* 调整宽度为30% */
+            max-width: 400px;
         }
 
         .search-input {
             width: 100%;
-            height: 28px; /* 高度压缩至28px */
-            padding: 0 10px; /* 调整padding以适应高度 */
-            border: 1px solid #E5E7EB; /* 浅灰色边框 */
+            padding: 10px 16px;
+            border: none;
+            border-bottom: 1px solid #d5d5d3; /* 更柔和的边框色 */
             outline: none;
             font-family: inherit;
-            font-size: 13px; /* 输入文字大小13px */
+            font-size: 14px;
             background: transparent;
             transition: border-color 0.2s ease;
             color: #1A365D; /* 做旧靛蓝色 */
         }
 
         .search-input:focus {
-            border-color: #1A365D; /* 搜索框聚焦时边框颜色改为低饱和靛蓝色 */
+            border-color: #a8a8a4; /* 更深一些的焦糖色 */
         }
 
         .search-btn {
             margin-left: 8px;
-            height: 28px; /* 按钮高度设为28px */
-            width: 50px; /* 按钮宽度设为50px */
-            background: #D69E2E; /* 黄色按钮 */
+            padding: 10px 16px;
+            background: #D69E2E; /* 土黄色按钮 - 替换了原来的#8B4513朱砂红色 */
             color: white;
-            border: 1px solid #E5E7EB; /* 与输入框一致的边框 */
-            border-radius: 0; /* 保持方形设计 */
+            border: none;
+            border-radius: 0; /* 榫卯式方形按钮 */
             cursor: pointer;
             font-family: inherit;
-            font-size: 13px; /* 缩小字体 */
             transition: opacity 0.2s ease;
         }
 
@@ -118,36 +116,34 @@
             display: flex; /* 使用flexbox主布局 */
             flex-direction: column;
             gap: 40px;
-            background: #acbdbd; /* 米白基底 */
+            background: #F9F7F3; /* 米白基底 */
         }
 
-        /* 页面标题区域 - 移动到导航栏中 */
+        /* 页面标题区域 */
         .header-section {
             display: flex;
-            justify-content: flex-start;
+            justify-content: center;
             align-items: center;
-            padding: 0;
-            margin-left: 20px; /* 与logo间隔 */
+            flex-direction: column;
+            padding: 20px 0;
         }
         
         .page-title { 
-            text-align: left; /* 左对齐标题 */
-            margin-left: 20px; /* 与logo的间距 */
+            text-align: center; /* 中心对齐标题 */
+            margin-bottom: 20px; /* 减少底部margin */
             color: #1A365D; /* 做旧靛蓝色 */
         }
         .page-title h2 { 
-            font-size: 16px; /* 调整为16px */
-            font-weight: 500; /* 适中字重 */
-            margin-bottom: 4px; /* 与副标题间距 */
-            color: #1A365D; /* 低饱和靛蓝色 */
+            font-size: 48px; /* 更大的标题 */
+            font-weight: 300; /* 极细字体 */
+            margin-bottom: 20px; 
             font-family: 'Noto Serif SC', 'Times New Roman', serif; /* 衬线字体标题 */
         } 
         .page-title p { 
-            color: #8B7355; /* 浅棕色副标题 */
-            font-size: 12px; /* 调整为12px */
-            letter-spacing: 1px; /* 适当调整字间距 */
+            color: #7a7a7a; /* 调整副标题颜色 */
+            font-size: 16px; /* 更小的字号 */
+            letter-spacing: 3px; /* 增加字间距 */
             font-weight: 300;
-            margin: 0;
         } 
 
         /* 主体内容区域：分类筛选 + 商品展示 */
@@ -163,14 +159,17 @@
             display: flex;
             flex-direction: column; /* 垂直排列 */
             gap: 24px;
-            flex: 0 0 120px; /* 固定宽度120px（之前已调整） */
+            flex: 0 0 240px; /* 固定宽度240px */
             position: sticky; /* 固定定位 */
             top: 100px; /* 考虑顶部导航栏高度 */
             align-self: start; /* 保持在顶部 */
             padding: 20px 15px;
-            background: #f2c876; /* 背景色与页面一致 */
+            background: transparent; /* 透明背景 */
             border-radius: 0; /* 移除圆角 */
-            border-right: 1px solid #eac787; /* 添加右侧边框 */
+            /* 添加细线条纹理边框 */
+            border: 1px solid #E2D9C8; /* 纹理边框 */
+            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAALUlEQVQ4T2N88uTJfwY0wMjIKPWPAQkwhgwZ8v8/w1SDWAw0NTUVY2hoqMwwBgARkwK0YqZnlwAAAABJRU5ErkJggg==');
+            background-repeat: repeat;
         }
 
         .filter-btn {
@@ -194,7 +193,7 @@
         }
 
         .filter-btn.active, .filter-btn:hover {
-            color: #c6ced8; /* 做旧靛蓝色 */
+            color: #1A365D; /* 做旧靛蓝色 */
             font-weight: 500; /* 适中加粗 */
         }
         
@@ -392,15 +391,145 @@
         /* ========================================
            响应式设计
            ======================================== */
-        /* ========================================
-           响应式设计
-           ======================================== */
         @media (max-width: 1200px) {
             .product-grid { 
                 grid-template-columns: repeat(3, 1fr); 
             }
+            
+            .product-grid > div:first-child, 
+            .product-grid > div:nth-child(4n) { 
+                grid-column: span 2; 
+            }
         }
         
+        @media (max-width: 1024px) {
+            .container { 
+                grid-template-columns: 1fr; 
+                padding: 20px; 
+            }
+            
+            .filter-container {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 12px;
+                top: 80px;
+                padding: 15px;
+                border-right: none;
+            }
+            
+            .filter-btn {
+                writing-mode: horizontal-tb;
+                text-orientation: upright;
+                height: auto;
+                padding: 8px 20px;
+                text-align: center;
+            }
+            
+            .filter-btn.active::before {
+                position: absolute;
+                top: auto;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                height: 2px;
+                width: auto;
+            }
+            
+            .product-grid { 
+                grid-template-columns: repeat(2, 1fr); 
+            }
+            
+            .product-grid > div:first-child { 
+                grid-column: span 2; 
+            }
+            
+            .pagination,
+            .search-results,
+            .no-results { 
+                grid-column: 1; 
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .navbar { padding: 16px 20px; }
+            .page-title { margin-bottom: 20px; }
+            .filter-container { margin: 20px 0 30px; }
+            .page-title h2 { font-size: 32px; }
+            .container { padding: 20px; }
+            .product-grid { gap: 25px 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo">冀遗筑梦</div>
+        
+        <!-- 搜索框 -->
+        <div class="search-container">
+            <input type="text" class="search-input" id="search-input" placeholder="搜索商品..." onkeypress="handleSearchKeypress(event)" oninput="showSearchHint()">
+            <button class="search-btn" onclick="performSearch()">搜索</button>
+        </div>
+        
+        <div class="nav-links" id="auth-section">
+            <!-- JS填充 -->
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- 标题区域 -->
+        <div class="header-section">
+            <div class="page-title">
+                <h2>传承非遗 · 筑梦河北</h2>
+                <p>精选燕赵大地文化瑰宝</p>
+            </div>
+        </div>
+
+        <!-- 主体内容：分类筛选 + 商品展示 -->
+        <div class="main-content">
+            <!-- 左侧分类筛选 -->
+            <div class="filter-container" id="filter-container">
+                <button class="filter-btn active" data-category="all">全部</button>
+                <button class="filter-btn" data-category="工艺品">工艺</button>
+                <button class="filter-btn" data-category="剪纸">剪纸</button>
+                <button class="filter-btn" data-category="雕塑">雕塑</button>
+                <button class="filter-btn" data-category="陶瓷">陶瓷</button>
+                <button class="filter-btn" data-category="皮影">皮影</button>
+                <button class="filter-btn" data-category="雕刻">雕刻</button>
+                <button class="filter-btn" data-category="文房四宝">文房</button>
+                <button class="filter-btn" data-category="年画">年画</button>
+                <button class="filter-btn" data-category="金银器">金银</button>
+                <button class="filter-btn" data-category="内画">内画</button>
+                <button class="filter-btn" data-category="泥塑">泥塑</button>
+                <button class="filter-btn" data-category="乐器">乐器</button>
+            </div>
+
+            <!-- 右侧内容区域 -->
+            <div class="content-area">
+                <!-- 搜索结果提示 -->
+                <div class="search-results" id="search-results"></div>
+
+                <div class="product-grid" id="product-list"></div>
+
+                <!-- 无结果提示 -->
+                <div class="no-results" id="no-results" style="display: none;">
+                    没有找到相关商品，请尝试其他关键词
+                </div>
+
+                <div class="pagination" id="pagination">
+                    <button class="page-btn" id="prev-btn" onclick="changePage(-1)">上一页</button>
+                    <span class="page-info" id="page-info">第 1 页</span>
+                    <button class="page-btn" id="next-btn" onclick="changePage(1)">下一页</button>
+                </div>
+            </div>
+        </div>
+    </div>
+```
+
+c:\Users\xueru\Desktop\冀遗筑梦1\frontend\index.html
+```html
+<<<<<<< SEARCH
         @media (max-width: 1024px) {
             .container { 
                 grid-template-columns: 1fr; 
