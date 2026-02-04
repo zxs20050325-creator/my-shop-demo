@@ -956,30 +956,52 @@
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
                 
-                const res = await fetch(`${API_BASE}/api/products`, {
+                // 获取第一页商品
+                const res1 = await fetch(`${API_BASE}/api/products?page=1`, {
                     signal: controller.signal
                 });
                 clearTimeout(timeoutId);
                 
-                if (!res.ok) {
-                    throw new Error(`API请求失败: ${res.status} ${res.statusText}`);
+                if (!res1.ok) {
+                    throw new Error(`API请求失败: ${res1.status} ${res1.statusText}`);
                 }
                 
-                const data = await res.json();
-                allProducts = data.items || [];
+                const data1 = await res1.json();
+                let allProductsTemp = [...data1.items];
                 
-                // 获取所有商品用于分页
-                const allRes = await fetch(`${API_BASE}/api/products?page=1&limit=100`, {
-                    signal: controller.signal
-                });
-                clearTimeout(timeoutId);
-                
-                if (!allRes.ok) {
-                    throw new Error(`API请求失败: ${allRes.status} ${allRes.statusText}`);
+                // 获取第二页商品（如果存在）
+                if (data1.totalPages > 1) {
+                    const res2 = await fetch(`${API_BASE}/api/products?page=2`, {
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+                    
+                    if (!res2.ok) {
+                        throw new Error(`API请求失败: ${res2.status} ${res2.statusText}`);
+                    }
+                    
+                    const data2 = await res2.json();
+                    allProductsTemp = allProductsTemp.concat(data2.items);
                 }
                 
-                const allData = await allRes.json();
-                allProducts = allData.items || [];
+                // 获取第三页及以上（如果存在）
+                if (data1.totalPages > 2) {
+                    for (let i = 3; i <= data1.totalPages; i++) {
+                        const resNext = await fetch(`${API_BASE}/api/products?page=${i}`, {
+                            signal: controller.signal
+                        });
+                        
+                        if (!resNext.ok) {
+                            console.error(`获取第${i}页失败: ${resNext.status} ${resNext.statusText}`);
+                            continue;
+                        }
+                        
+                        const dataNext = await resNext.json();
+                        allProductsTemp = allProductsTemp.concat(dataNext.items);
+                    }
+                }
+                
+                allProducts = allProductsTemp;
                 
                 loadProductsByPage(1);
             } catch (err) {
