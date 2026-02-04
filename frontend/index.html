@@ -905,7 +905,11 @@
     </div>
 
     <script>
-        const API_BASE = 'https://api.example.com'; // 替换为实际API地址
+        // 设置API基础URL，以便在部署时调整
+        const isDeployed = window.location.hostname.includes('onrender.com');
+        // 修改为实际的后端服务地址
+        const API_BASE = isDeployed ? 'https://jiyi-zhumeng.onrender.com' : 'http://localhost:3000';
+        
         // 全局变量
         let allProducts = [];
         let currentPage = 1;
@@ -1019,31 +1023,30 @@
         function renderProducts(products) {
             const container = document.getElementById('product-container');
             container.innerHTML = '';
-            
+
             if (products.length === 0) {
                 container.innerHTML = '<div class="error-msg">未找到商品，请尝试其他筛选条件</div>';
                 return;
             }
-            
+
             products.forEach(item => {
                 // 处理图片路径
-                let imgSrc = item.img;
-                if(imgSrc && imgSrc.startsWith('/images/')) {
-                    imgSrc = `${API_BASE}${imgSrc}`;
-                } else if(!imgSrc || imgSrc === '') {
-                    // 使用占位符图片
+                let imgSrc = item.img || '';
+                
+                // 如果图片路径为空或无效，则使用占位图
+                if (!imgSrc || imgSrc.trim() === '') {
                     imgSrc = `https://placehold.co/400x400/E0DED9/2F4842?text=${encodeURIComponent(item.name)}`;
-                } else if(imgSrc.startsWith('http')) {
-                    // 如果已经是完整URL则不变
-                } else {
+                } else if (imgSrc.startsWith('/images/')) {
+                    // 如果是相对路径，则拼接完整的URL
+                    imgSrc = `${API_BASE}${imgSrc}`;
+                } else if (!imgSrc.startsWith('http')) {
                     // 其他情况加上API基础路径
                     imgSrc = `${API_BASE}/${imgSrc}`;
                 }
-                
+
                 let blindTag = item.isBlindBox ? '<div class="p-blindbox-tag">BLIND BOX</div>' : '';
-                // 模拟编号 (用于UI装饰，使用ID)
                 let tagNo = `NO.${String(item.id).padStart(3, '0')}`;
-                
+
                 // 占位图 URL (如果原图加载失败)
                 const placeholderUrl = `https://placehold.co/400x400/E0DED9/2F4842?text=${encodeURIComponent(item.name)}`;
 
@@ -1056,7 +1059,7 @@
                                  onerror="this.onerror=null;this.src='${placeholderUrl}';">
                             <div class="quick-view-overlay">
                                 <button class="quick-view-btn" onclick="event.stopPropagation(); quickViewProduct(${item.id}, '${item.name}', '${item.price}', '${item.category}', '${imgSrc.replace(/'/g, "\\'")}')"> QUICK VIEW </button>
-                                <button class="favorite-btn" onclick="event.stopPropagation(); toggleFavorite(event, ${item.id}, '${item.name}', '${item.price}', '${item.category}', '${imgSrc.replace(/'/g, "\\'")}')"> ❤️ </button>
+                                <button class="favorite-btn" onclick="event.stopPropagation(); toggleFavorite(event, ${item.id}, '${item.name}', '${item.price}', '${item.category}', '${imgSrc.replace(/'/g, "\'''")}')"> ❤️ </button>
                             </div>
                         </div>
                         <div class="p-info">
