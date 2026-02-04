@@ -1,0 +1,53 @@
+/* ... existing code ... */
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+}
+
+.navigation {
+    display: flex;
+    list-style: none;
+}
+
+.navigation li {
+    margin-right: 15px;
+}
+
+.hero-section {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.product-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 40px;
+}
+
+.gallery-item {
+    width: 300px;
+    text-align: center;
+}
+
+.gallery-item img {
+    max-width: 100%;
+    height: auto;
+}
+
+.gallery-item p {
+    margin: 10px 0;
+}
+
+.gallery-item button {
+    padding: 5px 10px;
+    background-color: #8b4513;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+/* ... existing code ... */
