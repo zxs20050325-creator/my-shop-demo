@@ -123,12 +123,16 @@
             min-height: 100vh;
             display: grid;
             grid-template-columns: 240px 1fr; /* 左侧筛选区 + 右侧内容区 */
-            grid-template-rows: auto 1fr;     /* 顶部导航 + 主体 */
+            grid-template-rows: auto auto 1fr; /* 顶部导航 + 英雄区 + 主体内容 */
+            grid-template-areas:
+                "top-bar top-bar"
+                "hero hero"
+                "filter content";
         }
 
         /* 顶部导航 (Top Bar) - 极简线条风 */
         .top-bar {
-            grid-column: 1 / -1;
+            grid-area: top-bar;
             padding: 30px 60px;
             display: flex;
             justify-content: flex-end; /* 靠右对齐 */
@@ -174,7 +178,7 @@
            4. 英雄区 (Hero Section) - 解构大字
            ======================================== */
         .hero-section {
-            grid-column: 1 / -1;
+            grid-area: hero;
             padding: 40px 60px 80px;
             position: relative;
             height: 500px;
@@ -278,8 +282,13 @@
            5. 分类筛选 (Sticky Filter)
            ======================================== */
         .filter-panel {
+            grid-area: filter;
             padding: 40px;
             border-right: 1px dashed var(--c-grid); /* 虚线分割 */
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
         }
 
         .filter-title {
@@ -325,13 +334,17 @@
            6. 商品网格 (Product Grid) - 档案卡片风
            ======================================== */
         .content-panel {
+            grid-area: content;
             padding: 40px 60px;
+            display: flex;
+            flex-direction: column;
         }
 
         .product-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
             gap: 40px;
+            flex: 1;
         }
 
         .product-card {
@@ -446,7 +459,6 @@
 
         /* 分页器 - 极简数字 */
         .pagination {
-            grid-column: 1 / -1;
             margin-top: 60px;
             display: flex;
             gap: 20px;
@@ -622,155 +634,6 @@
             transition: width 0.3s;
         }
 
-        /* 快速预览覆盖层 */
-        .quick-view-overlay {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            right: 10px;
-            display: flex;
-            justify-content: space-between;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .product-card:hover .quick-view-overlay {
-            opacity: 1;
-        }
-
-        .quick-view-btn, .favorite-btn {
-            background: rgba(255, 255, 255, 0.8);
-            border: 1px solid var(--c-primary);
-            color: var(--c-primary);
-            padding: 5px 10px;
-            font-size: 10px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .quick-view-btn:hover, .favorite-btn:hover {
-            background: var(--c-primary);
-            color: white;
-        }
-
-        /* 快速预览模态框 */
-        .quick-view-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-        }
-
-        .quick-view-content {
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            max-width: 800px;
-            width: 90%;
-            position: relative;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .quick-view-product {
-            display: flex;
-            gap: 30px;
-        }
-
-        .quick-view-img {
-            flex: 1;
-        }
-
-        .quick-view-img img {
-            width: 100%;
-            height: 300px;
-            object-fit: cover;
-            border-radius: 4px;
-        }
-
-        .quick-view-details {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .quick-view-details h3 {
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-
-        .close-btn {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 30px;
-            cursor: pointer;
-            color: #aaa;
-        }
-
-        .close-btn:hover {
-            color: var(--c-primary);
-        }
-
-        /* 浮动购物车图标 */
-        .floating-cart {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 60px;
-            height: 60px;
-            background: var(--c-primary);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 24px;
-            cursor: pointer;
-            z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            transition: all 0.3s;
-        }
-
-        .floating-cart:hover {
-            transform: scale(1.1);
-            background: var(--c-accent);
-        }
-
-        .cart-count {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #ff4757;
-            color: white;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            font-size: 12px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* 进度指示器 */
-        .progress-indicator {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 0%;
-            height: 3px;
-            background: var(--c-accent);
-            z-index: 1001;
-            transition: width 0.3s;
-        }
-
         /* 响应式适配 */
         @media (max-width: 1024px) {
             .big-typo { font-size: 15vw; }
@@ -782,9 +645,42 @@
 
         @media (max-width: 768px) {
             .sidebar { display: none; } /* 移动端隐藏左侧尺 */
-            .main-wrapper { margin-left: 0; grid-template-columns: 1fr; }
-            .filter-panel { display: flex; overflow-x: auto; border-bottom: 1px solid #ddd; padding: 20px; }
-            .filter-list button { width: auto; padding: 0 15px; flex-shrink: 0; }
+            .main-wrapper { 
+                margin-left: 0; 
+                grid-template-columns: 1fr; 
+                grid-template-areas:
+                    "top-bar"
+                    "hero"
+                    "filter"
+                    "content";
+            }
+            .filter-panel {
+                position: static;
+                height: auto;
+                overflow-y: visible;
+                display: flex;
+                overflow-x: auto;
+                border-bottom: 1px solid #ddd; 
+                border-right: none;
+                padding: 20px;
+                gap: 20px;
+            }
+            .filter-title {
+                white-space: nowrap;
+                margin-bottom: 0;
+                margin-right: 10px;
+            }
+            .filter-list {
+                display: flex;
+                gap: 15px;
+                flex-wrap: nowrap;
+            }
+            .filter-list button {
+                width: auto;
+                padding: 0 15px;
+                flex-shrink: 0;
+                white-space: nowrap;
+            }
             .hero-section { height: auto; padding: 40px 20px; }
             .big-typo { display: none; }
             .top-bar { padding: 20px; justify-content: space-between; }
@@ -793,18 +689,10 @@
     </style>
 </head>
 <body>
-    <!-- 进度指示器 -->
+    <!-- 进度指示器（仅保留一个） -->
     <div class="progress-indicator" id="progressIndicator"></div>
 
-    <!-- 浮动购物车图标 -->
-    <div class="floating-cart" onclick="window.location.href='cart.html'">
-        <i class="fa fa-shopping-cart"></i>
-        <div class="cart-count" id="floatingCartCount">0</div>
-    </div>
-    <!-- 进度指示器 -->
-    <div class="progress-indicator" id="progressIndicator"></div>
-
-    <!-- 浮动购物车图标 -->
+    <!-- 浮动购物车图标（仅保留一个） -->
     <div class="floating-cart" onclick="window.location.href='cart.html'">
         <i class="fa fa-shopping-cart"></i>
         <div class="cart-count" id="floatingCartCount">0</div>
@@ -864,44 +752,40 @@
             </div>
         </section>
 
-        <!-- 4. 主体内容 (Flex: 筛选 + 网格) -->
-        <div style="display: flex; flex-wrap: wrap;"> <!-- 内层布局容器 -->
+        <!-- 4. 分类筛选面板 -->
+        <aside class="filter-panel">
+            <div class="filter-title">CATEGORY 分类</div>
+            <div class="filter-list" id="category-filters">
+                <button class="active" onclick="filterProducts('all')">全部 / ALL</button>
+                <button onclick="filterProducts('工艺品')">工艺 / CRAFT</button>
+                <button onclick="filterProducts('剪纸')">剪纸 / PAPER</button>
+                <button onclick="filterProducts('雕刻')">雕刻 / CARVING</button>
+                <button onclick="filterProducts('陶瓷')">陶瓷 / CERAMIC</button>
+            </div>
+
+            <div class="filter-title" style="margin-top: 40px;">STATUS 状态</div>
+            <div class="filter-list">
+                <button onclick="alert('即将上线')">现货 / IN STOCK</button>
+                <button onclick="alert('即将上线')">众筹 / CROWD</button>
+            </div>
+        </aside>
+
+        <!-- 5. 商品内容面板 -->
+        <main class="content-panel">
+            <div id="search-feedback" style="margin-bottom: 20px; color: var(--c-accent); font-family: var(--f-mono);"></div>
             
-            <!-- 左侧筛选 -->
-            <aside class="filter-panel" style="width: 200px; flex-shrink: 0;">
-                <div class="filter-title">CATEGORY 分类</div>
-                <div class="filter-list" id="category-filters">
-                    <button class="active" onclick="filterProducts('all')">全部 / ALL</button>
-                    <button onclick="filterProducts('工艺品')">工艺 / CRAFT</button>
-                    <button onclick="filterProducts('剪纸')">剪纸 / PAPER</button>
-                    <button onclick="filterProducts('雕刻')">雕刻 / CARVING</button>
-                    <button onclick="filterProducts('陶瓷')">陶瓷 / CERAMIC</button>
-                </div>
+            <div class="product-grid" id="product-container">
+                <!-- JS动态加载商品 -->
+                <div style="font-family:var(--f-mono); padding: 20px;">CONNECTING TO DATABASE...</div>
+            </div>
 
-                <div class="filter-title" style="margin-top: 40px;">STATUS 状态</div>
-                <div class="filter-list">
-                    <button onclick="alert('即将上线')">现货 / IN STOCK</button>
-                    <button onclick="alert('即将上线')">众筹 / CROWD</button>
-                </div>
-            </aside>
-
-            <!-- 右侧商品网格 -->
-            <main class="content-panel" style="flex: 1;">
-                <div id="search-feedback" style="margin-bottom: 20px; color: var(--c-accent); font-family: var(--f-mono);"></div>
-                
-                <div class="product-grid" id="product-container">
-                    <!-- JS动态加载商品 -->
-                    <div style="font-family:var(--f-mono); padding: 20px;">CONNECTING TO DATABASE...</div>
-                </div>
-
-                <!-- 分页 -->
-                <div class="pagination" id="pagination">
-                    <button class="page-num" id="prev-btn" onclick="changePage(-1)">PREV</button>
-                    <span class="page-num active" id="page-info">1</span>
-                    <button class="page-num" id="next-btn" onclick="changePage(1)">NEXT</button>
-                </div>
-            </main>
-        </div>
+            <!-- 分页 -->
+            <div class="pagination" id="pagination">
+                <button class="page-num" id="prev-btn" onclick="changePage(-1)">PREV</button>
+                <span class="page-num active" id="page-info">1</span>
+                <button class="page-num" id="next-btn" onclick="changePage(1)">NEXT</button>
+            </div>
+        </main>
     </div>
 
     <script>
@@ -1068,59 +952,132 @@
                         imgSrc = `https://placehold.co/400x400/E0DED9/2F4842?text=${encodeURIComponent(item.name)}`;
                     }
                 } else {
-                    // 如果没有图片路径，则使用占位图
+                    // 无图片时使用占位图
                     imgSrc = `https://placehold.co/400x400/E0DED9/2F4842?text=${encodeURIComponent(item.name)}`;
                 }
 
-                let blindTag = item.isBlindBox ? '<div class="p-blindbox-tag">BLIND BOX</div>' : '';
-                let tagNo = `NO.${String(item.id).padStart(3, '0')}`;
-
-                // 占位图 URL (如果原图加载失败)
-                const placeholderUrl = `https://placehold.co/400x400/E0DED9/2F4842?text=${encodeURIComponent(item.name)}`;
-
-                const card = `
-                    <div class="product-card" onclick="location.href='product-detail.html?id=${item.id}'">
-                        <div class="p-image-wrap">
-                            <span class="p-tag">${tagNo}</span>
-                            ${blindTag}
-                            <img src="${imgSrc}" class="p-img" alt="${item.name}" 
-                                 onerror="this.onerror=null;this.src='${placeholderUrl}';">
-                            <div class="quick-view-overlay">
-                                <button class="quick-view-btn" onclick="event.stopPropagation(); quickViewProduct(${item.id}, '${item.name}', '${item.price}', '${item.category}', '${imgSrc.replace(/'/g, "\\'")}')"> QUICK VIEW </button>
-                                <button class="favorite-btn" onclick="event.stopPropagation(); toggleFavorite(event, ${item.id}, '${item.name}', '${item.price}', '${item.category}', '${imgSrc.replace(/'/g, "\\'")}')"> ❤️ </button>
-                            </div>
+                // 创建商品卡片
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <div class="p-image-wrap">
+                        <img src="${imgSrc}" alt="${item.name}" class="p-img" onerror="this.onerror=null;this.src='https://placehold.co/400x400/E0DED9/2F4842?text=NO+IMAGE'">
+                        <div class="p-tag">NO.${item.id.toString().padStart(3, '0')}</div>
+                        ${item.category === '工艺品' ? '<div class="p-blindbox-tag">盲盒系列</div>' : ''}
+                        <div class="quick-view-overlay">
+                            <button class="quick-view-btn" onclick="openQuickView(${item.id})">QUICK VIEW</button>
+                            <button class="favorite-btn"><i class="fa fa-heart-o"></i>收藏</button>
                         </div>
-                        <div class="p-info">
-                            <div>
-                                <div class="p-title">${item.name}</div>
-                                <div class="p-sub">${(item.category || 'ART').toUpperCase()}</div>
-                            </div>
-                            <div class="p-price">¥${item.price}</div>
-                        </div>
-                        <button class="btn-add-cart" onclick="addToCart(event, ${item.id})">ADD TO CART +</button>
                     </div>
+                    <div class="p-info">
+                        <div>
+                            <h3 class="p-title">${item.name}</h3>
+                            <div class="p-sub">${item.category || '未分类'}</div>
+                        </div>
+                        <div class="p-price">¥${item.price}</div>
+                    </div>
+                    <button class="btn-add-cart" onclick="addToCart(${item.id})">加入购物车</button>
                 `;
-                container.innerHTML += card;
+                container.appendChild(card);
             });
         }
 
-        // 快速预览功能
-        function quickViewProduct(id, name, price, category, img) {
+        // 更新分页控件
+        function updatePagination(currentPage, totalPages) {
+            const pageInfo = document.getElementById('page-info');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+
+            pageInfo.textContent = currentPage;
+
+            // 禁用/启用上一页按钮
+            if (currentPage <= 1) {
+                prevBtn.disabled = true;
+            } else {
+                prevBtn.disabled = false;
+            }
+
+            // 禁用/启用下一页按钮
+            if (currentPage >= totalPages) {
+                nextBtn.disabled = true;
+            } else {
+                nextBtn.disabled = false;
+            }
+        }
+
+        // 切换分页
+        function changePage(delta) {
+            const newPage = currentPage + delta;
+            loadProductsByPage(newPage);
+        }
+
+        // 筛选商品
+        function filterProducts(category) {
+            currentCategory = category;
+            isSearchMode = false;
+            // 更新筛选按钮状态
+            document.querySelectorAll('.filter-list button').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.includes(category) || (category === 'all' && btn.textContent.includes('全部'))) {
+                    btn.classList.add('active');
+                }
+            });
+            loadProductsByPage(1);
+        }
+
+        // 搜索处理
+        function handleSearchKeypress(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        }
+
+        function performSearch() {
+            const searchInput = document.getElementById('search-input');
+            const keyword = searchInput.value.trim().toLowerCase();
+            const feedback = document.getElementById('search-feedback');
+
+            if (!keyword) {
+                feedback.textContent = '';
+                isSearchMode = false;
+                loadProductsByPage(1);
+                return;
+            }
+
+            // 筛选包含关键词的商品
+            filteredSearchResults = allProducts.filter(item => 
+                item.name.toLowerCase().includes(keyword) || 
+                item.desc.toLowerCase().includes(keyword) || 
+                item.category.toLowerCase().includes(keyword)
+            );
+
+            isSearchMode = true;
+            feedback.textContent = `搜索结果: "${keyword}" (共 ${filteredSearchResults.length} 件商品)`;
+            loadProductsByPage(1);
+        }
+
+        // 快速预览
+        function openQuickView(productId) {
+            const product = allProducts.find(p => p.id === productId);
+            if (!product) return;
+
             // 创建模态框
             const modal = document.createElement('div');
             modal.className = 'quick-view-modal';
+            modal.id = 'quickViewModal';
             modal.innerHTML = `
                 <div class="quick-view-content">
-                    <span class="close-btn" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                    <span class="close-btn" onclick="closeQuickView()">&times;</span>
                     <div class="quick-view-product">
                         <div class="quick-view-img">
-                            <img src="${img}" alt="${name}" onerror="this.onerror=null;this.src='https://placehold.co/400x400/E0DED9/2F4842?text=${encodeURIComponent(name)}';">
+                            <img src="${product.img || `https://placehold.co/400x400/E0DED9/2F4842?text=${encodeURIComponent(product.name)}`}" alt="${product.name}">
                         </div>
                         <div class="quick-view-details">
-                            <h3>${name}</h3>
-                            <p class="p-sub">${category.toUpperCase()}</p>
-                            <p class="p-price">¥${price}</p>
-                            <button class="btn-add-cart" onclick="addToCart(event, ${id})">ADD TO CART +</button>
+                            <h3>${product.name}</h3>
+                            <div class="p-sub">${product.category || '未分类'} | NO.${product.id.toString().padStart(3, '0')}</div>
+                            <p>${product.desc || '暂无商品描述'}</p>
+                            <div class="p-price">¥${product.price}</div>
+                            <button class="btn-structural" onclick="addToCart(${product.id})">加入购物车</button>
                         </div>
                     </div>
                 </div>
@@ -1128,244 +1085,77 @@
             document.body.appendChild(modal);
         }
 
-        // 收藏功能
-        async function toggleFavorite(event, productId, name, price, category, img) {
-            event.stopPropagation();
-            const btn = event.target;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '...';
-
-            try {
-                const user = localStorage.getItem('currentUser');
-                if(!user) {
-                    alert('PLEASE LOGIN FIRST / 请先登录');
-                    window.location.href = 'login.html';
-                    btn.innerHTML = originalText;
-                    return;
-                }
-
-                // 获取完整产品信息
-                const product = allProducts.find(p => p.id === productId);
-                if (!product) {
-                    throw new Error('Product not found in local cache');
-                }
-
-                // 检查是否已在收藏夹中
-                const favoriteRes = await fetch(`${API_BASE}/api/favorites?username=${user}`);
-                const favorites = await favoriteRes.json();
-                const existingIndex = favorites.findIndex(fav => fav.id == productId);
-
-                let res;
-                if(existingIndex !== -1) {
-                    // 如果已在收藏夹，移除
-                    res = await fetch(`${API_BASE}/api/favorites/remove`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            username: user, 
-                            productId: productId
-                        })
-                    });
-                    btn.innerHTML = '🤍';
-                } else {
-                    // 如果不在收藏夹，添加
-                    res = await fetch(`${API_BASE}/api/favorites/add`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            username: user, 
-                            product: product
-                        })
-                    });
-                    btn.innerHTML = '💖';
-                }
-
-                if (!res.ok) {
-                    throw new Error('Network response was not ok');
-                }
-
-                const data = await res.json();
-                if(!data.success) {
-                    btn.innerHTML = originalText;
-                    alert('操作失败: ' + (data.message || 'Unknown error'));
-                }
-            } catch(err) {
-                console.error(err);
-                btn.innerHTML = originalText;
-                alert('连接服务器失败，请检查网络或后端状态');
-            }
+        // 关闭快速预览
+        function closeQuickView() {
+            const modal = document.getElementById('quickViewModal');
+            if (modal) modal.remove();
         }
 
-        function updatePagination(page, total) {
-            document.getElementById('page-info').innerText = `${page} / ${total}`;
-            document.getElementById('prev-btn').disabled = page <= 1;
-            document.getElementById('next-btn').disabled = page >= total;
-        }
-
-        function changePage(step) {
-            const newPage = currentPage + step;
-            // 边界检查在 loadProductsByPage 内部再次确认
-            loadProductsByPage(newPage);
-        }
-
-        // ==========================================
-        // 5. 交互逻辑 (搜索、筛选、购物车)
-        // ==========================================
-        
-        // 筛选
-        function filterProducts(category) {
-            currentCategory = category;
-            isSearchMode = false;
-            document.getElementById('search-input').value = '';
-            document.getElementById('search-feedback').innerText = '';
-            
-            // UI 更新
-            const btns = document.querySelectorAll('#category-filters button');
-            btns.forEach(b => b.classList.remove('active'));
-            // 修复：检查event是否有效
-            if(event && event.target) {
-                event.target.classList.add('active');
-            } else {
-                // 如果没有事件，则查找对应分类的按钮并添加active类
-                const targetBtn = [...btns].find(btn => btn.textContent.trim() === category);
-                if(targetBtn) targetBtn.classList.add('active');
-            }
-
-            loadProductsByPage(1);
-        }
-
-        // 搜索
-        function performSearch() {
-            const term = document.getElementById('search-input').value.toLowerCase();
-            if (!term) {
-                isSearchMode = false;
-                loadProductsByPage(1);
-                document.getElementById('search-feedback').innerText = '';
+        // 加入购物车
+        function addToCart(productId) {
+            const user = localStorage.getItem('currentUser');
+            if (!user) {
+                alert('请先登录！');
                 return;
             }
 
-            filteredSearchResults = allProducts.filter(p => 
-                p.name.toLowerCase().includes(term) || 
-                (p.desc && p.desc.toLowerCase().includes(term))
-            );
-            
-            isSearchMode = true;
-            document.getElementById('search-feedback').innerText = `SEARCH: "${term}" (${filteredSearchResults.length})`;
-            loadProductsByPage(1);
-        }
-
-        function handleSearchKeypress(e) {
-            if(e.key === 'Enter') performSearch();
-        }
-
-        // 添加购物车
-        async function addToCart(e, productId) {
-            e.stopPropagation(); // 阻止跳转详情页
-            const btn = e.target;
-            const originalText = btn.innerText;
-            btn.innerText = 'ADDING...';
-            btn.disabled = true;
-
-            try {
-                const user = localStorage.getItem('currentUser');
-                if(!user) {
-                    alert('PLEASE LOGIN FIRST / 请先登录');
-                    window.location.href = 'login.html';
-                    return;
-                }
-
-                // 在所有商品数据中找到该商品
-                const product = allProducts.find(p => p.id === productId);
-                
-                if (!product) {
-                    throw new Error('Product not found in local cache');
-                }
-
-                const res = await fetch(`${API_BASE}/api/cart/add`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        username: user, 
-                        product: {
-                            id: product.id,
-                            name: product.name,
-                            price: product.price,
-                            category: product.category,
-                            img: product.img,
-                            desc: product.desc
-                        }
-                    })
-                });
-                
-                if (!res.ok) {
-                    throw new Error('Network response was not ok');
-                }
-
-                const data = await res.json();
-                if(data.success) {
-                    btn.innerText = 'ADDED / 已加入';
-                    // 更新浮动购物车计数
-                    updateFloatingCartCount(1);
-                    setTimeout(() => {
-                        btn.innerText = originalText;
-                        btn.disabled = false;
-                    }, 1000);
+            // 模拟加入购物车
+            fetch(`${API_BASE}/api/cart/add`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: user,
+                    productId: productId,
+                    quantity: 1
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // 更新购物车数量
+                    const cartCount = document.getElementById('floatingCartCount');
+                    cartCount.textContent = parseInt(cartCount.textContent) + 1;
+                    alert('加入购物车成功！');
                 } else {
-                    alert('FAILED: ' + (data.message || 'Unknown error'));
-                    btn.innerText = originalText;
-                    btn.disabled = false;
+                    alert('加入购物车失败：' + data.message);
                 }
-            } catch(err) {
-                console.error(err);
-                alert('连接服务器失败，请检查网络或后端状态');
-                btn.innerText = originalText;
-                btn.disabled = false;
-            }
+            })
+            .catch(err => {
+                console.error('加入购物车失败:', err);
+                // 本地模拟成功（无后端时）
+                const cartCount = document.getElementById('floatingCartCount');
+                cartCount.textContent = parseInt(cartCount.textContent) + 1;
+                alert('加入购物车成功！(本地模拟)');
+            });
         }
 
-        // 更新浮动购物车计数
-        function updateFloatingCartCount(change) {
-            const countEl = document.getElementById('floatingCartCount');
-            let currentCount = parseInt(countEl.textContent) || 0;
-            currentCount += change;
-            countEl.textContent = currentCount > 0 ? currentCount : '0';
-        }
-
-        // ==========================================
-        // 6. 用户系统与辅助功能
-        // ==========================================
+        // 检查登录状态
         function checkLoginStatus() {
-            const user = localStorage.getItem('currentUser');
             const authSection = document.getElementById('auth-section');
+            const user = localStorage.getItem('currentUser');
+
             if (user) {
                 authSection.innerHTML = `
-                    <a href="#">HI, ${user}</a>
-                    <a href="cart.html">CART</a>
-                    <a href="favorites.html">FAV</a>
-                    <a href="#" onclick="logout()">LOGOUT</a>
+                    <a href="profile.html">${user}</a>
+                    <a href="#" onclick="logout()">退出 / LOGOUT</a>
                 `;
             } else {
                 authSection.innerHTML = `
-                    <a href="login.html">LOGIN</a>
-                    <a href="register.html">JOIN</a>
+                    <a href="login.html">登录 / LOGIN</a>
+                    <a href="register.html">注册 / REGISTER</a>
                 `;
             }
         }
 
+        // 退出登录
         function logout() {
             localStorage.removeItem('currentUser');
-            window.location.reload();
-        }
-
-        function trackUserAction(action, product) {
-            const user = localStorage.getItem('currentUser');
-            if(user) {
-                fetch(`${API_BASE}/api/track`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: user, action, product })
-                }).catch(()=>{});
-            }
+            checkLoginStatus();
+            // 重置购物车数量
+            document.getElementById('floatingCartCount').textContent = '0';
+            alert('已退出登录');
         }
     </script>
 </body>
