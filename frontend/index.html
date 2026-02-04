@@ -849,7 +849,7 @@
             
             <div class="hero-card">
                 <div class="hero-image-box">
-                    <img src="https://picsum.photos/id/1040/800/800" alt="正定隆兴寺" class="hero-img" onerror="this.src='https://placehold.co/800x800/E0DED9/2F4842?text=NO+IMAGE'">
+                    <img src="https://picsum.photos/id/1040/800/800" alt="正定隆兴寺" class="hero-img" onerror="this.onerror=null;this.src='https://placehold.co/800x800/E0DED9/2F4842?text=NO+IMAGE'">
                 </div>
                 <div class="hero-text">
                     <h1>正定隆兴寺·摩尼殿</h1>
@@ -1032,16 +1032,22 @@
             products.forEach(item => {
                 // 处理图片路径
                 let imgSrc = item.img || '';
+                let fileName = '';
                 
-                // 如果图片路径为空或无效，则使用占位图
-                if (!imgSrc || imgSrc.trim() === '') {
+                if (imgSrc) {
+                    // 提取文件名部分（去掉路径前缀）
+                    fileName = imgSrc.split('/').pop();
+                    // 如果fileName包含常见图片扩展名，认为是有效文件名
+                    if (fileName && /\.(jpg|jpeg|png|gif|webp)$/i.test(fileName)) {
+                        // 使用统一格式拼接完整URL
+                        imgSrc = `${API_BASE}/images/${fileName}`;
+                    } else {
+                        // 如果无法提取有效文件名，则使用占位图
+                        imgSrc = `https://placehold.co/400x400/E0DED9/2F4842?text=${encodeURIComponent(item.name)}`;
+                    }
+                } else {
+                    // 如果没有图片路径，则使用占位图
                     imgSrc = `https://placehold.co/400x400/E0DED9/2F4842?text=${encodeURIComponent(item.name)}`;
-                } else if (imgSrc.startsWith('/images/')) {
-                    // 如果是相对路径，则拼接完整的URL
-                    imgSrc = `${API_BASE}${imgSrc}`;
-                } else if (!imgSrc.startsWith('http')) {
-                    // 其他情况加上API基础路径
-                    imgSrc = `${API_BASE}/${imgSrc}`;
                 }
 
                 let blindTag = item.isBlindBox ? '<div class="p-blindbox-tag">BLIND BOX</div>' : '';
@@ -1059,7 +1065,7 @@
                                  onerror="this.onerror=null;this.src='${placeholderUrl}';">
                             <div class="quick-view-overlay">
                                 <button class="quick-view-btn" onclick="event.stopPropagation(); quickViewProduct(${item.id}, '${item.name}', '${item.price}', '${item.category}', '${imgSrc.replace(/'/g, "\\'")}')"> QUICK VIEW </button>
-                                <button class="favorite-btn" onclick="event.stopPropagation(); toggleFavorite(event, ${item.id}, '${item.name}', '${item.price}', '${item.category}', '${imgSrc.replace(/'/g, "\'''")}')"> ❤️ </button>
+                                <button class="favorite-btn" onclick="event.stopPropagation(); toggleFavorite(event, ${item.id}, '${item.name}', '${item.price}', '${item.category}', '${imgSrc.replace(/'/g, "\\'")}')"> ❤️ </button>
                             </div>
                         </div>
                         <div class="p-info">
@@ -1178,115 +1184,6 @@
             const newPage = currentPage + step;
             // 边界检查在 loadProductsByPage 内部再次确认
             loadProductsByPage(newPage);
-        }
-
-        // 加载商品数据
-        async function loadProductsByPage(page) {
-            const indicator = document.getElementById('progressIndicator');
-            indicator.style.width = '100%';
-
-            try {
-                const res = await fetch(`${API_BASE}/api/products?page=${page}&category=${currentCategory}`);
-                if (!res.ok) {
-                    throw new Error('Network response was not ok');
-                }
-
-                const data = await res.json();
-                allProducts = data.products;
-                totalPages = data.totalPages;
-
-                renderProducts();
-            } catch (err) {
-                console.error(err);
-                document.getElementById('product-container').innerHTML = '加载失败，请稍后再试';
-            } finally {
-                indicator.style.width = '0%';
-            }
-        }
-
-        // 渲染商品
-        function renderProducts() {
-            const container = document.getElementById('product-container');
-            container.innerHTML = '';
-
-            const productsToRender = isSearchMode ? filteredSearchResults : allProducts;
-
-            if (productsToRender.length === 0) {
-                container.innerHTML = '暂无商品';
-                return;
-            }
-
-            productsToRender.forEach(product => {
-                const card = document.createElement('div');
-                card.className = 'product-card';
-                card.onclick = () => quickViewProduct(product);
-
-                card.innerHTML = `
-                    <div class="p-image-wrap">
-                        <img src="${product.img}" alt="${product.name}" class="p-img">
-                        <div class="p-tag">${product.id}</div>
-                        <div class="quick-view-overlay">
-                            <div class="quick-view-btn">QUICK VIEW</div>
-                            <div class="favorite-btn">FAVORITE</div>
-                        </div>
-                    </div>
-                    <div class="p-info">
-                        <div class="p-title">${product.name}</div>
-                        <div class="p-sub">${product.category}</div>
-                        <div class="p-price">${product.price}元</div>
-                        <button class="btn-add-cart" onclick="addToCart(event, '${product.id}')">ADD TO CART</button>
-                    </div>
-                `;
-
-                container.appendChild(card);
-            });
-
-            updatePagination();
-        }
-
-        // 分页
-        function updatePagination() {
-            const prevBtn = document.getElementById('prev-btn');
-            const nextBtn = document.getElementById('next-btn');
-            const pageInfo = document.getElementById('page-info');
-
-            prevBtn.disabled = currentPage === 1;
-            nextBtn.disabled = currentPage === totalPages;
-
-            pageInfo.textContent = `${currentPage} / ${totalPages}`;
-        }
-
-        function changePage(delta) {
-            const newPage = currentPage + delta;
-            if (newPage < 1 || newPage > totalPages) return;
-
-            currentPage = newPage;
-            loadProductsByPage(currentPage);
-        }
-
-        // 快速预览
-        function quickViewProduct(product) {
-            const modal = document.createElement('div');
-            modal.className = 'quick-view-modal';
-
-            modal.innerHTML = `
-                <div class="quick-view-content">
-                    <div class="quick-view-product">
-                        <div class="quick-view-img">
-                            <img src="${product.img}" alt="${product.name}">
-                        </div>
-                        <div class="quick-view-details">
-                            <h3>${product.name}</h3>
-                            <p>${product.desc}</p>
-                            <div class="p-price">${product.price}元</div>
-                            <button class="btn-add-cart" onclick="addToCart(event, '${product.id}')">ADD TO CART</button>
-                        </div>
-                    </div>
-                    <div class="close-btn" onclick="document.body.removeChild(this.parentElement)">&times;</div>
-                </div>
-            `;
-
-            document.body.appendChild(modal);
         }
 
         // ==========================================
