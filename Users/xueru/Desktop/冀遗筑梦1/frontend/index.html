@@ -113,9 +113,9 @@
                 // 修复图片路径处理逻辑 - 完全从后端获取
                 let imgSrc = product.img;
                 
-                // 确保图片URL是完整的，如果只是相对路径则拼接API基础URL
-                if (!imgSrc.startsWith('http') && !imgSrc.startsWith('/')) {
-                    imgSrc = `${API_BASE}/${imgSrc}`;
+                // 前端兜底修复：如果图片路径不是以http开头，则拼接API基础URL和/images前缀
+                if (!imgSrc.startsWith('http')) {
+                    imgSrc = `${API_BASE}/images/${imgSrc}`;
                 }
                 
                 productList.innerHTML += `
@@ -124,7 +124,6 @@
                         <div class="card-body">
                             <div class="product-name" onclick="viewProductDetail(${product.id})" style="cursor: pointer;">${product.name}</div>
                             <div class="product-price">¥${product.price}</div>
-                            <div class="product-desc">${product.desc}</div>
                             <button class="btn-buy" onclick="addToCart(${index})">加入购物车</button>
                         </div>
                     </div>
@@ -294,3 +293,6 @@
         }
     </script>
 </```
+```
+
+```

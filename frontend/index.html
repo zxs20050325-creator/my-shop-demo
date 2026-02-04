@@ -542,8 +542,8 @@
                 let imgSrc = product.img;
                 
                 // 确保图片URL是完整的，如果只是相对路径则拼接API基础URL
-                if (!imgSrc.startsWith('http') && !imgSrc.startsWith('/')) {
-                    imgSrc = `${API_BASE}/${imgSrc}`;
+                if (!imgSrc.startsWith('http')) {
+                    imgSrc = `${API_BASE}/images/${imgSrc}`;
                 }
                 
                 productList.innerHTML += `
