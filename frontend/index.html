@@ -17,8 +17,8 @@
         /* 新中式极简字体方案 */
         body { 
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #F9F7F3; /* 米白基底 - 替换原来的#FDFBF7 */
-            color: #1A365D; /* 做旧靛蓝色文字 - 替换原来的#333333 */
+            background: #b0aeaa; /* 米白基底 - 替换原来的#FDFBF7 */
+            color: #4e545d; /* 做旧靛蓝色文字 - 替换原来的#333333 */
             padding-top: 80px; 
             line-height: 1.6; /* 统一行高 */
         }
@@ -31,16 +31,16 @@
             top: 0; 
             left: 0; 
             width: 100%;
-            background: linear-gradient(to bottom, rgba(249, 247, 243, 0.95), rgba(249, 247, 243, 0.85)); /* 米白基底的渐变 */
+            background: linear-gradient(to bottom, rgba(189, 179, 160, 0.95), rgba(249, 247, 243, 0.85)); /* 米白基底的渐变 */
             backdrop-filter: blur(10px); /* 磨砂玻璃效果 */
-            color: #1A365D; /* 做旧靛蓝色 */
+            color: #828a96; /* 做旧靛蓝色 */
             padding: 16px 40px;
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
             z-index: 1000;
             border-bottom: 1px solid #E2D9C8; /* 浅木色边框 */
-            box-shadow: 0 2px 10px rgba(139, 70, 70, 0.05); /* 轻微阴影增强层次 */
+            box-shadow: 0 2px 10px rgba(119, 106, 106, 0.05); /* 轻微阴影增强层次 */
         }
 
         .logo {
@@ -64,41 +64,42 @@
             color: #5a5a5a; /* 更柔和的悬停色 */
         }
 
-        /* 搜索框极简化 - 只保留底边框 */
+        /* 搜索框极简化 - 统一边框 */
         .search-container {
             display: flex;
             align-items: center;
             margin: 0 20px;
             flex: 1;
-            max-width: 400px;
+            max-width: 40%; /* 调整宽度为40% */
         }
 
         .search-input {
             width: 100%;
-            padding: 10px 16px;
-            border: none;
-            border-bottom: 1px solid #d5d5d3; /* 更柔和的边框色 */
+            height: 30px; /* 高度压缩至30px */
+            padding: 0 12px; /* 调整padding以适应高度 */
+            border: 1px solid #E5E7EB; /* 浅灰色边框 */
             outline: none;
             font-family: inherit;
-            font-size: 14px;
+            font-size: 14px; /* 输入文字大小14px */
             background: transparent;
             transition: border-color 0.2s ease;
             color: #1A365D; /* 做旧靛蓝色 */
         }
 
         .search-input:focus {
-            border-color: #a8a8a4; /* 更深一些的焦糖色 */
+            border-color: #D1D5DB; /* 略微加深的聚焦边框色 */
         }
 
         .search-btn {
             margin-left: 8px;
-            padding: 10px 16px;
-            background: #D69E2E; /* 土黄色按钮 - 替换了原来的#8B4513朱砂红色 */
+            padding: 6px 12px; /* 尺寸同步缩小 */
+            background: #D69E2E; /* 黄色按钮 */
             color: white;
-            border: none;
-            border-radius: 0; /* 榫卯式方形按钮 */
+            border: 1px solid #E5E7EB; /* 与输入框一致的边框 */
+            border-radius: 0; /* 保持方形设计 */
             cursor: pointer;
             font-family: inherit;
+            font-size: 14px; /* 缩小字体 */
             transition: opacity 0.2s ease;
         }
 
@@ -130,19 +131,21 @@
         
         .page-title { 
             text-align: center; /* 中心对齐标题 */
-            margin-bottom: 20px; /* 减少底部margin */
+            margin-bottom: 12px; /* 压缩整体标题区域高度 */
             color: #1A365D; /* 做旧靛蓝色 */
         }
         .page-title h2 { 
-            font-size: 48px; /* 更大的标题 */
-            font-weight: 300; /* 极细字体 */
-            margin-bottom: 20px; 
+            font-size: 22px; /* 调整为22px */
+            font-weight: 400; /* 适中字重 */
+            margin-bottom: 8px; /* 与副标题间距压缩为8px */
+            line-height: 1.2; /* 行高设为1.2 */
+            color: #1A365D; /* 低饱和靛蓝色 */
             font-family: 'Noto Serif SC', 'Times New Roman', serif; /* 衬线字体标题 */
         } 
         .page-title p { 
-            color: #7a7a7a; /* 调整副标题颜色 */
-            font-size: 16px; /* 更小的字号 */
-            letter-spacing: 3px; /* 增加字间距 */
+            color: #8B7355; /* 浅棕色副标题 */
+            font-size: 14px; /* 调整为14px */
+            letter-spacing: 2px; /* 适当调整字间距 */
             font-weight: 300;
         } 
 
@@ -167,7 +170,7 @@
             background: transparent; /* 透明背景 */
             border-radius: 0; /* 移除圆角 */
             /* 添加细线条纹理边框 */
-            border: 1px solid #E2D9C8; /* 纹理边框 */
+            border: 1px solid #d5be92; /* 纹理边框 */
             background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAALUlEQVQ4T2N88uTJfwY0wMjIKPWPAQkwhgwZ8v8/w1SDWAw0NTUVY2hoqMwwBgARkwK0YqZnlwAAAABJRU5ErkJggg==');
             background-repeat: repeat;
         }
@@ -264,13 +267,13 @@
             opacity: 1;
         }
 
-        /* 产品图片 - 高度统一，防止拉伸 */
+        /* 产品图片 - 调整高度以适应新布局 */
         .product-img { 
             width: 100%; 
-            height: 280px; /* 统一高度 */
+            height: 200px; /* 调整高度 */
             object-fit: cover; /* 防止拉伸变形 */
             background-color: #f8fafc;
-            margin-bottom: 16px;
+            margin-bottom: 12px; /* 减少间距 */
             border-radius: 8px; /* 圆角 */
             filter: sepia(0.1) contrast(1.1); /* 轻微做旧滤镜 */
             transition: transform 0.3s ease; /* 添加过渡效果 */
@@ -281,10 +284,10 @@
             transform: scale(1.05); /* 悬停时稍微放大 */
         }
         
-        /* 第一个产品和每4n个产品的图片更高 */
+        /* 所有图片恢复相同高度 */
         .product-grid > div:first-child .product-img, 
         .product-grid > div:nth-child(4n) .product-img { 
-            height: 380px; /* 更高的图片 */
+            height: 200px; /* 恢复正常高度 */
         }
 
         /* 卡片内容区 - 左对齐 */
@@ -395,27 +398,25 @@
             .product-grid { 
                 grid-template-columns: repeat(3, 1fr); 
             }
-            
+            /* 移除第一个商品横跨的样式 */
             .product-grid > div:first-child, 
             .product-grid > div:nth-child(4n) { 
-                grid-column: span 2; 
+                grid-column: span 1; 
             }
         }
         
         @media (max-width: 1024px) {
-            .container { 
-                grid-template-columns: 1fr; 
-                padding: 20px; 
+            .main-content { 
+                flex-direction: column; /* 小屏时垂直排列 */
             }
             
             .filter-container {
-                display: flex;
+                order: 2; /* 分类筛选移到下方 */
+                flex-direction: row; /* 水平排列 */
                 flex-wrap: wrap;
                 justify-content: center;
                 gap: 12px;
                 top: 80px;
-                padding: 15px;
-                border-right: none;
             }
             
             .filter-btn {
@@ -439,25 +440,54 @@
             .product-grid { 
                 grid-template-columns: repeat(2, 1fr); 
             }
-            
+            /* 在1024px下，第一个商品也不再横跨 */
             .product-grid > div:first-child { 
-                grid-column: span 2; 
-            }
-            
-            .pagination,
-            .search-results,
-            .no-results { 
-                grid-column: 1; 
+                grid-column: span 1; 
             }
         }
         
         @media (max-width: 768px) {
-            .navbar { padding: 16px 20px; }
-            .page-title { margin-bottom: 20px; }
-            .filter-container { margin: 20px 0 30px; }
-            .page-title h2 { font-size: 32px; }
-            .container { padding: 20px; }
-            .product-grid { gap: 25px 15px; }
+            .navbar { 
+                padding: 16px 20px; 
+                flex-wrap: wrap;
+            }
+            
+            .search-container {
+                max-width: 50%; /* 在小屏幕上增加搜索框宽度 */
+                order: 3; /* 将搜索框移到第三行 */
+                margin-top: 10px;
+            }
+            
+            .page-title { 
+                margin-bottom: 10px; 
+            }
+            
+            .filter-container { 
+                margin: 20px 0 30px; 
+                flex: none; /* 在小屏幕上不固定宽度 */
+            }
+            
+            .page-title h2 { 
+                font-size: 18px; 
+                margin-bottom: 6px;
+            } 
+            
+            .page-title p { 
+                font-size: 12px; 
+            }
+            
+            .container { 
+                padding: 20px; 
+            }
+            
+            .product-grid { 
+                grid-template-columns: 1fr; /* 单列布局 */
+                gap: 20px; 
+            }
+            
+            .product-img { 
+                height: 180px; 
+            }
         }
     </style>
 </head>
