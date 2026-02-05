@@ -149,6 +149,29 @@
         
         .progress-line { position: fixed; top: 0; left: 0; width: 0%; height: 6px; background: var(--c-accent); z-index: 5000; transition: width 0.1s; }
 
+        /* 通知提示框样式 */
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
         @media (max-width: 1200px) {
             .hero-section { flex-direction: column; height: auto; padding: 120px 40px; }
             .hero-tower-gate, .hero-content { width: 100%; padding: 0; }
@@ -435,7 +458,42 @@
             addToBag() {
                 this.state.cart++;
                 document.getElementById('cartBadge').textContent = this.state.cart;
-                alert("遗珍已入袋！");
+                this.showNotification("遗珍已入袋！", 2000);
+            }
+            
+            showNotification(message, duration) {
+                // 创建通知元素
+                const notification = document.createElement('div');
+                notification.className = 'notification-toast';
+                notification.textContent = message;
+                
+                // 添加样式
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: rgba(47, 72, 66, 0.9);
+                    color: white;
+                    padding: 12px 24px;
+                    border-radius: 4px;
+                    z-index: 10000;
+                    font-family: var(--f-serif);
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    animation: slideInRight 0.3s ease-out;
+                `;
+                
+                // 添加到页面
+                document.body.appendChild(notification);
+                
+                // 自动移除
+                setTimeout(() => {
+                    notification.style.animation = 'slideOutRight 0.3s ease-out';
+                    setTimeout(() => {
+                        if(notification.parentNode) {
+                            notification.parentNode.removeChild(notification);
+                        }
+                    }, 300);
+                }, duration);
             }
             
             showRealPhoto(element, series, id) {
