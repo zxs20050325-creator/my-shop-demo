@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>冀遗筑梦 | 数字化分析平台</title>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <style>
+        /* ========================================
+           0. 设计系统 (完全保留您的原始变量)
+           ======================================== */
+        :root {
+            --c-primary: #2F4842;    /* 青黛 - 文字/主调 */
+            --c-accent: #C1A268;     /*鎏金 - 强调/按钮 */
+            --c-bg: #F2F0EB;         /* 宣纸灰 - 背景 */
+            --c-grid: #E0DED9;       /* 网格线 */
+            --c-text-light: #8A9A96; /* 辅助文字 */
+            --f-serif: 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+            --f-mono: 'Courier New', Courier, monospace;
+            --sidebar-width: 80px;
+            /* 新增：图片动画变量 */
+            --img-fade-duration: 1.5s; /* 单张图片渐显时长 */
+            --img-delay-step: 0.5s;    /* 每张图片延迟递增步长 */
+        }
+
+        /* [新增交互 3]：水墨自定义光标样式 */
+        body { cursor: none !important; } 
+        a, button, .dynasty-mark, .product-card, .search-btn, .page-num { cursor: none !important; }
+        
+        #cursor-dot {
+            width: 8px; height: 8px; background: var(--c-primary);
+            position: fixed; pointer-events: none; border-radius: 50%; z-index: 10000;
+            filter: blur(0.5px);
+        }
+        #cursor-outline {
+            width: 30px; height: 30px; border: 1.5px solid rgba(47, 72, 66, 0.3);
+            position: fixed; pointer-events: none; border-radius: 50%;
+            z-index: 9999; transition: width 0.4s, height 0.4s, background 0.4s, border 0.4s;
+            background: rgba(47, 72, 66, 0.02);
+            display: flex; justify-content: center; align-items: center;
+        }
+        /* 交互时的扩散效果 */
+        .cursor-hover-ink {
+            width: 50px !important; height: 50px !important;
+            background: rgba(193, 162, 104, 0.15) !important;
+            border-color: var(--c-accent) !important;
+            filter: blur(1px);
+        }
+
+        /* [4. 筑梦水印强化] */
+        .front-parallax-layer {
+            position: fixed;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 4000;
+            mix-blend-mode: color-burn;
+        }
+        .dream-watermark {
+            position: absolute;
+            font-weight: 900;
+            line-height: 1;
+            opacity: 0.4;
+            color: var(--c-primary);
+            transition: transform 0.2s ease-out;
+            text-shadow: 0 0 20px rgba(47, 72, 66, 0.3);
+        }
+        #word-zhu {
+            font-size: 32vw;
+            top: 0%;
+            left: -5%;
+        }
+        #word-meng {
+            font-size: 38vw; /* 增大字体大小 */
+            bottom: 5%;
+            right: -5%;
+            color: var(--c-accent);
+            text-shadow: 0 0 30px rgba(193, 162, 104, 0.6); /* 加强阴影效果 */
+        }
+
+        /* ========================================
+           原有样式 (完全保留)
+           ======================================== */
+        .p-img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: 
+                opacity var(--img-fade-duration) ease-out,
+                transform var(--img-fade-duration) ease-out;
+        }
+        .p-img.fade-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background-color: var(--c-bg);
+            color: var(--c-primary);
+            font-family: var(--f-serif);
+            overflow-x: hidden;
+            background-image: 
+                linear-gradient(var(--c-grid) 1px, transparent 1px),
+                linear-gradient(90deg, var(--c-grid) 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: center top;
+        }
+        a { text-decoration: none; color: inherit; }
+        button { font-family: inherit; }
+        .sidebar {
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            width: var(--sidebar-width);
+            background: #fff;
+            border-right: 1px solid var(--c-primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 40px 0;
+            z-index: 1000;
+        }
+        .brand-vertical {
+            writing-mode: vertical-rl;
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: 8px;
+            color: var(--c-primary);
+            border: 2px solid var(--c-primary);
+            padding: 15px 8px;
+        }
+        .time-ruler {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 40px;
+            position: relative;
+        }
+        .time-ruler::before {
+            content: '';
+            position: absolute;
+            top: 20px; bottom: 20px; left: 50%;
+            width: 1px; background: var(--c-grid);
+            transform: translateX(-50%);
+        }
+        .dynasty-mark {
+            font-family: var(--f-mono);
+            font-size: 12px;
+            background: #fff;
+            padding: 4px;
+            z-index: 2;
+            cursor: pointer;
+            transition: 0.3s;
+            color: var(--c-text-light);
+        }
+        .dynasty-mark:hover, .dynasty-mark.active {
+            color: var(--c-primary);
+            font-weight: bold;
+            transform: scale(1.2);
+        }
+        .social-links i {
+            display: block; margin-top: 20px;
+            color: var(--c-primary); opacity: 0.5; cursor: pointer;
+            transition: 0.3s;
+        }
+        .social-links i:hover { opacity: 1; transform: translateY(-3px); }
+        .main-wrapper {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            grid-template-rows: auto auto 1fr;
+            grid-template-areas:
+                "top-bar top-bar"
+                "hero hero"
+                "filter content";
+        }
+        .top-bar {
+            grid-area: top-bar;
+            padding: 30px 60px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 40px;
+        }
+        .search-minimal {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--c-primary);
+            padding-bottom: 5px;
+        }
+        .search-minimal input {
+            background: transparent; border: none; outline: none;
+            width: 150px;
+            font-family: var(--f-mono);
+            font-size: 14px;
+            color: var(--c-primary);
+            text-align: right;
+        }
+        .search-minimal input::placeholder { color: var(--c-text-light); font-style: italic;}
+        .search-btn { background: none; border: none; cursor: pointer; margin-left: 10px; }
+        .user-actions {
+            font-family: var(--f-mono);
+            font-size: 12px;
+            margin-left: 20px;
+            display: flex;
+            gap: 20px;
+        }
+        .user-actions a {
+            position: relative;
+        }
+        .user-actions a::after {
+            content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 1px;
+            background: var(--c-accent); transition: 0.3s;
+        }
+        .user-actions a:hover::after { width: 100%; }
+
+        /* [优化交互 2]：Hero 视差背景大字显示增强 */
+        .hero-section {
+            grid-area: hero;
+            padding: 40px 60px 80px;
+            position: relative;
+            height: 500px;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+        .big-typo {
+            position: absolute;
+            font-size: 20vw;
+            font-weight: 900;
+            color: rgba(47, 72, 66, 0.08); /* 稍微增加可见度 */
+            z-index: 0;
+            top: -50px; left: -20px;
+            pointer-events: none;
+            line-height: 1;
+            transition: transform 0.15s ease-out; /* 视差位移过渡 */
+        }
+        .hero-card {
+            display: flex;
+            align-items: center;
+            gap: 60px;
+            z-index: 10;
+            width: 100%;
+        }
+        .hero-image-box {
+            position: relative;
+            width: 400px;
+            height: 400px;
+        }
+        .hero-image-box::before {
+            content: '';
+            position: absolute;
+            top: -20px; left: -20px;
+            width: 100%; height: 100%;
+            border: 1px solid var(--c-accent);
+            z-index: -1;
+        }
+        .hero-img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            filter: saturate(0.8) contrast(1.1); 
+            transition: 0.5s;
+        }
+        .hero-image-box:hover .hero-img { filter: saturate(1.2); }
+        .hero-text {
+            max-width: 400px;
+        }
+        .hero-text h1 {
+            font-size: 42px;
+            margin-bottom: 10px;
+        }
+        .hero-text .subtitle {
+            font-family: var(--f-mono);
+            color: var(--c-accent);
+            font-size: 14px;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+        .hero-text p {
+            color: #555;
+            font-size: 15px;
+            margin-bottom: 30px;
+            text-align: justify;
+        }
+        .btn-structural {
+            padding: 12px 30px;
+            background: var(--c-primary);
+            color: #fff;
+            border: none;
+            font-family: var(--f-mono);
+            letter-spacing: 1px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: 0.3s;
+        }
+        .btn-structural:hover {
+            background: var(--c-accent);
+            padding-left: 40px;
+        }
+        .btn-structural::before {
+            content: '+';
+            position: absolute;
+            left: 10px; opacity: 0;
+            transition: 0.3s;
+        }
+        .btn-structural:hover::before { opacity: 1; }
+        .filter-panel {
+            grid-area: filter;
+            padding: 40px;
+            border-right: 1px dashed var(--c-grid);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        .filter-title {
+            font-family: var(--f-mono);
+            font-size: 12px;
+            color: var(--c-text-light);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+        .filter-list button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            background: none;
+            border: none;
+            padding: 10px 0;
+            font-family: var(--f-serif);
+            font-size: 16px;
+            color: #666;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+        }
+        .filter-list button.active, .filter-list button:hover {
+            color: var(--c-primary);
+            font-weight: bold;
+            padding-left: 15px;
+        }
+        .filter-list button.active::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 50%;
+            width: 6px; height: 6px;
+            background: var(--c-accent);
+            transform: translateY(-50%) rotate(45deg);
+        }
+        
+        /* 选项卡样式 */
+        .category-tabs-container {
+            margin: 0 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .category-tabs {
+            display: inline-flex;
+            gap: 15px;
+            padding: 8px 15px;
+            background: rgba(242, 240, 235, 0.7);
+            border-radius: 50px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            backdrop-filter: blur(10px);
+        }
+        
+        .tab-item {
+            padding: 10px 20px;
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--c-text-light);
+            font-family: var(--f-serif);
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 40px;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .tab-item:hover {
+            color: var(--c-primary);
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
+        .tab-item.active {
+            color: #fff;
+            background: var(--c-primary);
+            border-color: var(--c-primary);
+        }
+        
+        .tab-item.active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, var(--c-primary), var(--c-accent));
+            border-radius: 40px;
+            z-index: -1;
+            opacity: 0.8;
+        }
+        
+        .content-panel {
+            grid-area: content;
+            padding: 40px 60px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* [优化交互 1]：3D 倾斜容器配置 */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 每行三个商品卡 */
+            gap: 30px; /* 卡片之间的间隔 */
+            perspective: 2500px;
+        }
+
+        .box-card {
+            background: #fff;
+            padding: 15px; /* 减少内边距 */
+            border: 1.5px solid #F0F0F0;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease, opacity 0.5s ease;
+            opacity: 0;
+            transform: translateY(60px);
+        }
+        .box-card.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .box-card:hover {
+            border-color: var(--c-accent);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.08);
+        }
+
+        .card-price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .card-price {
+            font-family: var(--f-mono);
+            font-size: 20px; /* 价格标签从24px减到20px */
+            font-weight: 900;
+            color: var(--c-danger);
+        }
+        .card-cat {
+            font-size: 7px; /* 类别标签从8px减到7px */
+            text-transform: uppercase;
+            color: #AAA;
+            letter-spacing: 2px;
+            border: 1px solid #EEE;
+            padding: 2px 6px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #333;
+            height: 40px;
+            overflow: hidden;
+            line-height: 1.4;
+            margin-bottom: 12px;
+        }
+
+        .btn-reveal {
+            width: 100%;
+            padding: 12px; /* 减少内边距 */
+            background: var(--c-primary);
+            color: #fff;
+            border: none;
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 3px;
+            transition: 0.3s;
+        }
+        .btn-reveal:hover {
+            background: var(--c-accent);
+            letter-spacing: 5px;
+        }
+
+        .btn-show-real {
+            width: 100%;
+            padding: 12px; /* 减少内边距 */
+            background: var(--c-accent);
+            color: #fff;
+            border: none;
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 3px;
+            transition: 0.3s;
+            margin-top: 6px;
+        }
+        .btn-show-real:hover {
+            background: var(--c-primary);
+            letter-spacing: 5px;
+        }
+
+        .error-msg {
+            grid-column: 1 / -1;
+            padding: 40px;
+            border: 1px dashed var(--c-accent);
+            color: var(--c-accent);
+            text-align: center;
+            font-family: var(--f-mono);
+        }
+        .p-info {
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            transform: translateZ(15px);
+        }
+        .p-title {
+            font-size: 18px;
+            margin-bottom: 4px;
+        }
+        .p-sub {
+            font-family: var(--f-mono);
+            font-size: 12px;
+            color: #999;
+        }
+        .p-price {
+            font-family: var(--f-mono);
+            font-size: 16px;
+            color: var(--c-accent);
+            font-weight: bold;
+        }
+        .btn-add-cart {
+            margin-top: 10px;
+            width: 100%;
+            padding: 8px;
+            background: #fff;
+            border: 1px solid var(--c-primary);
+            color: var(--c-primary);
+            font-size: 12px;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: 0.3s;
+        }
+        .product-card:hover .btn-add-cart {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .btn-add-cart:hover {
+            background: var(--c-primary);
+            color: #fff;
+        }
+        .pagination {
+            margin-top: 60px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            font-family: var(--f-mono);
+        }
+        .page-num {
+            cursor: pointer;
+            color: var(--c-text-light);
+            padding-bottom: 2px;
+            border-bottom: 2px solid transparent;
+            background: none;
+            border-top: none;
+            border-left: none;
+            border-right: none;
+        }
+        .page-num.active, .page-num:hover {
+            color: var(--c-primary);
+            border-bottom-color: var(--c-primary);
+        }
+        .page-num:disabled {
+            color: #e0e0e0;
+            cursor: not-allowed;
+            border-bottom-color: transparent;
+        }
+        .quick-view-overlay {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 15;
+        }
+        .product-card:hover .quick-view-overlay {
+            opacity: 1;
+        }
+        .quick-view-btn, .favorite-btn {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid var(--c-primary);
+            color: var(--c-primary);
+            padding: 5px 10px;
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .quick-view-btn:hover, .favorite-btn:hover {
+            background: var(--c-primary);
+            color: white;
+        }
+        .quick-view-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .quick-view-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 800px;
+            width: 90%;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .quick-view-product {
+            display: flex;
+            gap: 30px;
+        }
+        .quick-view-img {
+            flex: 1;
+        }
+        .quick-view-img img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        .quick-view-details {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .quick-view-details h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 30px;
+            cursor: pointer;
+            color: #aaa;
+        }
+        .close-btn:hover {
+            color: var(--c-primary);
+        }
+        .floating-cart {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: var(--c-primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        .floating-cart:hover {
+            transform: scale(1.1);
+            background: var(--c-accent);
+        }
+        .cart-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff4757;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .progress-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: var(--c-accent);
+            z-index: 1001;
+            transition: width 0.3s;
+        }
+        @media (max-width: 1024px) {
+            .big-typo { font-size: 15vw; }
+            .hero-card { flex-direction: column; align-items: flex-start; gap: 30px; }
+            .hero-image-box { width: 100%; height: 300px; }
+            .main-wrapper { grid-template-columns: 180px 1fr; }
+            .quick-view-product { flex-direction: column; }
+        }
+        @media (max-width: 768px) {
+            body { cursor: auto !important; }
+            #cursor-dot, #cursor-outline { display: none; }
+            .sidebar { display: none; }
+            .main-wrapper { 
+                margin-left: 0; 
+                grid-template-columns: 1fr; 
+                grid-template-areas:
+                    "top-bar"
+                    "hero"
+                    "filter"
+                    "content";
+            }
+            .filter-panel {
+                position: static;
+                height: auto;
+                overflow-y: visible;
+                display: flex;
+                overflow-x: auto;
+                border-bottom: 1px solid #ddd; 
+                border-right: none;
+                padding: 20px;
+                gap: 20px;
+            }
+            .filter-title {
+                white-space: nowrap;
+                margin-bottom: 0;
+                margin-right: 10px;
+            }
+            .filter-list {
+                display: flex;
+                gap: 15px;
+                flex-wrap: nowrap;
+            }
+            .filter-list button {
+                width: auto;
+                padding: 0 15px;
+                flex-shrink: 0;
+                white-space: nowrap;
+            }
+            .hero-section { height: auto; padding: 40px 20px; }
+            .big-typo { display: none; }
+            .top-bar { padding: 20px; justify-content: space-between; }
+            .floating-cart { width: 50px; height: 50px; font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- [新增交互 3] 光标元素 -->
+    <div id="cursor-dot" style="position:fixed; top:0; left:0; width:8px; height:8px; background:var(--c-primary); border-radius:50%; pointer-events:none; z-index:10000; filter:blur(0.5px);"></div>
+    <div id="cursor-outline" style="position:fixed; top:0; left:0; width:30px; height:30px; border:1.5px solid rgba(47, 72, 66, 0.3); border-radius:50%; pointer-events:none; z-index:9999; background:rgba(47, 72, 66, 0.02); transition: width 0.4s, height 0.4s, background 0.4s, border 0.4s;"></div>
+
+    <div class="progress-indicator" id="progressIndicator"></div>
+    <div class="floating-cart" onclick="window.location.href='cart.html'">
+        <i class="fa fa-shopping-cart"></i>
+        <div class="cart-count" id="floatingCartCount">0</div>
+    </div>
+    <aside class="sidebar">
+        <div class="brand-vertical">冀遗筑梦</div>
+        <div class="time-ruler">
+            <div class="dynasty-mark">SUI</div>
+            <div class="dynasty-mark active">TANG</div>
+            <div class="dynasty-mark">SONG</div>
+            <div class="dynasty-mark">MING</div>
+            <div class="dynasty-mark">QING</div>
+        </div>
+        <div class="social-links">
+            <i class="fa fa-weixin" title="AR小程序"></i>
+            <i class="fa fa-weibo"></i>
+        </div>
+    </aside>
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="search-engine">
+                <i class="fa fa-search"></i>
+                <input type="text" placeholder="寻找沉封的非遗惊喜...">
+            </div>
+
+            <div class="cart-trigger" onclick="engine.toggleCart()">
+                <i class="fa fa-shopping-basket"></i>
+                <span>惊喜袋 / BAG</span>
+                <div id="cartBadge">0</div>
+            </div>
+
+            <div class="auth-gate" onclick="engine.toggleLogin()">结缘 / SIGN IN</div>
+        </header>
+        
+        <!-- 选项卡容器 -->
+        <div class="category-tabs-container">
+            <nav class="category-tabs">
+                <button class="tab-item active">全部盲盒藏品</button>
+                <button class="tab-item">石木金石系列</button>
+                <button class="tab-item">手作工艺系列</button>
+                <button class="tab-item">剪纸遗墨系列</button>
+                <button class="tab-item">隐藏限定档案</button>
+            </nav>
+        </div>
+        
+        <section class="hero-section" id="heroRegion">
+            <!-- [优化交互 2] 视差大字 -->
+            <div class="big-typo" id="heroTypo">筑梦</div>
+            <div class="hero-card">
+                <div class="hero-image-box">
+                    <img src="https://picsum.photos/id/1040/800/800" alt="正定隆兴寺" class="hero-img" onerror="this.onerror=null;this.src='https://placehold.co/800x800/E0DED9/2F4842?text=NO+IMAGE'">
+                </div>
+                <div class="hero-text">
+                    <h1>正定隆兴寺·摩尼殿</h1>
+                    <div class="subtitle">LONGXING TEMPLE SERIES NO.01</div>
+                    <p>
+                        " 东方美学巅峰之作 "。<br>
+                        结合3D打印技术，将千年木构微缩于掌心。<br>
+                        透过AR技术，看见斗拱之间的力学秘密。
+                    </p>
+                    <button class="btn-structural" onclick="window.scrollTo({top: 800, behavior: 'smooth'})">EXPLORE 探索结构</button>
+                </div>
+            </div>
+        </section>
+        <aside class="filter-panel">
+            <div class="filter-title">CATEGORY 分类</div>
+            <div class="filter-list" id="category-filters">
+                <button class="active" onclick="filterProducts('all')">全部 / ALL</button>
+                <button onclick="filterProducts('工艺品')">工艺 / CRAFT</button>
+                <button onclick="filterProducts('剪纸')">剪纸 / PAPER</button>
+                <button onclick="filterProducts('雕刻')">雕刻 / CARVING</button>
+                <button onclick="filterProducts('陶瓷')">陶瓷 / CERAMIC</button>
+            </div>
+            <div class="filter-title" style="margin-top: 40px;">STATUS 状态</div>
+            <div class="filter-list">
+                <button onclick="alert('即将上线')">现货 / IN STOCK</button>
+                <button onclick="alert('即将上线')">众筹 / CROWD</button>
+            </div>
+        </aside>
+        <main class="content-panel">
+            <div id="search-feedback" style="margin-bottom: 20px; color: var(--c-accent); font-family: var(--f-mono);"></div>
+            <div class="product-grid" id="product-container">
+                <div style="font-family:var(--f-mono); padding: 20px;">CONNECTING TO DATABASE...</div>
+            </div>
+            <div class="pagination" id="pagination">
+                <button class="page-num" id="prev-btn" onclick="changePage(-1)">PREV</button>
+                <span class="page-num active" id="page-info">1</span>
+                <button class="page-num" id="next-btn" onclick="changePage(1)">NEXT</button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const isDeployed = window.location.hostname.includes('onrender.com');
+        const API_BASE = isDeployed ? 'https://jiyi-zhumeng.onrender.com' : 'http://localhost:3000';
+        let allProducts = [];
+        let currentPage = 1;
+        const pageSize = 6;
+        let currentCategory = 'all'; // 初始设为all保证全部展示
+        let filteredSearchResults = [];
+        let isSearchMode = false;
+
+        window.onload = function() {
+            loadProducts();
+            checkLoginStatus();
+            initFloatingCart();
+            setupScrollListener();
+            initCursor();      // [新增交互 3]
+            initHeroParallax(); // [优化交互 2]
+        };
+
+        // [新增交互 3] 进化版水墨光标逻辑
+        function initCursor() {
+            const dot = document.getElementById('cursor-dot');
+            const outline = document.getElementById('cursor-outline');
+            window.addEventListener('mousemove', (e) => {
+                dot.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+                outline.animate({
+                    transform: `translate(${e.clientX - 15}px, ${e.clientY - 15}px)`
+                }, { duration: 500, fill: "forwards" });
+            });
+
+            // 监听交互元素以产生扩散效果
+            document.body.addEventListener('mouseover', (e) => {
+                if (e.target.closest('a, button, .product-card, .dynasty-mark')) {
+                    outline.style.width = '50px';
+                    outline.style.height = '50px';
+                    outline.style.background = 'rgba(193, 162, 104, 0.15)';
+                    outline.style.borderColor = 'var(--c-accent)';
+                    outline.style.filter = 'blur(1px)';
+                }
+            });
+            document.body.addEventListener('mouseout', (e) => {
+                if (e.target.closest('a, button, .product-card, .dynasty-mark')) {
+                    outline.style.width = '30px';
+                    outline.style.height = '30px';
+                    outline.style.background = 'rgba(47, 72, 66, 0.02)';
+                    outline.style.borderColor = 'rgba(47, 72, 66, 0.3)';
+                    outline.style.filter = 'none';
+                }
+            });
+        }
+
+        // [优化交互 2] Hero 视差
+        function initHeroParallax() {
+            const region = document.getElementById('heroRegion');
+            const typo = document.getElementById('heroTypo');
+            if(!region || !typo) return;
+            region.addEventListener('mousemove', (e) => {
+                const x = (e.clientX - window.innerWidth/2) / 35;
+                const y = (e.clientY - window.innerHeight/2) / 35;
+                typo.style.transform = `translate(${x}px, ${y}px)`;
+            });
+        }
+
+        // [优化交互 1] 微妙 3D 倾斜逻辑
+        function bindTilt(card) {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const rotateX = (rect.height / 2 - y) / 35; // 减小幅度
+                const rotateY = (x - rect.width / 2) / 35;
+                card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = `rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+            });
+        }
+
+        function setupScrollListener() {
+            window.addEventListener('scroll', function() {
+                const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+                const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                const scrolled = (winScroll / height) * 100;
+                document.getElementById('progressIndicator').style.width = scrolled + '%';
+            });
+        }
+
+        async function initFloatingCart() {
+            try {
+                const user = localStorage.getItem('currentUser');
+                if(user) {
+                    const res = await fetch(`${API_BASE}/api/cart?username=${user}`);
+                    const cartItems = await res.json();
+                    document.getElementById('floatingCartCount').textContent = cartItems.length;
+                }
+            } catch (e) {
+                console.error('获取购物车信息失败:', e);
+            }
+        }
+
+        // 为选项卡添加点击事件
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabItems = document.querySelectorAll('.tab-item');
+            tabItems.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // 移除所有激活状态
+                    tabItems.forEach(item => item.classList.remove('active'));
+                    // 为当前点击的选项卡添加激活状态
+                    this.classList.add('active');
+                    
+                    // 这里可以添加根据选项卡筛选产品的逻辑
+                    const category = this.textContent.trim();
+                    filterProductsByCategory(category);
+                });
+            });
+        });
+
+        // 根据类别筛选产品
+        function filterProductsByCategory(category) {
+            console.log(`筛选类别: ${category}`);
+            // 这里可以根据需要实现实际的产品筛选逻辑
+        }
+
+        async function loadProducts() {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                
+                const res1 = await fetch(`${API_BASE}/api/products?page=1`, {
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+                
+                if (!res1.ok) {
+                    throw new Error(`API请求失败: ${res1.status} ${res1.statusText}`);
+                }
+                
+                const data1 = await res1.json();
+                let allProductsTemp = [...data1.items];
+                
+                if (data1.totalPages > 1) {
+                    const res2 = await fetch(`${API_BASE}/api/products?page=2`, {
+                        signal: controller.signal
+                    });
+                    
+                    if (res2.ok) {
+                        const data2 = await res2.json();
+                        allProductsTemp = allProductsTemp.concat(data2.items);
+                    }
+                }
+                
+                if (data1.totalPages > 2) {
+                    for (let i = 3; i <= data1.totalPages; i++) {
+                        const resNext = await fetch(`${API_BASE}/api/products?page=${i}`, {
+                            signal: controller.signal
+                        });
+                        if (resNext.ok) {
+                            const dataNext = await resNext.json();
+                            allProductsTemp = allProductsTemp.concat(dataNext.items);
+                        }
+                    }
+                }
+                
+                allProducts = allProductsTemp;
+                loadProductsByPage(1);
+            } catch (err) {
+                console.error('加载商品失败:', err);
+                allProducts = [
+                    { id: 1, name: "【镇店之宝】冀州古韵·微缩避暑山庄", price: 399, desc: "皇家园林典范", img: "", category: "工艺品" },
+                    { id: 2, name: "【非遗国礼】蔚县剪纸·百鸟朝凤", price: 168, desc: "世界非遗技艺", img: "", category: "剪纸" },
+                    { id: 3, name: "【镇宅神兽】沧州铁狮·铸铁摆件", price: 299, desc: "燕赵雄风", img: "", category: "雕刻" },
+                    { id: 4, name: "【白如玉】曲阳定窑·刻花梅瓶", price: 899, desc: "千年定瓷", img: "", category: "陶瓷" },
+                    { id: 5, name: "【光影传奇】唐山皮影·传统礼盒", price: 128, desc: "光影艺术", img: "", category: "皮影" },
+                    { id: 6, name: "【古城印记】正定记忆·浮雕砖刻", price: 268, desc: "复刻古城墙", img: "", category: "雕刻" }
+                ];
+                loadProductsByPage(1);
+            }
+        }
+
+        function loadProductsByPage(page) {
+            currentPage = page;
+            let list = isSearchMode ? [...filteredSearchResults] : [...allProducts];
+            
+            if(currentCategory !== 'all' && currentCategory !== '全部') {
+                list = list.filter(p => p.category === currentCategory);
+            }
+            
+            const totalPages = Math.ceil(list.length / pageSize) || 1;
+            const pageProducts = list.slice((page - 1) * pageSize, page * pageSize);
+            
+            renderProducts(pageProducts);
+            updatePagination(page, totalPages);
+        }
+
+        function renderProducts(products) {
+            const container = document.getElementById('product-container');
+            container.innerHTML = '';
+
+            if (products.length === 0) {
+                container.innerHTML = '<div class="error-msg">未找到商品，请尝试其他筛选条件</div>';
+                return;
+            }
+
+            products.forEach((item, index) => {
+                let imgSrc = item.img || '';
+                if (imgSrc && !imgSrc.startsWith('http')) {
+                    imgSrc = `${API_BASE}/images/${imgSrc.split('/').pop()}`;
+                } else if (!imgSrc) {
+                    imgSrc = `https://placehold.co/400x400/E0DED9/2F4842?text=${encodeURIComponent(item.name)}`;
+                }
+
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <div class="p-image-wrap">
+                        <img src="${imgSrc}" alt="${item.name}" class="p-img" id="product-img-${item.id}" 
+                             onerror="this.onerror=null;this.src='https://placehold.co/400x400/E0DED9/2F4842?text=NO+IMAGE'">
+                        <div class="p-tag">NO.${item.id.toString().padStart(3, '0')}</div>
+                        ${item.category === '工艺品' ? '<div class="p-blindbox-tag">盲盒系列</div>' : ''}
+                        <div class="quick-view-overlay">
+                            <button class="quick-view-btn" onclick="openQuickView(${item.id})">QUICK VIEW</button>
+                            <button class="favorite-btn"><i class="fa fa-heart-o"></i>收藏</button>
+                        </div>
+                    </div>
+                    <div class="p-info">
+                        <div>
+                            <h3 class="p-title">${item.name}</h3>
+                            <div class="p-sub">${item.category || '未分类'}</div>
+                        </div>
+                        <div class="p-price">¥${item.price}</div>
+                    </div>
+                    <button class="btn-add-cart" onclick="addToCart(${item.id})">加入购物车</button>
+                `;
+                container.appendChild(card);
+                bindTilt(card); // [优化交互 1]
+
+                const imgDelayStep = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--img-delay-step'));
+                setTimeout(() => {
+                    const img = document.getElementById(`product-img-${item.id}`);
+                    if(img) img.classList.add('fade-in');
+                }, index * imgDelayStep * 1000);
+            });
+        }
+
+        function updatePagination(currentPage, totalPages) {
+            document.getElementById('page-info').textContent = currentPage;
+            document.getElementById('prev-btn').disabled = currentPage <= 1;
+            document.getElementById('next-btn').disabled = currentPage >= totalPages;
+        }
+
+        function changePage(delta) { loadProductsByPage(currentPage + delta); }
+
+        function filterProducts(category) {
+            currentCategory = category;
+            isSearchMode = false;
+            document.querySelectorAll('#category-filters button').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('onclick').includes(`'${category}'`)) btn.classList.add('active');
+            });
+            loadProductsByPage(1);
+        }
+
+        function handleSearchKeypress(event) { if (event.key === 'Enter') performSearch(); }
+
+        function performSearch() {
+            const keyword = document.getElementById('search-input').value.trim().toLowerCase();
+            if (!keyword) {
+                isSearchMode = false;
+                loadProductsByPage(1);
+                return;
+            }
+            filteredSearchResults = allProducts.filter(item => 
+                item.name.toLowerCase().includes(keyword) || 
+                (item.desc && item.desc.toLowerCase().includes(keyword))
+            );
+            isSearchMode = true;
+            document.getElementById('search-feedback').textContent = `搜索结果: ${filteredSearchResults.length} 件`;
+            loadProductsByPage(1);
+        }
+
+        function addToCart(productId) {
+            const user = localStorage.getItem('currentUser');
+            if (!user) { alert('请先登录！'); window.location.href = 'login.html'; return; }
+            const product = allProducts.find(item => item.id === productId);
+            fetch(`${API_BASE}/api/cart/add`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: user, product: product })
+            }).then(() => {
+                initFloatingCart();
+                alert('已加入购物车！');
+            });
+        }
+
+        function openQuickView(productId) {
+            const p = allProducts.find(item => item.id === productId);
+            if (!p) return;
+            const modal = document.createElement('div');
+            modal.className = 'quick-view-modal';
+            modal.innerHTML = `
+                <div class="quick-view-content">
+                    <span class="close-btn" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                    <div class="quick-view-product">
+                        <div class="quick-view-img">
+                            <img src="${p.img || 'https://placehold.co/400'}" onerror="this.src='https://placehold.co/400x400/E0DED9/2F4842?text=NO+IMAGE'">
+                        </div>
+                        <div class="quick-view-details">
+                            <h3>${p.name}</h3>
+                            <p>¥${p.price}</p>
+                            <p>${p.desc || '暂无描述'}</p>
+                            <button class="btn-structural" onclick="addToCart(${p.id})">加入购物车</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function checkLoginStatus() {
+            const user = localStorage.getItem('currentUser');
+            const authSection = document.getElementById('auth-section');
+            if (user) {
+                authSection.innerHTML = `<a href="profile.html">${user}</a><a href="javascript:logout()">退出</a>`;
+            } else {
+                authSection.innerHTML = `<a href="login.html">登录</a><a href="register.html">注册</a>`;
+            }
+        }
+        function logout() { localStorage.removeItem('currentUser'); location.reload(); }
+    </script>
+</body>
+</html>
