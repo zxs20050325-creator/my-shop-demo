@@ -352,6 +352,63 @@
             background: var(--c-accent);
             transform: translateY(-50%) rotate(45deg);
         }
+        
+        /* 选项卡样式 */
+        .category-tabs-container {
+            margin: 0 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .category-tabs {
+            display: inline-flex;
+            gap: 15px;
+            padding: 8px 15px;
+            background: rgba(242, 240, 235, 0.7);
+            border-radius: 50px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            backdrop-filter: blur(10px);
+        }
+        
+        .tab-item {
+            padding: 10px 20px;
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--c-text-light);
+            font-family: var(--f-serif);
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 40px;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .tab-item:hover {
+            color: var(--c-primary);
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
+        .tab-item.active {
+            color: #fff;
+            background: var(--c-primary);
+            border-color: var(--c-primary);
+        }
+        
+        .tab-item.active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, var(--c-primary), var(--c-accent));
+            border-radius: 40px;
+            z-index: -1;
+            opacity: 0.8;
+        }
+        
         .content-panel {
             grid-area: content;
             padding: 40px 60px;
@@ -699,15 +756,6 @@
                 <input type="text" placeholder="寻找沉封的非遗惊喜...">
             </div>
 
-            <!-- 新增：选项卡导航 -->
-            <nav class="category-tabs">
-                <button class="tab-item active">全部盲盒藏品</button>
-                <button class="tab-item">石木金石系列</button>
-                <button class="tab-item">手作工艺系列</button>
-                <button class="tab-item">剪纸遗墨系列</button>
-                <button class="tab-item">隐藏限定档案</button>
-            </nav>
-
             <div class="cart-trigger" onclick="engine.toggleCart()">
                 <i class="fa fa-shopping-basket"></i>
                 <span>惊喜袋 / BAG</span>
@@ -716,6 +764,18 @@
 
             <div class="auth-gate" onclick="engine.toggleLogin()">结缘 / SIGN IN</div>
         </header>
+        
+        <!-- 选项卡容器 -->
+        <div class="category-tabs-container">
+            <nav class="category-tabs">
+                <button class="tab-item active">全部盲盒藏品</button>
+                <button class="tab-item">石木金石系列</button>
+                <button class="tab-item">手作工艺系列</button>
+                <button class="tab-item">剪纸遗墨系列</button>
+                <button class="tab-item">隐藏限定档案</button>
+            </nav>
+        </div>
+        
         <section class="hero-section" id="heroRegion">
             <!-- [优化交互 2] 视差大字 -->
             <div class="big-typo" id="heroTypo">筑梦</div>
@@ -861,6 +921,29 @@
             } catch (e) {
                 console.error('获取购物车信息失败:', e);
             }
+        }
+
+        // 为选项卡添加点击事件
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabItems = document.querySelectorAll('.tab-item');
+            tabItems.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // 移除所有激活状态
+                    tabItems.forEach(item => item.classList.remove('active'));
+                    // 为当前点击的选项卡添加激活状态
+                    this.classList.add('active');
+                    
+                    // 这里可以添加根据选项卡筛选产品的逻辑
+                    const category = this.textContent.trim();
+                    filterProductsByCategory(category);
+                });
+            });
+        });
+
+        // 根据类别筛选产品
+        function filterProductsByCategory(category) {
+            console.log(`筛选类别: ${category}`);
+            // 这里可以根据需要实现实际的产品筛选逻辑
         }
 
         async function loadProducts() {
