@@ -105,31 +105,31 @@
         .filter-item:hover { color: var(--c-primary); padding-left: 35px; }
         .filter-item.active { border-left-color: var(--c-accent); color: var(--c-primary); font-weight: 900; background: rgba(193, 162, 104, 0.08); }
 
-        /* [8. 商品卡片比例还原 2x3] */
+        /* [8. 商品卡片比例调整] */
         .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, auto); gap: 40px; perspective: 2500px; }
         .box-card { 
-            background: #fff; padding: 25px; border: 1.5px solid #F0F0F0; position: relative; transform-style: preserve-3d; transition: transform 0.6s var(--trans-spring), box-shadow 0.4s ease, opacity 0.5s ease; opacity: 0; transform: translateY(60px); 
+            background: #fff; padding: 20px; border: 1.5px solid #F0F0F0; position: relative; transform-style: preserve-3d; transition: transform 0.6s var(--trans-spring), box-shadow 0.4s ease, opacity 0.5s ease; opacity: 0; transform: translateY(60px); 
         }
         .box-card.revealed { opacity: 1; transform: translateY(0); }
         .box-card:hover { border-color: var(--c-accent); box-shadow: 0 40px 80px rgba(0,0,0,0.08); }
         
-        .card-no { position: absolute; top: 25px; left: 25px; font-family: var(--f-mono); font-size: 10px; background: var(--c-primary); color: #fff; padding: 3px 10px; z-index: 10; letter-spacing: 1px; }
-        .card-ssr { position: absolute; top: 25px; right: 25px; font-size: 10px; font-weight: 900; background: var(--c-danger); color: #fff; padding: 3px 12px; z-index: 10; box-shadow: 4px 4px 0 rgba(0,0,0,0.1); }
+        .card-no { position: absolute; top: 20px; left: 20px; font-family: var(--f-mono); font-size: 9px; background: var(--c-primary); color: #fff; padding: 3px 8px; z-index: 10; letter-spacing: 1px; }
+        .card-ssr { position: absolute; top: 20px; right: 20px; font-size: 9px; font-weight: 900; background: var(--c-danger); color: #fff; padding: 3px 10px; z-index: 10; box-shadow: 4px 4px 0 rgba(0,0,0,0.1); }
 
-        .card-img-gate { height: 280px; width: 100%; overflow: hidden; background: #FAFAFA; position: relative; margin-bottom: 25px; border: 0.5px solid #F5F5F5; transform: translateZ(30px); }
+        .card-img-gate { height: 240px; width: 100%; overflow: hidden; background: #FAFAFA; position: relative; margin-bottom: 20px; border: 0.5px solid #F5F5F5; transform: translateZ(30px); }
         .box-card .main-img { width: 100%; height: 100%; object-fit: cover; transition: 0.8s cubic-bezier(0.165, 0.84, 0.44, 1); }
         .box-card:hover .main-img { transform: scale(1.1) rotate(2deg); filter: brightness(1.05); }
 
         .card-price-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; transform: translateZ(40px); }
-        .card-price { font-family: var(--f-mono); font-size: 26px; font-weight: 900; color: var(--c-danger); }
-        .card-cat { font-size: 9px; text-transform: uppercase; color: #AAA; letter-spacing: 2px; border: 1px solid #EEE; padding: 2px 6px; }
+        .card-price { font-family: var(--f-mono); font-size: 24px; font-weight: 900; color: var(--c-danger); }
+        .card-cat { font-size: 8px; text-transform: uppercase; color: #AAA; letter-spacing: 2px; border: 1px solid #EEE; padding: 2px 6px; }
         
-        .card-title { font-size: 16px; font-weight: 700; color: #333; height: 50px; overflow: hidden; line-height: 1.5; margin-bottom: 20px; transform: translateZ(45px); }
+        .card-title { font-size: 15px; font-weight: 700; color: #333; height: 45px; overflow: hidden; line-height: 1.5; margin-bottom: 15px; transform: translateZ(45px); }
         
-        .btn-reveal { width: 100%; padding: 16px; background: var(--c-primary); color: #fff; border: none; font-size: 12px; font-weight: 900; letter-spacing: 3px; transition: 0.3s; }
+        .btn-reveal { width: 100%; padding: 14px; background: var(--c-primary); color: #fff; border: none; font-size: 11px; font-weight: 900; letter-spacing: 3px; transition: 0.3s; }
         .btn-reveal:hover { background: var(--c-accent); letter-spacing: 6px; }
         
-        .btn-show-real { width: 100%; padding: 16px; background: var(--c-accent); color: #fff; border: none; font-size: 12px; font-weight: 900; letter-spacing: 3px; transition: 0.3s; margin-top: 10px; }
+        .btn-show-real { width: 100%; padding: 14px; background: var(--c-accent); color: #fff; border: none; font-size: 11px; font-weight: 900; letter-spacing: 3px; transition: 0.3s; margin-top: 8px; }
         .btn-show-real:hover { background: var(--c-primary); letter-spacing: 6px; }
         
         .real-photo-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 100; opacity: 0; visibility: hidden; transition: all 0.5s ease; }
