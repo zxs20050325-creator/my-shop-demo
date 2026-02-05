@@ -51,113 +51,6 @@
         body::before { content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: linear-gradient(var(--c-grid) 1px, transparent 1px), linear-gradient(90deg, var(--c-grid) 1px, transparent 1px); background-size: 45px 45px; z-index: -2; opacity: 0.5; pointer-events: none; }
 
         /* [3. 侧边栏还原] */
-<<<<<<< HEAD
-        .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: var(--sidebar-width); background: #fff; border-right: 1.5px solid var(--c-primary); display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 40px 0; z-index: 4500; }
-        .brand-plaque { background: var(--c-primary); color: #fff; padding: 20px 10px; border-radius: 2px; box-shadow: 4px 4px 0 var(--c-accent); transition: var(--trans-spring); }
-        .brand-vertical { writing-mode: vertical-rl; font-size: 20px; font-weight: 900; letter-spacing: 5px; }
-        
-        .series-axis { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 35px; position: relative; }
-        .series-axis::after { content: ""; position: absolute; left: 50%; top: 0; height: 100%; width: 1px; background: linear-gradient(to bottom, transparent, var(--c-grid), transparent); transform: translateX(-50%); }
-        .series-mark { font-family: var(--f-mono); font-size: 11px; transition: 0.3s; color: #BBB; display: flex; flex-direction: column; align-items: center; background: #fff; z-index: 2; padding: 5px; }
-        .series-mark span { writing-mode: vertical-rl; margin-top: 10px; font-size: 10px; opacity: 0; transition: 0.3s; transform: translateY(10px); color: var(--c-primary); }
-        .series-mark:hover, .series-mark.active { color: var(--c-primary); transform: scale(1.2); }
-        .series-mark:hover span, .series-mark.active span { opacity: 1; transform: translateY(0); }
-        .social-links { display: flex; flex-direction: column; gap: 20px; font-size: 22px; color: var(--c-primary); opacity: 0.6; }
->>>>>>> 7acd5282920d759aefc9c1695e569f0cb1b0aa5d
-        /* [3. 侧边栏还原] */
-        .sidebar { 
-            position: fixed; 
-            left: 0; top: 0; bottom: 0; 
-            width: var(--sidebar-width); 
-            background: #fff; 
-            border-right: 1.5px solid var(--c-primary); 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: space-between; 
-            padding: 40px 0; 
-            z-index: 4500; 
-            height: 100vh; 
-            overflow-y: auto; 
-        }
-        .brand-plaque { background: var(--c-primary); color: #fff; padding: 20px 10px; border-radius: 2px; box-shadow: 4px 4px 0 var(--c-accent); transition: var(--trans-spring); width: 80px; }
-        .brand-vertical { writing-mode: vertical-rl; font-size: 20px; font-weight: 900; letter-spacing: 5px; }
-        
-        .series-axis { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 25px; position: relative; width: 100%; }
-        .series-axis::after { content: ""; position: absolute; left: 50%; top: 0; height: 100%; width: 1px; background: linear-gradient(to bottom, transparent, var(--c-grid), transparent); transform: translateX(-50%); }
-        .series-mark { font-family: var(--f-mono); font-size: 14px; transition: 0.3s; color: #BBB; display: flex; flex-direction: column; align-items: center; background: #fff; z-index: 2; padding: 8px; cursor: pointer; border-radius: 8px; margin: 0 10px; }
-        .series-mark span { writing-mode: vertical-rl; margin-top: 8px; font-size: 9px; opacity: 0; transition: 0.3s; transform: translateY(10px); color: var(--c-primary); width: 60px; }
-        .series-mark:hover, .series-mark.active { color: var(--c-primary); transform: scale(1.1); background: rgba(242, 240, 235, 0.5); }
-        .series-mark:hover span, .series-mark.active span { opacity: 1; transform: translateY(0); }
-        .social-links { display: flex; flex-direction: column; gap: 20px; font-size: 22px; color: var(--c-primary); opacity: 0.6; padding: 0 10px; }
-
-        /* 添加悬停展开效果 */
-        .sidebar:hover {
-            width: 200px;
-        }
-        .sidebar:hover .series-mark span {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .sidebar:hover .brand-plaque {
-            width: 120px;
-        }
-
-        /* [4. 筑梦水印强化] */
-        .front-parallax-layer { position: fixed; width: 100vw; height: 100vh; pointer-events: none; z-index: 4000; mix-blend-mode: color-burn; }
-        .dream-watermark { position: absolute; font-weight: 900; line-height: 1; opacity: 0.15; color: var(--c-primary); transition: transform 0.2s ease-out; }
-        #word-zhu { font-size: 32vw; top: 0%; left: -5%; }
-        #word-meng { font-size: 32vw; bottom: 5%; right: -5%; color: var(--c-accent); }
-
-        /* [5. 顶部功能条] */
-        .main-content { margin-left: var(--sidebar-width); position: relative; z-index: 100; }
-        .top-bar { position: sticky; top: 0; height: 80px; padding: 0 60px; display: flex; justify-content: flex-end; align-items: center; gap: 30px; z-index: 4200; background: var(--c-topbar); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(47, 72, 66, 0.05); }
-        .search-engine { display: flex; align-items: center; gap: 8px; padding: 8px 25px; background: var(--c-primary); color: #fff; border-radius: 40px; transition: var(--trans-spring); font-family: var(--f-mono); font-size: 12px; }
-        .search-engine input { background: none; border: none; outline: none; width: 160px; font-family: var(--f-mono); font-size: 12px; color: #fff; }
-        .cart-trigger { display: flex; align-items: center; gap: 12px; padding: 8px 25px; background: var(--c-primary); color: #fff; border-radius: 40px; transition: var(--trans-spring); font-family: var(--f-mono); font-size: 12px; position: relative; }
-        .cart-trigger:hover { background: var(--c-accent); transform: translateY(-3px); }
-        #cartBadge { background: var(--c-danger); color: #fff; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; position: absolute; top: -5px; right: 5px; }
-        .auth-gate { display: flex; align-items: center; gap: 8px; padding: 8px 25px; background: var(--c-primary); color: #fff; border-radius: 40px; transition: var(--trans-spring); font-family: var(--f-mono); font-size: 12px; border: none; }
-        .auth-gate:hover { background: var(--c-accent); transform: translateY(-3px); }
-
-        /* [6. Hero 华塔巨幕修正] */
-        .hero-section { height: 90vh; padding: 40px 100px; display: flex; align-items: center; overflow: hidden; position: relative; }
-        .hero-tower-gate { width: 55%; height: 90%; position: relative; overflow: hidden; border: 1.5px solid var(--c-primary); box-shadow: 45px 45px 0 rgba(193, 162, 104, 0.15); transition: 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
-        .hero-tower-gate:hover { transform: scale(1.02); box-shadow: 60px 60px 0 rgba(193, 162, 104, 0.25); }
-        .hero-img { 
-            width: 100%; height: 100%; object-fit: cover; transform: scale(1.1); transition: 1.5s var(--trans-spring);
-            /* 广惠寺华塔标志图 */
-            background: url('https://img.zcool.cn/community/016ca55d57b4c6a801214814d94b7e.jpg@1280w_1l_2o_100sh.jpg') center/cover;
-        }
-        .hero-tower-gate:hover .hero-img { transform: scale(1.2) rotate(1deg); }
-        .scan-beam { position: absolute; top: -100%; left: 0; width: 100%; height: 15%; background: linear-gradient(to bottom, transparent, rgba(193, 162, 104, 0.4), transparent); animation: scanLine 4s linear infinite; }
-        @keyframes scanLine { 0% { top: -100%; } 100% { top: 200%; } }
-
-        .hero-content { width: 45%; padding-left: 100px; }
-        .hero-content h1 { font-size: 68px; line-height: 1.1; margin-bottom: 30px; font-weight: 900; }
-        .hero-content p { font-size: 18px; line-height: 2.1; color: #555; margin-bottom: 50px; text-align: justify; }
-
-        /* [7. 商品商城与新版分类轴] */
-        .shop-container { display: grid; grid-template-columns: 200px 1fr; margin-right: 15vw; padding: 100px; gap: 80px; border-top: 1px solid var(--c-grid); }
-        
-        .filter-aside { position: sticky; top: 150px; height: fit-content; display: flex; flex-direction: column; gap: 15px; }
-        .filter-aside label { font-family: var(--f-mono); font-size: 10px; color: #BBB; letter-spacing: 4px; margin-bottom: 15px; border-bottom: 1px solid var(--c-grid); padding-bottom: 10px; }
-        .filter-item { text-align: left; padding: 15px 25px; font-size: 16px; color: #888; transition: 0.3s; border-left: 2px solid transparent; }
-        .filter-item:hover { color: var(--c-primary); padding-left: 35px; }
-        .filter-item.active { border-left-color: var(--c-accent); color: var(--c-primary); font-weight: 900; background: rgba(193, 162, 104, 0.08); }
-
-        /* [8. 商品卡片比例还原 2x3] */
-        .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, auto); gap: 40px; perspective: 2500px; }
-        .box-card { 
-            background: #fff; padding: 25px; border: 1.5px solid #F0F0F0; position: relative; transform-style: preserve-3d; transition: transform 0.6s var(--trans-spring), box-shadow 0.4s ease, opacity 0.5s ease; opacity: 0; transform: translateY(60px); 
-        }
-        .box-card.revealed { opacity: 1; transform: translateY(0); }
-        .box-card:hover { border-color: var(--c-accent); box-shadow: 0 40px 80px rgba(0,0,0,0.08); }
-        
-        .card-no { position: absolute; top: 25px; left: 25px; font-family: var(--f-mono); font-size: 10px; background: var(--c-primary); color: #fff; padding: 3px 10px; z-index: 10; letter-spacing: 1px; }
-        .card-ssr { position: absolute; top: 25px; right: 25px; font-size: 10px; font-weight: 900; background: var(--c-danger); color: #fff; padding: 3px 12px; z-index: 10; box-shadow: 4px 4px 0 rgba(0,0,0,0.1); }
-
-=======
         .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: var(--sidebar-width); background: #fff; border-right: 1.5px solid var(--c-primary); display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 40px 0; z-index: 4500; }
         .brand-plaque { background: var(--c-primary); color: #fff; padding: 20px 10px; border-radius: 2px; box-shadow: 4px 4px 0 var(--c-accent); transition: var(--trans-spring); }
         .brand-vertical { writing-mode: vertical-rl; font-size: 20px; font-weight: 900; letter-spacing: 5px; }
@@ -172,9 +65,9 @@
 
         /* [4. 筑梦水印强化] */
         .front-parallax-layer { position: fixed; width: 100vw; height: 100vh; pointer-events: none; z-index: 4000; mix-blend-mode: color-burn; }
-        .dream-watermark { position: absolute; font-weight: 900; line-height: 1; opacity: 0.15; color: var(--c-primary); transition: transform 0.2s ease-out; }
+        .dream-watermark { position: absolute; font-weight: 900; line-height: 1; opacity: 0.4; color: var(--c-primary); transition: transform 0.2s ease-out; text-shadow: 0 0 20px rgba(47, 72, 66, 0.3); }
         #word-zhu { font-size: 32vw; top: 0%; left: -5%; }
-        #word-meng { font-size: 32vw; bottom: 5%; right: -5%; color: var(--c-accent); }
+        #word-meng { font-size: 32vw; bottom: 5%; right: -5%; color: var(--c-accent); text-shadow: 0 0 20px rgba(193, 162, 104, 0.4); }
 
         /* [5. 顶部功能条] */
         .main-content { margin-left: var(--sidebar-width); position: relative; z-index: 100; }
@@ -223,7 +116,6 @@
         .card-no { position: absolute; top: 25px; left: 25px; font-family: var(--f-mono); font-size: 10px; background: var(--c-primary); color: #fff; padding: 3px 10px; z-index: 10; letter-spacing: 1px; }
         .card-ssr { position: absolute; top: 25px; right: 25px; font-size: 10px; font-weight: 900; background: var(--c-danger); color: #fff; padding: 3px 12px; z-index: 10; box-shadow: 4px 4px 0 rgba(0,0,0,0.1); }
 
->>>>>>> 7acd5282920d759aefc9c1695e569f0cb1b0aa5d
         .card-img-gate { height: 280px; width: 100%; overflow: hidden; background: #FAFAFA; position: relative; margin-bottom: 25px; border: 0.5px solid #F5F5F5; transform: translateZ(30px); }
         .box-card .main-img { width: 100%; height: 100%; object-fit: cover; transition: 0.8s cubic-bezier(0.165, 0.84, 0.44, 1); }
         .box-card:hover .main-img { transform: scale(1.1) rotate(2deg); filter: brightness(1.05); }
@@ -296,21 +188,6 @@
         <header class="top-bar">
             <div class="search-engine">
                 <i class="fa fa-search"></i>
-<<<<<<< HEAD
-                <input type="text" placeholder="寻宝...">
-            </div>
-
-            <div class="cart-trigger" onclick="engine.toggleCart()">
-                <i class="fa fa-shopping-basket"></i>
-                <span>惊喜袋 / BAG</span>
-                <div id="cartBadge">0</div>
-            </div>
-
-            <div class="auth-gate" onclick="engine.toggleLogin()">
-                <i class="fa fa-user"></i>
-                <span>结缘 / SIGN IN</span>
-            </div>
-=======
                 <input type="text" placeholder="寻找沉封的非遗惊喜...">
             </div>
 
@@ -321,7 +198,6 @@
             </div>
 
             <div class="auth-gate" onclick="engine.toggleLogin()">结缘 / SIGN IN</div>
->>>>>>> 7acd5282920d759aefc9c1695e569f0cb1b0aa5d
         </header>
 
         <!-- [Hero 华塔巨幕交互] -->
@@ -546,3 +422,8 @@
                 alert("遗珍已入袋！");
             }
         }
+
+        const engine = new HeritageEngine();
+    </script>
+</body>
+</html>
