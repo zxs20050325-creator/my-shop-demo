@@ -694,12 +694,27 @@
     </aside>
     <div class="main-wrapper">
         <header class="top-bar">
-            <div class="search-minimal">
-                <input type="text" id="search-input" placeholder="SEARCH..." onkeypress="handleSearchKeypress(event)">
-                <button class="search-btn" onclick="performSearch()"><i class="fa fa-search" aria-hidden="true"></i></button>
+            <div class="search-engine">
+                <i class="fa fa-search"></i>
+                <input type="text" placeholder="寻找沉封的非遗惊喜...">
             </div>
-            <div class="user-actions" id="auth-section">
+
+            <!-- 新增：选项卡导航 -->
+            <nav class="category-tabs">
+                <button class="tab-item active">全部盲盒藏品</button>
+                <button class="tab-item">石木金石系列</button>
+                <button class="tab-item">手作工艺系列</button>
+                <button class="tab-item">剪纸遗墨系列</button>
+                <button class="tab-item">隐藏限定档案</button>
+            </nav>
+
+            <div class="cart-trigger" onclick="engine.toggleCart()">
+                <i class="fa fa-shopping-basket"></i>
+                <span>惊喜袋 / BAG</span>
+                <div id="cartBadge">0</div>
             </div>
+
+            <div class="auth-gate" onclick="engine.toggleLogin()">结缘 / SIGN IN</div>
         </header>
         <section class="hero-section" id="heroRegion">
             <!-- [优化交互 2] 视差大字 -->
