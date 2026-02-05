@@ -181,7 +181,40 @@
         .p-info { margin-top: 15px; display: flex; justify-content: space-between; align-items: flex-end; transform: translateZ(40px); }
         .p-price { font-family: var(--f-mono); font-size: 16px; color: var(--c-accent); font-weight: bold; }
         
-        .btn-add-cart { margin-top: 10px; width: 100%; padding: 8px; background: #fff; border: 1px solid var(--c-primary); font-size: 12px; opacity: 0; transform: translateY(10px); transition: 0.3s; }
+        
+        /* 更新按钮字体为英文字体 */
+        .btn-add-cart {
+            font-family: var(--f-mono);
+        }
+>>>>>>> 3202d26 (Upload project files for deployment)
+
+        /* 原有进度条、悬浮球、分页 (完全保留) */
+        .progress-indicator { position: fixed; top: 0; left: 0; width: 0%; height: 3px; background: var(--c-accent); z-index: 1001; transition: width 0.3s; }
+        .floating-cart { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: var(--c-primary); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .cart-count { position: absolute; top: -5px; right: -5px; background: #ff4757; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; display: flex; justify-content: center; align-items: center; }
+        .pagination { margin-top: 60px; display: flex; gap: 20px; justify-content: center; font-family: var(--f-mono); }
+        .page-num { cursor: pointer; color: var(--c-text-light); border-bottom: 2px solid transparent; background: none; border: none; transition: 0.3s; }
+        .page-num.active, .page-num:hover { color: var(--c-primary); border-bottom-color: var(--c-primary); }
+<<<<<<< HEAD
+        
+        /* 更新用户操作区域字体为英文字体 */
+        .user-actions { font-family: var(--f-mono); font-size: 12px; margin-left: 20px; display: flex; gap: 20px; }
+        .user-actions a { position: relative; }
+        .user-actions a::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 1px; background: var(--c-accent); transition: 0.3s; }
+        .user-actions a:hover::after { width: 100%; }
+>>>>>>> 3202d26 (Upload project files for deployment)
+        .btn-add-cart { 
+            margin-top: 10px; 
+            width: 100%; 
+            padding: 8px; 
+            background: #fff; 
+            border: 1px solid var(--c-primary); 
+            font-size: 12px; 
+            opacity: 0; 
+            transform: translateY(10px); 
+            transition: 0.3s; 
+            font-family: var(--f-mono);
+        }
         .product-card:hover .btn-add-cart { opacity: 1; transform: translateY(0); }
 
         /* 原有进度条、悬浮球、分页 (完全保留) */
@@ -191,6 +224,36 @@
         .pagination { margin-top: 60px; display: flex; gap: 20px; justify-content: center; font-family: var(--f-mono); }
         .page-num { cursor: pointer; color: var(--c-text-light); border-bottom: 2px solid transparent; background: none; border: none; transition: 0.3s; }
         .page-num.active, .page-num:hover { color: var(--c-primary); border-bottom-color: var(--c-primary); }
+        
+        /* 更新用户操作区域字体为英文字体 */
+        .user-actions { font-family: var(--f-mono); font-size: 12px; margin-left: 20px; display: flex; gap: 20px; }
+        .user-actions a { position: relative; }
+        .user-actions a::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 1px; background: var(--c-accent); transition: 0.3s; }
+        .user-actions a:hover::after { width: 100%; }
+=======
+        
+        /* 更新按钮字体为英文字体 */
+        .btn-add-cart {
+            font-family: var(--f-mono);
+        }
+>>>>>>> 3202d26 (Upload project files for deployment)
+
+        /* 原有进度条、悬浮球、分页 (完全保留) */
+        .progress-indicator { position: fixed; top: 0; left: 0; width: 0%; height: 3px; background: var(--c-accent); z-index: 1001; transition: width 0.3s; }
+        .floating-cart { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: var(--c-primary); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .cart-count { position: absolute; top: -5px; right: -5px; background: #ff4757; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; display: flex; justify-content: center; align-items: center; }
+        .pagination { margin-top: 60px; display: flex; gap: 20px; justify-content: center; font-family: var(--f-mono); }
+        .page-num { cursor: pointer; color: var(--c-text-light); border-bottom: 2px solid transparent; background: none; border: none; transition: 0.3s; }
+        .page-num.active, .page-num:hover { color: var(--c-primary); border-bottom-color: var(--c-primary); }
+<<<<<<< HEAD
+=======
+        
+        /* 更新用户操作区域字体为英文字体 */
+        .user-actions { font-family: var(--f-mono); font-size: 12px; margin-left: 20px; display: flex; gap: 20px; }
+        .user-actions a { position: relative; }
+        .user-actions a::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 1px; background: var(--c-accent); transition: 0.3s; }
+        .user-actions a:hover::after { width: 100%; }
+>>>>>>> 3202d26 (Upload project files for deployment)
 
         @media (max-width: 768px) {
             body { cursor: auto !important; } #cursor-ink-dot, #cursor-ink-wash { display: none; }
