@@ -46,11 +46,11 @@ if "%REPO_URL%"=="" (
     git remote set-url origin %REPO_URL%
     
     REM 推送前先拉取最新代码（如果有的话）
-    git pull origin master --allow-unrelated-histories 2>nul
+    git pull origin main --allow-unrelated-histories 2>nul
     
     REM 推送到远程仓库
     echo 正在推送到远程仓库...
-    git push -u origin master --force-with-lease
+    git push -u origin main --force-with-lease
     
     if errorlevel 1 (
         echo 推送失败，请检查网络连接或仓库权限
