@@ -4,255 +4,613 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>我的收藏 - 冀遗筑梦</title>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: '微软雅黑'; }
-        body { background: #f5f5f5; padding-top: 80px; }
-        .navbar {
-            position: fixed; top: 0; left: 0; width: 100%;
-            background: #8b2a2a; 
-            color: white; padding: 15px 30px;
-            display: flex; justify-content: space-between; align-items: center; z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        /* ========================================
+           0. 设计系统 (Design System)
+           ======================================== */
+        :root {
+            --c-primary: #2F4842;    /* 青黛 - 文字/主调 */
+            --c-accent: #C1A268;     /* 鎏金 - 强调/按钮 */
+            --c-bg: #F2F0EB;         /* 宣纸灰 - 背景 */
+            --c-grid: #E0DED9;       /* 网格线 */
+            --c-text-light: #8A9A96; /* 辅助文字 */
+            --f-serif: 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+            --f-mono: 'Courier New', Courier, monospace;
+            --sidebar-width: 80px;
         }
-        .nav-links a { color: white; text-decoration: none; margin-left: 20px; cursor: pointer; }
-        .nav-links a:hover { color: #ffeb3b; }
-        
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        
-        .page-title { text-align: center; margin-bottom: 30px; color: #333; }
-        .page-title h2 { font-size: 32px; font-weight: bold; margin-bottom: 10px; }
-        .page-title p { color: #666; font-size: 16px; }
 
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background-color: var(--c-bg);
+            color: var(--c-primary);
+            font-family: var(--f-serif);
+            overflow-x: hidden;
+            background-image: 
+                linear-gradient(var(--c-grid) 1px, transparent 1px),
+                linear-gradient(90deg, var(--c-grid) 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: center top;
+        }
+        a { text-decoration: none; color: inherit; }
+        button { font-family: inherit; }
         
-        .product-card { 
-            background: white; border-radius: 8px; overflow: hidden; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
-            transition: transform 0.3s; 
+        .sidebar {
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            width: var(--sidebar-width);
+            background: #fff;
+            border-right: 1px solid var(--c-primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 40px 0;
+            z-index: 1000;
+        }
+        .brand-vertical {
+            writing-mode: vertical-rl;
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: 8px;
+            color: var(--c-primary);
+            border: 2px solid var(--c-primary);
+            padding: 15px 8px;
+        }
+        .time-ruler {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 40px;
             position: relative;
         }
-        .product-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+        .time-ruler::before {
+            content: '';
+            position: absolute;
+            top: 20px; bottom: 20px; left: 50%;
+            width: 1px; background: var(--c-grid);
+            transform: translateX(-50%);
+        }
+        .dynasty-mark {
+            font-family: var(--f-mono);
+            font-size: 12px;
+            background: #fff;
+            padding: 4px;
+            z-index: 2;
+            cursor: pointer;
+            transition: 0.3s;
+            color: var(--c-text-light);
+        }
+        .dynasty-mark:hover, .dynasty-mark.active {
+            color: var(--c-primary);
+            font-weight: bold;
+            transform: scale(1.2);
+        }
+        .social-links i {
+            display: block; margin-top: 20px;
+            color: var(--c-primary); opacity: 0.5; cursor: pointer;
+            transition: 0.3s;
+        }
+        .social-links i:hover { opacity: 1; transform: translateY(-3px); }
         
+        .main-wrapper {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            grid-template-rows: auto auto 1fr;
+            grid-template-areas:
+                "top-bar top-bar"
+                "hero hero"
+                "filter content";
+        }
+        
+        .top-bar {
+            grid-area: top-bar;
+            padding: 30px 60px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 40px;
+        }
+        .search-minimal {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--c-primary);
+            padding-bottom: 5px;
+        }
+        .search-minimal input {
+            background: transparent; border: none; outline: none;
+            width: 150px;
+            font-family: var(--f-mono);
+            font-size: 14px;
+            color: var(--c-primary);
+            text-align: right;
+        }
+        .search-minimal input::placeholder { color: var(--c-text-light); font-style: italic;}
+        .search-btn { background: none; border: none; cursor: pointer; margin-left: 10px; }
+        .user-actions {
+            font-family: var(--f-mono);
+            font-size: 12px;
+            margin-left: 20px;
+            display: flex;
+            gap: 20px;
+        }
+        .user-actions a {
+            position: relative;
+        }
+        .user-actions a::after {
+            content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 1px;
+            background: var(--c-accent); transition: 0.3s;
+        }
+        .user-actions a:hover::after { width: 100%; }
+        
+        .favorites-container {
+            grid-area: content;
+            padding: 40px 60px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .favorites-header {
+            margin-bottom: 30px;
+        }
+        
+        .favorites-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--c-primary);
+            margin-bottom: 10px;
+        }
+        
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 40px;
+            flex: 1;
+        }
+        
+        .product-card {
+            background: transparent;
+            position: relative;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        .product-card:hover {
+            transform: translateY(-10px);
+        }
+        .p-image-wrap {
+            height: 320px;
+            background: #fff;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid transparent;
+            transition: 0.3s;
+        }
+        .product-card:hover .p-image-wrap {
+            border-color: var(--c-accent);
+            box-shadow: 10px 10px 0 rgba(44, 74, 71, 0.05);
+        }
+        .p-tag {
+            position: absolute;
+            top: 0; left: 0;
+            background: var(--c-primary);
+            color: #fff;
+            font-family: var(--f-mono);
+            font-size: 10px;
+            padding: 4px 8px;
+        }
+        .p-blindbox-tag {
+            position: absolute;
+            top: 0; right: 0;
+            background: var(--c-accent);
+            color: #fff;
+            font-size: 12px;
+            padding: 4px 8px;
+            writing-mode: vertical-rl;
+        }
+        .error-msg {
+            grid-column: 1 / -1;
+            padding: 40px;
+            border: 1px dashed var(--c-accent);
+            color: var(--c-accent);
+            text-align: center;
+            font-family: var(--f-mono);
+        }
+        .p-info {
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .p-title {
+            font-size: 18px;
+            margin-bottom: 4px;
+        }
+        .p-sub {
+            font-family: var(--f-mono);
+            font-size: 12px;
+            color: #999;
+        }
+        .p-price {
+            font-family: var(--f-mono);
+            font-size: 16px;
+            color: var(--c-accent);
+            font-weight: bold;
+        }
+        .btn-add-cart {
+            margin-top: 10px;
+            width: 100%;
+            padding: 8px;
+            background: #fff;
+            border: 1px solid var(--c-primary);
+            color: var(--c-primary);
+            font-size: 12px;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: 0.3s;
+        }
+        .product-card:hover .btn-add-cart {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .btn-add-cart:hover {
+            background: var(--c-primary);
+            color: #fff;
+        }
         .favorite-icon {
             position: absolute;
-            top: 15px;
-            right: 15px;
+            top: 10px;
+            right: 10px;
             font-size: 24px;
             color: #ff6b6b;
             cursor: pointer;
             z-index: 10;
-        }
-        
-        .product-img { 
-            width: 100%; 
-            height: 250px;
-            object-fit: contain;
-            background-color: #fff;
-            padding: 10px;
-        }
-        
-        .card-body { padding: 20px; }
-        .product-name { font-size: 18px; font-weight: bold; margin-bottom: 8px; color: #333; }
-        .product-price { color: #8b2a2a; font-size: 22px; font-weight: bold; margin-bottom: 10px; }
-        .product-desc { color: #666; font-size: 14px; line-height: 1.5; margin-bottom: 15px; height: 42px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-        
-        .btn-actions { 
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
             display: flex;
-            gap: 10px;
+            align-items: center;
+            justify-content: center;
         }
-        
-        .btn-buy, .btn-remove { 
-            flex: 1;
-            padding: 10px; 
-            border: none; 
-            border-radius: 5px; 
-            cursor: pointer; 
-            font-size: 16px; 
-        }
-        
-        .btn-buy { 
-            background: #8b2a2a; color: white; 
-        }
-        .btn-buy:hover { background: #a53f3f; }
-        
-        .btn-remove { 
-            background: #f0f0f0; color: #666;
-        }
-        .btn-remove:hover { background: #e0e0e0; }
         
         .empty-favorites {
             text-align: center;
             padding: 60px 20px;
-            color: #999;
+            color: var(--c-text-light);
             font-size: 18px;
+            font-family: var(--f-mono);
         }
         
         .empty-favorites i {
             font-size: 60px;
             display: block;
             margin-bottom: 20px;
-            color: #ddd;
+            color: var(--c-grid);
+        }
+        
+        .back-link {
+            display: inline-block;
+            padding: 10px 16px;
+            background: #fff;
+            color: var(--c-primary);
+            text-decoration: none;
+            border: 1px solid var(--c-primary);
+            border-radius: 4px;
+            transition: 0.3s;
+            width: fit-content;
+            font-family: var(--f-mono);
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        
+        .back-link:hover {
+            background: var(--c-primary);
+            color: white;
+        }
+        
+        .floating-cart {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: var(--c-primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        .floating-cart:hover {
+            transform: scale(1.1);
+            background: var(--c-accent);
+        }
+        .cart-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff4757;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main-wrapper { 
+                margin-left: 0; 
+                grid-template-columns: 1fr; 
+                grid-template-areas:
+                    "top-bar"
+                    "hero"
+                    "content";
+            }
+            .favorites-container {
+                padding: 20px;
+            }
+            .floating-cart { width: 50px; height: 50px; font-size: 20px; }
         }
     </style>
 </head>
 <body>
-
-    <nav class="navbar">
-        <div style="font-size: 22px; font-weight: bold; font-family: '楷体';">🏛️ 冀遗筑梦</div>
-        <div class="nav-links" id="auth-section">
-            <!-- JS填充 -->
+    <div class="floating-cart" onclick="window.location.href='cart.html'">
+        <i class="fa fa-shopping-cart"></i>
+        <div class="cart-count" id="floatingCartCount">0</div>
+    </div>
+    
+    <aside class="sidebar">
+        <div class="brand-vertical">冀遗筑梦</div>
+        <div class="time-ruler">
+            <div class="dynasty-mark">SUI</div>
+            <div class="dynasty-mark active">TANG</div>
+            <div class="dynasty-mark">SONG</div>
+            <div class="dynasty-mark">MING</div>
+            <div class="dynasty-mark">QING</div>
         </div>
-    </nav>
-
-    <div class="container">
-        <div class="page-title">
-            <h2>我的收藏</h2>
-            <p>您收藏的非遗宝贝</p>
+        <div class="social-links">
+            <i class="fa fa-weixin" title="AR小程序"></i>
+            <i class="fa fa-weibo"></i>
         </div>
+    </aside>
 
-        <div class="product-grid" id="favorites-list"></div>
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="search-minimal">
+                <input type="text" id="search-input" placeholder="SEARCH...">
+                <button class="search-btn"><i class="fa fa-search" aria-hidden="true"></i></button>
+            </div>
+            <div class="user-actions" id="auth-section">
+                <!-- JS填充 -->
+            </div>
+        </header>
         
-        <div class="empty-favorites" id="empty-favorites" style="display: none;">
-            <i>❤️</i>
-            <p>您的收藏夹还是空的<br>快去首页发现喜欢的非遗宝贝吧！</p>
-            <a href="index.html" style="display: inline-block; margin-top: 20px; padding: 10px 20px; background: #8b2a2a; color: white; text-decoration: none; border-radius: 5px;">前往首页</a>
-        </div>
+        <section style="grid-area: hero; padding: 40px 60px;">
+            <h1 style="font-size: 42px; margin-bottom: 10px;">我的收藏</h1>
+            <div style="font-family: var(--f-mono); color: var(--c-accent); font-size: 14px; margin-bottom: 20px;">MY FAVORITES</div>
+        </section>
+
+        <main class="favorites-container">
+            <a href="index.html" class="back-link">← 返回首页</a>
+            
+            <div class="favorites-header">
+                <h2 class="favorites-title">收藏的商品</h2>
+            </div>
+            
+            <div id="favorites-grid" class="product-grid">
+                <!-- 收藏项目将通过JS动态加载 -->
+            </div>
+        </main>
     </div>
 
     <script>
         // 设置API基础URL，以便在部署时调整
         const isDeployed = window.location.hostname.includes('onrender.com');
-        // 修改为实际的后端服务地址
-        const API_BASE = isDeployed ? 'https://jiyizhumeng.onrender.com' : 'http://localhost:3000';
-        
+        const API_BASE = isDeployed ? 'https://jiyi-zhumeng.onrender.com' : 'http://localhost:3000';
+
         window.onload = function() {
             checkLoginStatus();
             loadFavorites();
+            initFloatingCart();
         };
 
+        // 检查登录状态
         function checkLoginStatus() {
-            const user = localStorage.getItem('currentUser');
-            const authSection = document.getElementById('auth-section');
-            if (user) {
-                authSection.innerHTML = `
-                    <span>欢迎, ${user}</span>
-                    <a href="cart.html">🛒 购物车</a>
-                    <a href="favorites.html">❤️ 收藏</a>
-                    <a href="index.html">首页</a>
-                    <a onclick="logout()">退出</a>
-                `;
-            } else {
-                alert('请先登录以查看收藏');
-                window.location.href = 'login.html';
-            }
-        }
-
-        function logout() {
-            localStorage.removeItem('currentUser');
-            window.location.href = 'login.html';
-        }
-
-        async function loadFavorites() {
-            const user = localStorage.getItem('currentUser');
-            if (!user) {
-                window.location.href = 'login.html';
-                return;
-            }
-
             try {
-                const res = await fetch(`${API_BASE}/api/favorites?username=${user}`);
-                const favorites = await res.json();
-                
-                const favoritesList = document.getElementById('favorites-list');
-                const emptyFavorites = document.getElementById('empty-favorites');
-                
-                if (favorites.length === 0) {
-                    favoritesList.innerHTML = '';
-                    emptyFavorites.style.display = 'block';
+                const user = localStorage.getItem('currentUser');
+                const authSection = document.getElementById('auth-section');
+                if (user) {
+                    authSection.innerHTML = `
+                        <a href="profile.html">${user}</a>
+                        <a href="javascript:logout()">退出</a>
+                    `;
+                } else {
+                    authSection.innerHTML = `
+                        <a href="login.html">登录</a>
+                        <a href="register.html">注册</a>
+                    `;
+                }
+            } catch (e) {
+                console.warn('无法访问localStorage，可能是隐私模式');
+            }
+        }
+
+        // 初始化浮动购物车
+        async function initFloatingCart() {
+            try {
+                const user = localStorage.getItem('currentUser');
+                if(user) {
+                    const res = await fetch(`${API_BASE}/api/cart?username=${user}`);
+                    const cartItems = await res.json();
+                    document.getElementById('floatingCartCount').textContent = cartItems.length;
+                }
+            } catch (e) {
+                console.error('获取购物车信息失败:', e);
+            }
+        }
+
+        // 登出
+        function logout() {
+            try {
+                localStorage.removeItem('currentUser');
+            } catch (e) {
+                console.warn('无法访问localStorage');
+            }
+            window.location.reload();
+        }
+
+        // 加载收藏
+        async function loadFavorites() {
+            try {
+                const user = localStorage.getItem('currentUser');
+                if (!user) {
+                    alert('请先登录！');
+                    window.location.href = 'login.html';
                     return;
                 }
-                
-                emptyFavorites.style.display = 'none';
-                favoritesList.innerHTML = '';
 
-                favorites.forEach((product, index) => {
-                    // 修复图片路径处理逻辑
-                    let imgSrc = product.img;
-                    if (product.img.startsWith('images/')) {
-                        imgSrc = `/${product.img}`;
+                const res = await fetch(`${API_BASE}/api/favorites?username=${user}`);
+                const favoriteItems = await res.json();
+
+                const favoritesGrid = document.getElementById('favorites-grid');
+
+                if (favoriteItems.length === 0) {
+                    favoritesGrid.innerHTML = `
+                        <div class="empty-favorites">
+                            <i class="fa fa-heart-o"></i>
+                            <p>暂无收藏商品</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let favoritesHTML = '';
+
+                favoriteItems.forEach(item => {
+                    // 处理图片路径
+                    let imgSrc = item.img || '';
+                    if (imgSrc) {
+                        const imgName = imgSrc.split('/').pop();
+                        if (/(jpg|jpeg|png|gif|webp)$/i.test(imgName)) {
+                            imgSrc = `${API_BASE}/images/${imgName}`;
+                        } else {
+                            imgSrc = `https://placehold.co/400x400/E0DED9/2F4842?text=${encodeURIComponent(item.name)}`;
+                        }
+                    } else {
+                        imgSrc = `https://placehold.co/400x400/E0DED9/2F4842?text=${encodeURIComponent(item.name)}`;
                     }
-                    
-                    favoritesList.innerHTML += `
-                        <div class="product-card">
-                            <div class="favorite-icon" onclick="removeFromFavorites(${product.id}, ${index})">❤️</div>
-                            <img src="${imgSrc}" class="product-img" onerror="this.src='https://placehold.co/300x200?text=No+Image'" onclick="window.location.href='product-detail.html?id=${product.id}'" style="cursor: pointer;">
-                            <div class="card-body">
-                                <div class="product-name" onclick="window.location.href='product-detail.html?id=${product.id}'" style="cursor: pointer;">${product.name}</div>
-                                <div class="product-price">¥${product.price}</div>
-                                <div class="product-desc">${product.desc}</div>
-                                <div class="btn-actions">
-                                    <button class="btn-buy" onclick="addToCart(${index})">加入购物车</button>
-                                    <button class="btn-remove" onclick="removeFromFavorites(${product.id}, ${index})">移除</button>
+
+                    favoritesHTML += `
+                        <div class="product-card" onclick="location.href='product-detail.html?id=${item.id}'">
+                            <div class="p-image-wrap">
+                                <img src="${imgSrc}" class="p-img" alt="${item.name}" 
+                                     onerror="this.onerror=null;this.src='https://placehold.co/400x400/E0DED9/2F4842?text=NO+IMAGE';">
+                                <div class="p-tag">NO.${item.id.toString().padStart(3, '0')}</div>
+                                <div class="favorite-icon" onclick="event.stopPropagation(); removeFromFavorites(${item.id})">
+                                    <i class="fa fa-heart"></i>
                                 </div>
                             </div>
+                            <div class="p-info">
+                                <div>
+                                    <h3 class="p-title">${item.name}</h3>
+                                    <div class="p-sub">${item.category || '未分类'}</div>
+                                </div>
+                                <div class="p-price">¥${item.price}</div>
+                            </div>
+                            <button class="btn-add-cart" onclick="event.stopPropagation(); addToCart(${item.id})">加入购物车</button>
                         </div>
                     `;
                 });
+
+                favoritesGrid.innerHTML = favoritesHTML;
             } catch (err) {
                 console.error('加载收藏失败:', err);
+                document.getElementById('favorites-grid').innerHTML = `
+                    <div class="error-msg">加载失败，请稍后重试</div>
+                `;
             }
         }
 
-        async function removeFromFavorites(productId, index) {
-            const user = localStorage.getItem('currentUser');
-            if (!user) {
-                window.location.href = 'login.html';
-                return;
-            }
-
+        // 从收藏中移除商品
+        async function removeFromFavorites(productId) {
             try {
+                const user = localStorage.getItem('currentUser');
+                if (!user) {
+                    alert('请先登录！');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
                 const res = await fetch(`${API_BASE}/api/favorites/remove`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username: user, productId: productId })
                 });
-                const data = await res.json();
-                
-                if(data.success) {
-                    loadFavorites();
+
+                if (res.ok) {
+                    loadFavorites(); // 重新加载收藏列表
+                } else {
+                    alert('取消收藏失败');
                 }
-            } catch(e) {
-                console.error('移除收藏失败:', e);
+            } catch (err) {
+                console.error('取消收藏失败:', err);
+                alert('取消收藏失败');
             }
         }
 
-        async function addToCart(index) {
-            const user = localStorage.getItem('currentUser');
-            if(!user) {
-                alert('请先登录后再购买！');
-                window.location.href = 'login.html';
-                return;
-            }
-
-            // 获取当前显示的收藏商品列表
+        // 添加到购物车
+        async function addToCart(productId) {
             try {
-                const res = await fetch(`${API_BASE}/api/favorites?username=${user}`);
-                const favorites = await res.json();
-                const product = favorites[index];
+                const user = localStorage.getItem('currentUser');
+                if (!user) {
+                    alert('请先登录！');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                // 获取商品信息
+                const res = await fetch(`${API_BASE}/api/products/${productId}`);
+                if (!res.ok) {
+                    throw new Error('获取商品信息失败');
+                }
                 
+                const product = await res.json();
+
                 const cartRes = await fetch(`${API_BASE}/api/cart/add`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: user, product: product })
+                    body: JSON.stringify({ 
+                        username: user, 
+                        product: product
+                    })
                 });
+                
                 const data = await cartRes.json();
-                if(data.success) {
-                    alert(`✅ [${product.name}] 已加入购物车！`);
+                
+                if (data.success) {
+                    initFloatingCart(); // 更新购物车数量
+                    alert('✅ [' + product.name + '] 已加入购物车！');
+                } else {
+                    alert('添加失败: ' + (data.message || '未知错误'));
                 }
-            } catch(e) {
-                alert('添加失败');
+            } catch (err) {
+                console.error('添加到购物车失败:', err);
+                alert('网络错误，请稍后重试');
             }
         }
     </script>
 </body>
-</html> 
+</html>

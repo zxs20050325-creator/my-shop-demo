@@ -3,55 +3,443 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>登录 - 云端商城</title>
+    <title>用户登录 - 冀遗筑梦</title>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <style>
-        body { background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: '微软雅黑'; }
-        .card { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; }
-        button { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
-        button:hover { background: #0056b3; }
-        .link { text-align: center; margin-top: 15px; font-size: 14px; }
+        /* ========================================
+           0. 设计系统 (Design System)
+           ======================================== */
+        :root {
+            --c-primary: #2F4842;    /* 青黛 - 文字/主调 */
+            --c-accent: #C1A268;     /* 鎏金 - 强调/按钮 */
+            --c-bg: #F2F0EB;         /* 宣纸灰 - 背景 */
+            --c-grid: #E0DED9;       /* 网格线 */
+            --c-text-light: #8A9A96; /* 辅助文字 */
+            --f-serif: 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+            --f-mono: 'Courier New', Courier, monospace;
+            --sidebar-width: 80px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background-color: var(--c-bg);
+            color: var(--c-primary);
+            font-family: var(--f-serif);
+            overflow-x: hidden;
+            background-image: 
+                linear-gradient(var(--c-grid) 1px, transparent 1px),
+                linear-gradient(90deg, var(--c-grid) 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: center top;
+        }
+        a { text-decoration: none; color: inherit; }
+        button { font-family: inherit; }
+        
+        .sidebar {
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            width: var(--sidebar-width);
+            background: #fff;
+            border-right: 1px solid var(--c-primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 40px 0;
+            z-index: 1000;
+        }
+        .brand-vertical {
+            writing-mode: vertical-rl;
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: 8px;
+            color: var(--c-primary);
+            border: 2px solid var(--c-primary);
+            padding: 15px 8px;
+        }
+        .time-ruler {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 40px;
+            position: relative;
+        }
+        .time-ruler::before {
+            content: '';
+            position: absolute;
+            top: 20px; bottom: 20px; left: 50%;
+            width: 1px; background: var(--c-grid);
+            transform: translateX(-50%);
+        }
+        .dynasty-mark {
+            font-family: var(--f-mono);
+            font-size: 12px;
+            background: #fff;
+            padding: 4px;
+            z-index: 2;
+            cursor: pointer;
+            transition: 0.3s;
+            color: var(--c-text-light);
+        }
+        .dynasty-mark:hover, .dynasty-mark.active {
+            color: var(--c-primary);
+            font-weight: bold;
+            transform: scale(1.2);
+        }
+        .social-links i {
+            display: block; margin-top: 20px;
+            color: var(--c-primary); opacity: 0.5; cursor: pointer;
+            transition: 0.3s;
+        }
+        .social-links i:hover { opacity: 1; transform: translateY(-3px); }
+        
+        .main-wrapper {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            grid-template-rows: auto auto 1fr;
+            grid-template-areas:
+                "top-bar top-bar"
+                "hero hero"
+                "filter content";
+        }
+        
+        .top-bar {
+            grid-area: top-bar;
+            padding: 30px 60px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 40px;
+        }
+        .search-minimal {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--c-primary);
+            padding-bottom: 5px;
+        }
+        .search-minimal input {
+            background: transparent; border: none; outline: none;
+            width: 150px;
+            font-family: var(--f-mono);
+            font-size: 14px;
+            color: var(--c-primary);
+            text-align: right;
+        }
+        .search-minimal input::placeholder { color: var(--c-text-light); font-style: italic;}
+        .search-btn { background: none; border: none; cursor: pointer; margin-left: 10px; }
+        .user-actions {
+            font-family: var(--f-mono);
+            font-size: 12px;
+            margin-left: 20px;
+            display: flex;
+            gap: 20px;
+        }
+        .user-actions a {
+            position: relative;
+        }
+        .user-actions a::after {
+            content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 1px;
+            background: var(--c-accent); transition: 0.3s;
+        }
+        .user-actions a:hover::after { width: 100%; }
+        
+        .login-container {
+            grid-area: content;
+            padding: 40px 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .login-form {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border: 1px solid var(--c-grid);
+        }
+        
+        .form-title {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 24px;
+            color: var(--c-primary);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--c-primary);
+            font-family: var(--f-mono);
+            font-size: 14px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--c-grid);
+            border-radius: 4px;
+            font-size: 16px;
+            color: var(--c-primary);
+            background: #fafafa;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--c-accent);
+            background: white;
+        }
+        
+        .form-button {
+            width: 100%;
+            padding: 12px;
+            background: var(--c-primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-family: var(--f-mono);
+        }
+        
+        .form-button:hover {
+            background: var(--c-accent);
+        }
+        
+        .form-footer {
+            text-align: center;
+            margin-top: 20px;
+            color: var(--c-text-light);
+            font-family: var(--f-mono);
+            font-size: 14px;
+        }
+        
+        .form-footer a {
+            color: var(--c-accent);
+            text-decoration: none;
+        }
+        
+        .back-link {
+            display: inline-block;
+            padding: 10px 16px;
+            background: #fff;
+            color: var(--c-primary);
+            text-decoration: none;
+            border: 1px solid var(--c-primary);
+            border-radius: 4px;
+            transition: 0.3s;
+            width: fit-content;
+            font-family: var(--f-mono);
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        
+        .back-link:hover {
+            background: var(--c-primary);
+            color: white;
+        }
+        
+        .floating-cart {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: var(--c-primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        .floating-cart:hover {
+            transform: scale(1.1);
+            background: var(--c-accent);
+        }
+        .cart-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff4757;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main-wrapper { 
+                margin-left: 0; 
+                grid-template-columns: 1fr; 
+                grid-template-areas:
+                    "top-bar"
+                    "hero"
+                    "content";
+            }
+            .login-container {
+                padding: 20px;
+            }
+            .login-form {
+                padding: 30px;
+            }
+            .floating-cart { width: 50px; height: 50px; font-size: 20px; }
+        }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h2 style="text-align: center; margin-bottom: 20px;">用户登录</h2>
-        <input type="text" id="username" placeholder="请输入用户名">
-        <input type="password" id="password" placeholder="请输入密码">
-        <button onclick="handleLogin()">登录</button>
-        <div class="link">
-            还没有账号？ <a href="register.html">去注册</a> | <a href="index.html">返回首页</a>
+    <div class="floating-cart" onclick="window.location.href='cart.html'">
+        <i class="fa fa-shopping-cart"></i>
+        <div class="cart-count" id="floatingCartCount">0</div>
+    </div>
+    
+    <aside class="sidebar">
+        <div class="brand-vertical">冀遗筑梦</div>
+        <div class="time-ruler">
+            <div class="dynasty-mark">SUI</div>
+            <div class="dynasty-mark active">TANG</div>
+            <div class="dynasty-mark">SONG</div>
+            <div class="dynasty-mark">MING</div>
+            <div class="dynasty-mark">QING</div>
         </div>
+        <div class="social-links">
+            <i class="fa fa-weixin" title="AR小程序"></i>
+            <i class="fa fa-weibo"></i>
+        </div>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="search-minimal">
+                <input type="text" id="search-input" placeholder="SEARCH...">
+                <button class="search-btn"><i class="fa fa-search" aria-hidden="true"></i></button>
+            </div>
+            <div class="user-actions" id="auth-section">
+                <a href="register.html">注册</a>
+            </div>
+        </header>
+        
+        <section style="grid-area: hero; padding: 40px 60px;">
+            <h1 style="font-size: 42px; margin-bottom: 10px;">用户登录</h1>
+            <div style="font-family: var(--f-mono); color: var(--c-accent); font-size: 14px; margin-bottom: 20px;">USER LOGIN</div>
+        </section>
+
+        <main class="login-container">
+            <a href="index.html" class="back-link">← 返回首页</a>
+            
+            <form class="login-form" onsubmit="login(event)">
+                <h2 class="form-title">登录账户</h2>
+                
+                <div class="form-group">
+                    <label class="form-label" for="username">用户名</label>
+                    <input type="text" id="username" class="form-input" placeholder="请输入用户名" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="password">密码</label>
+                    <input type="password" id="password" class="form-input" placeholder="请输入密码" required>
+                </div>
+                
+                <button type="submit" class="form-button">登录</button>
+                
+                <div class="form-footer">
+                    还没有账户？ <a href="register.html">立即注册</a>
+                </div>
+            </form>
+        </main>
     </div>
 
     <script>
         // 设置API基础URL，以便在部署时调整
         const isDeployed = window.location.hostname.includes('onrender.com');
-        // 修改为实际的后端服务地址
         const API_BASE = isDeployed ? 'https://jiyi-zhumeng.onrender.com' : 'http://localhost:3000';
-        
-        async function handleLogin() {
+
+        window.onload = function() {
+            checkLoginStatus();
+        };
+
+        // 检查登录状态
+        function checkLoginStatus() {
+            try {
+                const user = localStorage.getItem('currentUser');
+                const authSection = document.getElementById('auth-section');
+                if (user) {
+                    authSection.innerHTML = `
+                        <a href="profile.html">${user}</a>
+                        <a href="javascript:logout()">退出</a>
+                    `;
+                } else {
+                    authSection.innerHTML = `
+                        <a href="login.html">登录</a>
+                        <a href="register.html">注册</a>
+                    `;
+                }
+            } catch (e) {
+                console.warn('无法访问localStorage，可能是隐私模式');
+            }
+        }
+
+        // 登出
+        function logout() {
+            try {
+                localStorage.removeItem('currentUser');
+            } catch (e) {
+                console.warn('无法访问localStorage');
+            }
+            window.location.reload();
+        }
+
+        // 登录
+        async function login(event) {
+            event.preventDefault();
+            
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
 
             try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                
                 const res = await fetch(`${API_BASE}/api/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
+                    body: JSON.stringify({ username, password }),
+                    signal: controller.signal
                 });
+                clearTimeout(timeoutId);
+                
                 const data = await res.json();
                 
                 if (data.success) {
-                    // 登录成功，把用户名存在浏览器里
-                    localStorage.setItem('currentUser', data.username);
+                    localStorage.setItem('currentUser', username);
                     alert('登录成功！');
-                    window.location.href = 'index.html'; // 跳转回首页
+                    window.location.href = 'index.html';
                 } else {
-                    alert('登录失败: ' + data.message);
+                    alert('登录失败: ' + (data.message || '用户名或密码错误'));
                 }
             } catch (err) {
-                alert('网络错误');
+                console.error('登录失败:', err);
+                alert('网络错误，请稍后重试');
             }
         }
     </script>

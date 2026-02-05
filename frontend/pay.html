@@ -1,108 +1,530 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>收银台 - 冀遗筑梦</title>
+    <title>支付页面 - 冀遗筑梦</title>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: '微软雅黑'; }
-        body { background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        
-        .pay-card { 
-            background: white; width: 400px; padding: 30px; 
-            border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center;
+        /* ========================================
+           0. 设计系统 (Design System)
+           ======================================== */
+        :root {
+            --c-primary: #2F4842;    /* 青黛 - 文字/主调 */
+            --c-accent: #C1A268;     /* 鎏金 - 强调/按钮 */
+            --c-bg: #F2F0EB;         /* 宣纸灰 - 背景 */
+            --c-grid: #E0DED9;       /* 网格线 */
+            --c-text-light: #8A9A96; /* 辅助文字 */
+            --f-serif: 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+            --f-mono: 'Courier New', Courier, monospace;
+            --sidebar-width: 80px;
         }
-        .header { border-bottom: 1px solid #eee; padding-bottom: 20px; margin-bottom: 20px; }
-        .logo { font-size: 20px; font-weight: bold; color: #8b2a2a; margin-bottom: 5px; }
-        .amount-title { color: #666; font-size: 14px; }
-        .amount { font-size: 36px; font-weight: bold; color: #333; margin: 10px 0; }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background-color: var(--c-bg);
+            color: var(--c-primary);
+            font-family: var(--f-serif);
+            overflow-x: hidden;
+            background-image: 
+                linear-gradient(var(--c-grid) 1px, transparent 1px),
+                linear-gradient(90deg, var(--c-grid) 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: center top;
+        }
+        a { text-decoration: none; color: inherit; }
+        button { font-family: inherit; }
         
-        .qrcode-box { 
-            background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px dashed #ccc;
+        .sidebar {
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            width: var(--sidebar-width);
+            background: #fff;
+            border-right: 1px solid var(--c-primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 40px 0;
+            z-index: 1000;
+        }
+        .brand-vertical {
+            writing-mode: vertical-rl;
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: 8px;
+            color: var(--c-primary);
+            border: 2px solid var(--c-primary);
+            padding: 15px 8px;
+        }
+        .time-ruler {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 40px;
+            position: relative;
+        }
+        .time-ruler::before {
+            content: '';
+            position: absolute;
+            top: 20px; bottom: 20px; left: 50%;
+            width: 1px; background: var(--c-grid);
+            transform: translateX(-50%);
+        }
+        .dynasty-mark {
+            font-family: var(--f-mono);
+            font-size: 12px;
+            background: #fff;
+            padding: 4px;
+            z-index: 2;
+            cursor: pointer;
+            transition: 0.3s;
+            color: var(--c-text-light);
+        }
+        .dynasty-mark:hover, .dynasty-mark.active {
+            color: var(--c-primary);
+            font-weight: bold;
+            transform: scale(1.2);
+        }
+        .social-links i {
+            display: block; margin-top: 20px;
+            color: var(--c-primary); opacity: 0.5; cursor: pointer;
+            transition: 0.3s;
+        }
+        .social-links i:hover { opacity: 1; transform: translateY(-3px); }
+        
+        .main-wrapper {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            grid-template-rows: auto auto 1fr;
+            grid-template-areas:
+                "top-bar top-bar"
+                "hero hero"
+                "filter content";
         }
         
-        /* 这里的 object-fit: contain 保证你的二维码不管长宽比是多少，都能完整显示 */
-        .qrcode-img { width: 200px; height: 200px; object-fit: contain; }
+        .top-bar {
+            grid-area: top-bar;
+            padding: 30px 60px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 40px;
+        }
+        .search-minimal {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--c-primary);
+            padding-bottom: 5px;
+        }
+        .search-minimal input {
+            background: transparent; border: none; outline: none;
+            width: 150px;
+            font-family: var(--f-mono);
+            font-size: 14px;
+            color: var(--c-primary);
+            text-align: right;
+        }
+        .search-minimal input::placeholder { color: var(--c-text-light); font-style: italic;}
+        .search-btn { background: none; border: none; cursor: pointer; margin-left: 10px; }
+        .user-actions {
+            font-family: var(--f-mono);
+            font-size: 12px;
+            margin-left: 20px;
+            display: flex;
+            gap: 20px;
+        }
+        .user-actions a {
+            position: relative;
+        }
+        .user-actions a::after {
+            content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 1px;
+            background: var(--c-accent); transition: 0.3s;
+        }
+        .user-actions a:hover::after { width: 100%; }
         
-        .tips { font-size: 12px; color: #888; margin-top: 10px; }
+        .pay-container {
+            grid-area: content;
+            padding: 40px 60px;
+            display: flex;
+            flex-direction: column;
+        }
         
-        .btn-group { display: flex; gap: 10px; }
-        .btn { flex: 1; padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
-        .btn-confirm { background: #07c160; color: white; } /* 微信绿 */
-        .btn-confirm:hover { background: #06ad56; }
-        .btn-cancel { background: #eee; color: #666; }
+        .pay-header {
+            margin-bottom: 30px;
+        }
+        
+        .pay-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--c-primary);
+            margin-bottom: 10px;
+        }
+        
+        .order-summary {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border: 1px solid var(--c-grid);
+        }
+        
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--c-grid);
+        }
+        
+        .order-total {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px 0;
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--c-accent);
+        }
+        
+        .payment-methods {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border: 1px solid var(--c-grid);
+        }
+        
+        .method-option {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border: 1px solid var(--c-grid);
+            border-radius: 4px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        
+        .method-option:hover, .method-option.selected {
+            border-color: var(--c-accent);
+            background-color: rgba(193, 162, 104, 0.05);
+        }
+        
+        .method-option input {
+            margin-right: 10px;
+        }
+        
+        .pay-button {
+            background: var(--c-primary);
+            color: white;
+            border: none;
+            padding: 16px 30px;
+            font-size: 18px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-family: var(--f-mono);
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .pay-button:hover {
+            background: var(--c-accent);
+        }
+        
+        .back-link {
+            display: inline-block;
+            padding: 10px 16px;
+            background: #fff;
+            color: var(--c-primary);
+            text-decoration: none;
+            border: 1px solid var(--c-primary);
+            border-radius: 4px;
+            transition: 0.3s;
+            width: fit-content;
+            font-family: var(--f-mono);
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        
+        .back-link:hover {
+            background: var(--c-primary);
+            color: white;
+        }
+        
+        .floating-cart {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: var(--c-primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        .floating-cart:hover {
+            transform: scale(1.1);
+            background: var(--c-accent);
+        }
+        .cart-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff4757;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main-wrapper { 
+                margin-left: 0; 
+                grid-template-columns: 1fr; 
+                grid-template-areas:
+                    "top-bar"
+                    "hero"
+                    "content";
+            }
+            .pay-container {
+                padding: 20px;
+            }
+            .floating-cart { width: 50px; height: 50px; font-size: 20px; }
+        }
     </style>
 </head>
 <body>
-
-    <div class="pay-card">
-        <div class="header">
-            <div class="logo">🏛️ 冀遗筑梦 · 收银台</div>
-            <div class="amount-title">订单总额</div>
-            <div class="amount" id="display-amount">¥0.00</div>
+    <div class="floating-cart" onclick="window.location.href='cart.html'">
+        <i class="fa fa-shopping-cart"></i>
+        <div class="cart-count" id="floatingCartCount">0</div>
+    </div>
+    
+    <aside class="sidebar">
+        <div class="brand-vertical">冀遗筑梦</div>
+        <div class="time-ruler">
+            <div class="dynasty-mark">SUI</div>
+            <div class="dynasty-mark active">TANG</div>
+            <div class="dynasty-mark">SONG</div>
+            <div class="dynasty-mark">MING</div>
+            <div class="dynasty-mark">QING</div>
         </div>
-
-        <div class="qrcode-box">
-            <!-- 这里会自动加载你上传的 wx-pay.jpg -->
-            <img src="" id="qr-code" class="qrcode-img" alt="支付二维码">
-            <div class="tips">请使用 微信 扫码支付</div>
-            <div style="font-size:12px; color:#8b2a2a; margin-top:5px;">(扫码后请输入对应金额转账)</div>
+        <div class="social-links">
+            <i class="fa fa-weixin" title="AR小程序"></i>
+            <i class="fa fa-weibo"></i>
         </div>
+    </aside>
 
-        <div class="btn-group">
-            <button class="btn btn-cancel" onclick="history.back()">取消</button>
-            <button class="btn btn-confirm" onclick="finishPayment()">我已支付</button>
-        </div>
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <div class="search-minimal">
+                <input type="text" id="search-input" placeholder="SEARCH...">
+                <button class="search-btn"><i class="fa fa-search" aria-hidden="true"></i></button>
+            </div>
+            <div class="user-actions" id="auth-section">
+                <!-- JS填充 -->
+            </div>
+        </header>
+        
+        <section style="grid-area: hero; padding: 40px 60px;">
+            <h1 style="font-size: 42px; margin-bottom: 10px;">支付页面</h1>
+            <div style="font-family: var(--f-mono); color: var(--c-accent); font-size: 14px; margin-bottom: 20px;">CHECKOUT</div>
+        </section>
+
+        <main class="pay-container">
+            <a href="cart.html" class="back-link">← 返回购物车</a>
+            
+            <div class="pay-header">
+                <h2 class="pay-title">确认订单信息</h2>
+            </div>
+            
+            <div class="order-summary">
+                <h3 style="margin-bottom: 20px; color: var(--c-primary);">订单摘要</h3>
+                <div id="order-items">
+                    <!-- 订单项目将通过JS动态加载 -->
+                </div>
+                <div class="order-total">
+                    <span>总计:</span>
+                    <span id="order-total-price">¥0.00</span>
+                </div>
+            </div>
+            
+            <div class="payment-methods">
+                <h3 style="margin-bottom: 20px; color: var(--c-primary);">选择支付方式</h3>
+                
+                <label class="method-option selected">
+                    <input type="radio" name="payment" value="wechat" checked> 微信支付
+                </label>
+                
+                <label class="method-option">
+                    <input type="radio" name="payment" value="alipay"> 支付宝
+                </label>
+                
+                <label class="method-option">
+                    <input type="radio" name="payment" value="card"> 银行卡
+                </label>
+            </div>
+            
+            <button class="pay-button" onclick="processPayment()">确认支付</button>
+        </main>
     </div>
 
     <script>
-        // 1. 获取网址里传过来的金额
-        const params = new URLSearchParams(window.location.search);
-        const money = params.get('money');
-        const user = localStorage.getItem('currentUser');
+        // 设置API基础URL，以便在部署时调整
+        const isDeployed = window.location.hostname.includes('onrender.com');
+        const API_BASE = isDeployed ? 'https://jiyi-zhumeng.onrender.com' : 'http://localhost:3000';
 
-        // 2. 初始化页面
         window.onload = function() {
-            if(!money || !user) {
-                alert('订单无效');
-                window.location.href = 'index.html';
-                return;
-            }
-            
-            // 显示金额
-            document.getElementById('display-amount').innerText = `¥${money}`;
-            
-            // ================= 关键修改在这里 =================
-            // 指向你在 images 文件夹里上传的 wx-pay.jpg
-            document.getElementById('qr-code').src = 'images/wx-pay.jpg'; 
-            // ================================================
+            checkLoginStatus();
+            loadCartForPayment();
+            initFloatingCart();
         };
 
-        // 3. 点击“我已支付”
-        async function finishPayment() {
+        // 检查登录状态
+        function checkLoginStatus() {
             try {
-                // 调用后端的【结账接口】
-                const res = await fetch('/api/cart/checkout', {
+                const user = localStorage.getItem('currentUser');
+                const authSection = document.getElementById('auth-section');
+                if (user) {
+                    authSection.innerHTML = `
+                        <a href="profile.html">${user}</a>
+                        <a href="javascript:logout()">退出</a>
+                    `;
+                } else {
+                    authSection.innerHTML = `
+                        <a href="login.html">登录</a>
+                        <a href="register.html">注册</a>
+                    `;
+                }
+            } catch (e) {
+                console.warn('无法访问localStorage，可能是隐私模式');
+            }
+        }
+
+        // 初始化浮动购物车
+        async function initFloatingCart() {
+            try {
+                const user = localStorage.getItem('currentUser');
+                if(user) {
+                    const res = await fetch(`${API_BASE}/api/cart?username=${user}`);
+                    const cartItems = await res.json();
+                    document.getElementById('floatingCartCount').textContent = cartItems.length;
+                }
+            } catch (e) {
+                console.error('获取购物车信息失败:', e);
+            }
+        }
+
+        // 登出
+        function logout() {
+            try {
+                localStorage.removeItem('currentUser');
+            } catch (e) {
+                console.warn('无法访问localStorage');
+            }
+            window.location.reload();
+        }
+
+        // 加载购物车用于支付
+        async function loadCartForPayment() {
+            try {
+                const user = localStorage.getItem('currentUser');
+                if (!user) {
+                    alert('请先登录！');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const res = await fetch(`${API_BASE}/api/cart?username=${user}`);
+                const cartItems = await res.json();
+
+                if (cartItems.length === 0) {
+                    alert('购物车为空，无法支付！');
+                    window.location.href = 'cart.html';
+                    return;
+                }
+
+                const orderItemsContainer = document.getElementById('order-items');
+                let totalPrice = 0;
+                let orderHTML = '';
+
+                cartItems.forEach(item => {
+                    const itemPrice = item.price || 0;
+                    totalPrice += itemPrice;
+                    
+                    orderHTML += `
+                        <div class="order-item">
+                            <span>${item.name}</span>
+                            <span>¥${itemPrice}</span>
+                        </div>
+                    `;
+                });
+
+                orderItemsContainer.innerHTML = orderHTML;
+                document.getElementById('order-total-price').textContent = `¥${totalPrice.toFixed(2)}`;
+            } catch (err) {
+                console.error('加载购物车失败:', err);
+                alert('加载购物车失败，请稍后重试');
+            }
+        }
+
+        // 处理支付
+        async function processPayment() {
+            try {
+                const user = localStorage.getItem('currentUser');
+                if (!user) {
+                    alert('请先登录！');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                // 获取总价
+                const totalPrice = document.getElementById('order-total-price').textContent.replace('¥', '');
+                
+                const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
+
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                
+                const res = await fetch(`${API_BASE}/api/cart/checkout`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         username: user, 
-                        totalPrice: money 
-                    })
+                        totalPrice: totalPrice,
+                        paymentMethod: paymentMethod
+                    }),
+                    signal: controller.signal
                 });
+                clearTimeout(timeoutId);
                 
                 const data = await res.json();
                 
                 if (data.success) {
-                    alert('🎉 支付成功！感谢您支持非遗文化！');
-                    window.location.href = 'index.html'; // 支付完回首页
+                    alert('支付成功！');
+                    window.location.href = 'index.html';
                 } else {
-                    alert('支付处理失败，请重试');
+                    alert('支付失败');
                 }
             } catch (err) {
-                console.error(err);
-                alert('网络错误');
+                console.error('支付失败:', err);
+                alert('支付过程中出现错误，请稍后重试');
             }
         }
     </script>
