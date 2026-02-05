@@ -420,93 +420,57 @@
         .product-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr); /* 每行三个商品卡 */
-            gap: 30px; /* 卡片之间的间隔 */
-            perspective: 2500px;
+            gap: 20px; /* 卡片之间的间隔 */
+            flex: 1;
+            perspective: 1500px; /* 增加视距让倾斜更微妙 */
         }
-
-        .box-card {
-            background: #fff;
-            padding: 15px; /* 减少内边距 */
-            border: 1.5px solid #F0F0F0;
+        .product-card {
+            background: transparent;
             position: relative;
+            transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); /* 平滑过渡 */
+            cursor: pointer;
             transform-style: preserve-3d;
-            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease, opacity 0.5s ease;
-            opacity: 0;
-            transform: translateY(60px);
-        }
-        .box-card.revealed {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .box-card:hover {
-            border-color: var(--c-accent);
-            box-shadow: 0 25px 50px rgba(0,0,0,0.08);
+            width: calc(33.33% - 20px); /* 每行三个商品卡，留出间隙 */
+            margin-bottom: 40px; /* 行间距 */
         }
 
-        .card-price-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .card-price {
-            font-family: var(--f-mono);
-            font-size: 20px; /* 价格标签从24px减到20px */
-            font-weight: 900;
-            color: var(--c-danger);
-        }
-        .card-cat {
-            font-size: 7px; /* 类别标签从8px减到7px */
-            text-transform: uppercase;
-            color: #AAA;
-            letter-spacing: 2px;
-            border: 1px solid #EEE;
-            padding: 2px 6px;
+        .product-card {
+            width: calc(50% - 20px); /* 将宽度调整为每行两个商品卡 */
         }
 
-        .card-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: #333;
-            height: 40px;
+        .p-image-wrap {
+            height: 240px; /* 调整高度 */
+            background: #fff;
+            position: relative;
             overflow: hidden;
-            line-height: 1.4;
-            margin-bottom: 12px;
+            border: 1px solid transparent;
+            transition: 0.3s;
+            transform: translateZ(10px); /* 让内部元素略微浮起 */
         }
-
-        .btn-reveal {
-            width: 100%;
-            padding: 12px; /* 减少内边距 */
+        .product-card:hover .p-image-wrap {
+            border-color: var(--c-accent);
+            box-shadow: 10px 10px 0 rgba(44, 74, 71, 0.05);
+        }
+        .p-tag {
+            position: absolute;
+            top: 0; left: 0;
             background: var(--c-primary);
             color: #fff;
-            border: none;
+            font-family: var(--f-mono);
             font-size: 10px;
-            font-weight: 900;
-            letter-spacing: 3px;
-            transition: 0.3s;
+            padding: 4px 8px;
+            z-index: 10;
         }
-        .btn-reveal:hover {
-            background: var(--c-accent);
-            letter-spacing: 5px;
-        }
-
-        .btn-show-real {
-            width: 100%;
-            padding: 12px; /* 减少内边距 */
+        .p-blindbox-tag {
+            position: absolute;
+            top: 0; right: 0;
             background: var(--c-accent);
             color: #fff;
-            border: none;
-            font-size: 10px;
-            font-weight: 900;
-            letter-spacing: 3px;
-            transition: 0.3s;
-            margin-top: 6px;
+            font-size: 12px;
+            padding: 4px 8px;
+            writing-mode: vertical-rl;
+            z-index: 10;
         }
-        .btn-show-real:hover {
-            background: var(--c-primary);
-            letter-spacing: 5px;
-        }
-
         .error-msg {
             grid-column: 1 / -1;
             padding: 40px;
