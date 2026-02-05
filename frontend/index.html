@@ -120,17 +120,22 @@
         .box-card .main-img { width: 100%; height: 100%; object-fit: cover; transition: 0.8s cubic-bezier(0.165, 0.84, 0.44, 1); }
         .box-card:hover .main-img { transform: scale(1.1) rotate(2deg); filter: brightness(1.05); }
 
-        .card-price-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; transform: translateZ(45px); }
+        .card-price-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; transform: translateZ(40px); }
         .card-price { font-family: var(--f-mono); font-size: 26px; font-weight: 900; color: var(--c-danger); }
         .card-cat { font-size: 9px; text-transform: uppercase; color: #AAA; letter-spacing: 2px; border: 1px solid #EEE; padding: 2px 6px; }
         
         .card-title { font-size: 16px; font-weight: 700; color: #333; height: 50px; overflow: hidden; line-height: 1.5; margin-bottom: 20px; transform: translateZ(45px); }
         
-        .btn-reveal { width: 100%; padding: 16px; background: var(--c-primary); color: #fff; border: none; font-size: 12px; font-weight: 900; letter-spacing: 3px; transition: 0.3s; margin-bottom: 10px; }
+        .btn-reveal { width: 100%; padding: 16px; background: var(--c-primary); color: #fff; border: none; font-size: 12px; font-weight: 900; letter-spacing: 3px; transition: 0.3s; }
         .btn-reveal:hover { background: var(--c-accent); letter-spacing: 6px; }
         
-        .btn-show-photo { width: 100%; padding: 16px; background: var(--c-accent); color: #fff; border: none; font-size: 12px; font-weight: 900; letter-spacing: 3px; transition: 0.3s; }
-        .btn-show-photo:hover { background: var(--c-primary); letter-spacing: 6px; }
+        .btn-show-real { width: 100%; padding: 16px; background: var(--c-accent); color: #fff; border: none; font-size: 12px; font-weight: 900; letter-spacing: 3px; transition: 0.3s; margin-top: 10px; }
+        .btn-show-real:hover { background: var(--c-primary); letter-spacing: 6px; }
+        
+        .real-photo-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 100; opacity: 0; visibility: hidden; transition: all 0.5s ease; }
+        .real-photo-overlay.show { opacity: 1; visibility: visible; }
+        .real-photo-content { max-width: 90%; max-height: 90%; }
+        .real-photo-content img { max-width: 100%; max-height: 80vh; border: 5px solid white; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
 
         /* [组件：弹窗与抽屉] */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(47, 72, 66, 0.5); backdrop-filter: blur(8px); display: none; justify-content: center; align-items: center; z-index: 6000; }
@@ -263,9 +268,7 @@
             <span style="font-size: 28px; font-weight: 900;">惊喜袋 / BAG</span>
             <button onclick="engine.toggleCart()" style="font-size:30px; background:none; border:none;">&times;</button>
         </div>
-        <div class="cart-items">
-            <p style="text-align:center; margin-top:100px; opacity:0.3;">惊喜袋中尚无遗珍</p>
-        </div>
+        <p style="text-align:center; margin-top:100px; opacity:0.3;">惊喜袋中尚无遗珍</p>
     </div>
 
     <script>
@@ -276,9 +279,6 @@
         class HeritageEngine {
             constructor() {
                 this.state = { cart: 0, series: '01', category: 'all', data: [] };
-                // 检测部署环境并设置API基础URL
-                const isDeployed = window.location.hostname.includes('onrender.com');
-                this.API_BASE = isDeployed ? 'https://jiyi-zhumeng.onrender.com' : 'http://localhost:3000';
                 this.dom = {
                     dot: document.getElementById('cursor-dot'),
                     wash: document.getElementById('cursor-wash'),
@@ -389,165 +389,73 @@
                 this.dom.grid.innerHTML = "";
                 let filtered = this.state.data.filter(it => it.series === this.state.series);
                 if(this.state.category !== 'all') filtered = filtered.filter(it => it.cat === this.state.category);
-                    
-                    filtered.slice(0, 6).forEach((item, index) => {
-                        const card = document.createElement('div');
-                        card.className = 'box-card';
-                        card.innerHTML = `
-                            <div class="card-no">NO.${item.id}</div>
-                            <div class="card-ssr">${item.rarity}</div>
-                            <div class="card-img-gate">
-                                <img src="https://placehold.co/400x500/2F4842/C1A268?text=JIYI+BOX+${this.state.series}" class="main-img" id="main-img-${item.id}">
+                
+                filtered.slice(0, 6).forEach((item, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'box-card';
+                    card.innerHTML = `
+                        <div class="card-no">NO.${item.id}</div>
+                        <div class="card-ssr">${item.rarity}</div>
+                        <div class="card-img-gate">
+                            <img src="https://placehold.co/400x500/2F4842/C1A268?text=JIYI+BOX+${this.state.series}" class="main-img">
+                        </div>
+                        <div class="card-price-row">
+                            <span class="card-price">¥${item.price}</span>
+                            <span class="card-cat">${item.cat}</span>
+                        </div>
+                        <h3 class="card-title">${item.name}</h3>
+                        <div style="position: relative;">
+                            <button class="btn-reveal" onclick="engine.addToBag()">揭晓数字化惊喜</button>
+                            <button class="btn-show-real" onclick="engine.showRealPhoto(this, ${item.series}, ${item.id})">查看真实照片</button>
+                            <div class="real-photo-overlay" id="overlay-${item.id}">
+                                <div class="real-photo-content">
+                                    <img src="https://placehold.co/600x800/2F4842/C1A268?text=真实商品图片-${item.series}-${item.id}" alt="真实商品图片" onerror="this.onerror=null;this.src='https://placehold.co/600x800/E0DED9/2F4842?text=图片加载失败';"/>
+                                </div>
                             </div>
-                            <div class="card-price-row">
-                                <span class="card-price">¥${item.price}</span>
-                                <span class="card-cat">${item.cat}</span>
-                            </div>
-                            <h3 class="card-title">${item.name}</h3>
-                            <button class="btn-reveal" onclick="engine.addToBag(event)">揭晓数字化惊喜</button>
-                            <button class="btn-show-photo" onclick="engine.showRealPhoto(${item.id}, ${this.state.series})">查看真实照片</button>
-                        `;
-                        this.bindTilt(card);
-                        this.dom.grid.appendChild(card);
-                        setTimeout(() => card.classList.add('revealed'), index * 100);
-                    });
-                }
+                        </div>
+                    `;
+                    this.bindTilt(card);
+                    this.dom.grid.appendChild(card);
+                    setTimeout(() => card.classList.add('revealed'), index * 100);
+                });
+            }
 
-                bindTilt(card) {
-                    card.addEventListener('mousemove', (e) => {
-                        const r = card.getBoundingClientRect();
-                        const x = (e.clientX - r.left) / r.width - 0.5;
-                        const y = (e.clientY - r.top) / r.height - 0.5;
-                        card.style.transform = `perspective(1000px) rotateY(${x*20}deg) rotateX(${-y*20}deg) scale(1.05)`;
-                    });
-                    card.addEventListener('mouseleave', () => card.style.transform = `perspective(1000px) rotateY(0) rotateX(0) scale(1)`);
-                }
+            bindTilt(card) {
+                card.addEventListener('mousemove', (e) => {
+                    const r = card.getBoundingClientRect();
+                    const x = (e.clientX - r.left) / r.width - 0.5;
+                    const y = (e.clientY - r.top) / r.height - 0.5;
+                    card.style.transform = `perspective(1000px) rotateY(${x*20}deg) rotateX(${-y*20}deg) scale(1.05)`;
+                });
+                card.addEventListener('mouseleave', () => card.style.transform = `perspective(1000px) rotateY(0) rotateX(0) scale(1)`);
+            }
 
-                toggleLogin() { this.dom.login.style.display = (this.dom.login.style.display === 'flex') ? 'none' : 'flex'; }
-                toggleCart() { 
-                    this.dom.cart.classList.toggle('open'); 
-                    if(this.dom.cart.classList.contains('open')) {
-                        this.renderCart(); // 打开购物车时更新显示
-                    }
-                }
-                
-                addToBag(event) {
-                    // 获取当前点击的卡片信息
-                    const card = event.target.closest('.box-card');
-                    const cardNo = card.querySelector('.card-no').textContent;
-                    const cardTitle = card.querySelector('.card-title').textContent;
-                    const cardPrice = card.querySelector('.card-price').textContent;
-                    const cardCat = card.querySelector('.card-cat').textContent;
-                    const cardImg = card.querySelector('.main-img').src;
+            toggleLogin() { this.dom.login.style.display = (this.dom.login.style.display === 'flex') ? 'none' : 'flex'; }
+            toggleCart() { this.dom.cart.classList.toggle('open'); }
+            addToBag() {
+                this.state.cart++;
+                document.getElementById('cartBadge').textContent = this.state.cart;
+                alert("遗珍已入袋！");
+            }
+            
+            showRealPhoto(element, series, id) {
+                const overlay = document.getElementById(`overlay-${id}`);
+                if(overlay) {
+                    overlay.classList.toggle('show');
                     
-                    // 创建商品对象
-                    const product = {
-                        id: Date.now(), // 使用时间戳作为唯一ID
-                        name: cardTitle,
-                        price: cardPrice.replace('¥', ''), // 去掉¥符号，只保留数字
-                        category: cardCat,
-                        image: cardImg
-                    };
-                    
-                    // 将商品添加到购物车数组
-                    if(!this.state.cartItems) {
-                        this.state.cartItems = [];
-                    }
-                    this.state.cartItems.push(product);
-                    
-                    // 更新购物车计数
-                    this.state.cart = this.state.cartItems.length;
-                    document.getElementById('cartBadge').textContent = this.state.cart;
-                    alert("遗珍已入袋！");
-                }
-                
-                renderCart() {
-                    const cartContainer = this.dom.cart.querySelector('.cart-items');
-                    if(!this.state.cartItems || this.state.cartItems.length === 0) {
-                        cartContainer.innerHTML = '<p style="text-align:center; margin-top:100px; opacity:0.3;">惊喜袋中尚无遗珍</p>';
-                        return;
-                    }
-                    
-                    let cartHTML = '';
-                    this.state.cartItems.forEach((item, index) => {
-                        cartHTML += `
-                        <div class="cart-item" style="display:flex; align-items:center; padding:15px; border-bottom:1px solid #eee;">
-                            <img src="${item.image}" style="width:60px; height:60px; object-fit:cover; margin-right:15px;" />
-                            <div style="flex:1;">
-                                <div style="font-weight:bold;">${item.name}</div>
-                                <div style="font-size:12px; color:#888;">¥${item.price}</div>
-                            </div>
-                            <button onclick="engine.removeFromCart(${index})" style="background:none; border:none; font-size:18px; cursor:pointer;">×</button>
-                        </div>`;
-                    });
-                    
-                    cartContainer.innerHTML = cartHTML;
-                }
-                
-                removeFromCart(index) {
-                    this.state.cartItems.splice(index, 1);
-                    this.state.cart = this.state.cartItems.length;
-                    document.getElementById('cartBadge').textContent = this.state.cart;
-                    this.renderCart(); // 重新渲染购物车
-                }
-                
-                async showRealPhoto(itemId, series) {
-                    // 根据itemId确定真实的图片路径
-                    let photoNum = itemId % 12; // 获取0-11之间的数值
-                    if(photoNum === 0) photoNum = 12; // 如果是12的倍数，则为12
-                    
-                    let photoPath;
-                    if(photoNum <= 6) {
-                        photoPath = `/images/00${photoNum}.jpg`;
-                        if(photoNum < 10) photoPath = `/images/00${photoNum}.jpg`;
-                    } else {
-                        // 对于7-12的商品，使用101-106的编号
-                        const num = photoNum - 6 + 100;
-                        photoPath = `/images/${num}.jpg`;
-                    }
-                    
-                    const imgElement = document.getElementById(`main-img-${itemId}`);
-                    
-                    // 显示加载动画
-                    imgElement.style.opacity = '0.5';
-                    imgElement.style.transition = 'opacity 0.3s';
-                    
-                    try {
-                        // 使用API_BASE构建完整URL
-                        const fullUrl = `${this.API_BASE}${photoPath}`;
-                        
-                        // 创建一个新的Image对象来预加载图片
-                        const tempImg = new Image();
-                        tempImg.src = fullUrl;
-                        
-                        tempImg.onload = () => {
-                            // 图片加载完成后，替换原图片
-                            imgElement.src = fullUrl;
-                            
-                            // 添加动画效果
-                            imgElement.style.transform = 'scale(1.1)';
-                            setTimeout(() => {
-                                imgElement.style.opacity = '1';
-                                imgElement.style.transform = 'scale(1)';
-                            }, 100);
-                        };
-                        
-                        tempImg.onerror = () => {
-                            // 如果图片加载失败，恢复原图片并提示
-                            alert('真实照片加载失败，使用默认图片');
-                            imgElement.src = 'https://placehold.co/400x500/2F4842/C1A268?text=JIYI+BOX+' + series;
-                            imgElement.style.opacity = '1';
-                        };
-                    } catch (error) {
-                        console.error('加载真实照片时发生错误:', error);
-                        imgElement.src = 'https://placehold.co/400x500/2F4842/C1A268?text=JIYI+BOX+' + series;
-                        imgElement.style.opacity = '1';
+                    // 如果是第一次打开，加载真实图片
+                    if(overlay.classList.contains('show')) {
+                        const img = overlay.querySelector('img');
+                        // 构造真实的图片路径，这里假设后端有12张图片，命名格式为 series-number.jpg
+                        const photoNumber = ((id - 1) % 12) + 1; // 循环使用1-12的图片编号
+                        img.src = `./images/${series}-${photoNumber}.jpg`; // 假设图片存放在images文件夹下
                     }
                 }
             }
+        }
 
-            const engine = new HeritageEngine();
-        </script>
+        const engine = new HeritageEngine();
+    </script>
 </body>
 <<<<<<< HEAD
 </html>
