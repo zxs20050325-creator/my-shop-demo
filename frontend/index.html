@@ -72,13 +72,12 @@
         /* [5. 顶部功能条] */
         .main-content { margin-left: var(--sidebar-width); position: relative; z-index: 100; }
         .top-bar { position: sticky; top: 0; height: 80px; padding: 0 60px; display: flex; justify-content: flex-end; align-items: center; gap: 30px; z-index: 4200; background: var(--c-topbar); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(47, 72, 66, 0.05); }
-        .search-engine { display: flex; align-items: center; gap: 8px; padding: 8px 25px; background: var(--c-primary); color: #fff; border-radius: 40px; transition: var(--trans-spring); font-family: var(--f-mono); font-size: 12px; }
-        .search-engine input { background: none; border: none; outline: none; width: 160px; font-family: var(--f-mono); font-size: 12px; color: #fff; }
+        .search-engine { display: flex; align-items: center; border-bottom: 1.5px solid var(--c-primary); padding: 2px 8px; transition: 0.3s; }
+        .search-engine input { background: none; border: none; outline: none; width: 200px; font-family: var(--f-serif); font-size: 15px; }
         .cart-trigger { display: flex; align-items: center; gap: 12px; padding: 8px 25px; background: var(--c-primary); color: #fff; border-radius: 40px; transition: var(--trans-spring); font-family: var(--f-mono); font-size: 12px; position: relative; }
         .cart-trigger:hover { background: var(--c-accent); transform: translateY(-3px); }
         #cartBadge { background: var(--c-danger); color: #fff; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; position: absolute; top: -5px; right: 5px; }
-        .auth-gate { display: flex; align-items: center; gap: 8px; padding: 8px 25px; background: var(--c-primary); color: #fff; border-radius: 40px; transition: var(--trans-spring); font-family: var(--f-mono); font-size: 12px; border: none; }
-        .auth-gate:hover { background: var(--c-accent); transform: translateY(-3px); }
+        .auth-gate { font-size: 14px; font-weight: 900; letter-spacing: 2px; color: var(--c-primary); transition: 0.3s; border-left: 1px solid var(--c-grid); padding-left: 25px; }
 
         /* [6. Hero 华塔巨幕修正] */
         .hero-section { height: 90vh; padding: 40px 100px; display: flex; align-items: center; overflow: hidden; position: relative; }
@@ -98,47 +97,30 @@
         .hero-content p { font-size: 18px; line-height: 2.1; color: #555; margin-bottom: 50px; text-align: justify; }
 
         /* [7. 商品商城与新版分类轴] */
-        .shop-container { display: grid; grid-template-columns: 200px 1fr; margin-right: 15vw; padding: 100px 50px; gap: 40px; border-top: 1px solid var(--c-grid); }
+        .shop-container { display: grid; grid-template-columns: 200px 1fr; margin-right: 15vw; padding: 100px; gap: 80px; border-top: 1px solid var(--c-grid); }
         
-        .filter-aside { position: sticky; top: 150px; height: fit-content; display: flex; flex-direction: column; gap: 15px; margin-right: 20px; }
+        .filter-aside { position: sticky; top: 150px; height: fit-content; display: flex; flex-direction: column; gap: 15px; }
         .filter-aside label { font-family: var(--f-mono); font-size: 10px; color: #BBB; letter-spacing: 4px; margin-bottom: 15px; border-bottom: 1px solid var(--c-grid); padding-bottom: 10px; }
         .filter-item { text-align: left; padding: 15px 25px; font-size: 16px; color: #888; transition: 0.3s; border-left: 2px solid transparent; }
         .filter-item:hover { color: var(--c-primary); padding-left: 35px; }
         .filter-item.active { border-left-color: var(--c-accent); color: var(--c-primary); font-weight: 900; background: rgba(193, 162, 104, 0.08); }
 
         /* [8. 商品卡片比例还原 2x3] */
-        .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, auto); gap: 25px; perspective: 2500px; margin-left: 20px; }
+        .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, auto); gap: 40px; perspective: 2500px; }
         .box-card { 
             background: #fff; padding: 25px; border: 1.5px solid #F0F0F0; position: relative; transform-style: preserve-3d; transition: transform 0.6s var(--trans-spring), box-shadow 0.4s ease, opacity 0.5s ease; opacity: 0; transform: translateY(60px); 
-            border-radius: 8px;
-            overflow: hidden;
         }
         .box-card.revealed { opacity: 1; transform: translateY(0); }
         .box-card:hover { border-color: var(--c-accent); box-shadow: 0 40px 80px rgba(0,0,0,0.08); }
         
-        /* 添加特色标记 */
-        .card-special-tag {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: var(--c-accent);
-            color: white;
-            font-size: 10px;
-            font-weight: bold;
-            padding: 3px 10px;
-            border-radius: 20px;
-            z-index: 10;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
         .card-no { position: absolute; top: 25px; left: 25px; font-family: var(--f-mono); font-size: 10px; background: var(--c-primary); color: #fff; padding: 3px 10px; z-index: 10; letter-spacing: 1px; }
         .card-ssr { position: absolute; top: 25px; right: 25px; font-size: 10px; font-weight: 900; background: var(--c-danger); color: #fff; padding: 3px 12px; z-index: 10; box-shadow: 4px 4px 0 rgba(0,0,0,0.1); }
 
-        .card-img-gate { height: 280px; width: 100%; overflow: hidden; background: #FAFAFA; position: relative; margin-bottom: 25px; border: 0.5px solid #F5F5F5; transform: translateZ(30px); border-radius: 6px; }
+        .card-img-gate { height: 280px; width: 100%; overflow: hidden; background: #FAFAFA; position: relative; margin-bottom: 25px; border: 0.5px solid #F5F5F5; transform: translateZ(30px); }
         .box-card .main-img { width: 100%; height: 100%; object-fit: cover; transition: 0.8s cubic-bezier(0.165, 0.84, 0.44, 1); }
         .box-card:hover .main-img { transform: scale(1.1) rotate(2deg); filter: brightness(1.05); }
 
-        .card-price-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; transform: translateZ(45px); }
+        .card-price-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; transform: translateZ(40px); }
         .card-price { font-family: var(--f-mono); font-size: 26px; font-weight: 900; color: var(--c-danger); }
         .card-cat { font-size: 9px; text-transform: uppercase; color: #AAA; letter-spacing: 2px; border: 1px solid #EEE; padding: 2px 6px; }
         
@@ -206,7 +188,7 @@
         <header class="top-bar">
             <div class="search-engine">
                 <i class="fa fa-search"></i>
-                <input type="text" placeholder="寻宝...">
+                <input type="text" placeholder="寻找沉封的非遗惊喜...">
             </div>
 
             <div class="cart-trigger" onclick="engine.toggleCart()">
@@ -215,10 +197,7 @@
                 <div id="cartBadge">0</div>
             </div>
 
-            <div class="auth-gate" onclick="engine.toggleLogin()">
-                <i class="fa fa-user"></i>
-                <span>结缘 / SIGN IN</span>
-            </div>
+            <div class="auth-gate" onclick="engine.toggleLogin()">结缘 / SIGN IN</div>
         </header>
 
         <!-- [Hero 华塔巨幕交互] -->
@@ -406,28 +385,7 @@
                 filtered.slice(0, 6).forEach((item, index) => {
                     const card = document.createElement('div');
                     card.className = 'box-card';
-                    
-                    // 为不同类别的商品添加不同的特色标签
-                    let specialTag = '';
-                    switch(item.cat) {
-                        case 'stone':
-                            specialTag = '非遗';
-                            break;
-                        case 'craft':
-                            specialTag = '匠心';
-                            break;
-                        case 'paper':
-                            specialTag = '传承';
-                            break;
-                        case 'hidden':
-                            specialTag = '限定';
-                            break;
-                        default:
-                            specialTag = '精品';
-                    }
-                    
                     card.innerHTML = `
-                        <div class="card-special-tag">${specialTag}</div>
                         <div class="card-no">NO.${item.id}</div>
                         <div class="card-ssr">${item.rarity}</div>
                         <div class="card-img-gate">
