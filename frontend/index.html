@@ -2,64 +2,78 @@
 <html lang="zh-CN">
 <!--
     =============================================================================
-    项目名称：冀遗筑梦 - 数字化非遗盲盒平台 (PROFESSIONAL EDITION)
-    交互升级：
-    - [3D] 物理阻尼卡片 & 华塔透视巨幕
-    - [Ink] 动态水墨光标追踪 & 点击洇染系统
-    - [Parallax] 前景/后景双重深度视差 (冀遗筑梦)
-    - [Logic] 四级序列联动过滤系统 & 模块化购物车/登录组件
+    项目名称：冀遗筑梦 - 全球首个数字化非遗盲盒平台
+    版本：V3.0 (旗舰交互完整版)
+    
+    交互架构说明：
+    1. [CUR SYSTEM]：双层水墨光标，支持点击洇染扩散。
+    2. [PHYSICS]：物理阻尼卡片交互，带过冲回弹算法。
+    3. [PARALLAX]：四层深度视差系统（背景冀遗、主体内容、前景筑梦）。
+    4. [UI/UX]：包含完整侧边抽屉购物车、水墨登录模态框。
+    5. [LAYOUT]：华塔巨幕中心化排版，商品卡片2x3紧致布局。
     =============================================================================
 -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>冀遗筑梦 | 全球首个非遗盲盒数字化平台</title>
+    <title>冀遗筑梦 | 数字化非遗盲盒平台</title>
     
-    <!-- 引入 FontAwesome 图标库 -->
+    <!-- 引入 FontAwesome 4.7 -->
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- 引入思源宋体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&display=swap" rel="stylesheet">
 
     <style>
         /* 
-           ========================================
-           0. 全局设计系统 (DESIGN SYSTEM)
-           ======================================== 
+           ==========================================================================
+           SECTION 0: 全局变量与设计系统 (DESIGN SYSTEM)
+           ==========================================================================
         */
         :root {
-            /* 核心调色盘：青黛、鎏金、朱砂 */
-            --c-primary: #2F4842;    
-            --c-accent: #C1A268;     
-            --c-bg: #F2F0EB;         
-            --c-grid: #E0DED9;       
-            --c-topbar: rgba(234, 232, 227, 0.7); 
-            --c-danger: #B22222;     
+            /* 核心品牌色：中国传统五色系统 */
+            --c-primary: #2F4842;        /* 青黛：主色 */
+            --c-accent: #C1A268;         /* 鎏金：强调色 */
+            --c-bg: #F2F0EB;             /* 宣纸灰：背景色 */
+            --c-grid: #E0DED9;           /* 辅助线：空间网格 */
             --c-white: #FFFFFF;
-            --c-black: #1A1A1A;
+            --c-danger: #B22222;         /* 朱砂红：稀有度、价格、报警 */
+            --c-text-faded: #8A9A96;     /* 辅助文字 */
             
+            /* 顶部栏透明度优化：磨砂玻璃感 */
+            --c-topbar: rgba(234, 232, 227, 0.75); 
+
             /* 字体栈 */
-            --f-serif: 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+            --f-serif: 'Noto Serif SC', 'Songti SC', serif;
             --f-mono: 'Courier New', Courier, monospace;
             
-            /* 物理参数 */
+            /* 布局参数 */
             --sidebar-width: 100px;
             --header-height: 80px;
+            
+            /* 物理交互动画曲线 */
             --trans-smooth: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-            --trans-bounce: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-            --trans-fast: all 0.3s ease;
+            --trans-spring: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            --trans-fast: all 0.3s ease-out;
         }
 
         /* 
-           ========================================
-           1. 基础重置 (BASIC RESET)
-           ======================================== 
+           ==========================================================================
+           SECTION 1: 基础重置 (BASIC RESET)
+           ==========================================================================
         */
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body { 
-            background-color: var(--c-bg); color: var(--c-primary); 
-            font-family: var(--f-serif); overflow-x: hidden; 
-            cursor: none !important; user-select: none;
+            background-color: var(--c-bg); 
+            color: var(--c-primary); 
+            font-family: var(--f-serif); 
+            overflow-x: hidden; 
+            cursor: none !important; /* 强制隐藏光标 */
+            user-select: none;
+            min-height: 200vh;
         }
 
-        /* 宣纸背景纹理层 */
+        /* 宣纸纹理蒙版 */
         body::before {
             content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-image: 
@@ -71,541 +85,661 @@
         a, button, .series-mark, .box-card, i, .page-btn { cursor: none !important; }
 
         /* 
-           ========================================
-           2. 水墨光标系统 (INK CURSOR)
-           ======================================== 
+           ==========================================================================
+           SECTION 2: 高级水墨交互系统 (INK CURSOR SYSTEM)
+           ==========================================================================
         */
         #cursor-dot { 
             width: 8px; height: 8px; background: var(--c-primary); 
             position: fixed; pointer-events: none; border-radius: 50%; z-index: 10001; 
             box-shadow: 0 0 10px rgba(47, 72, 66, 0.5);
+            transform: translate(-50%, -50%);
         }
         #cursor-wash { 
-            width: 30px; height: 30px; border: 1.5px solid rgba(47, 72, 66, 0.3); 
+            width: 32px; height: 32px; border: 1.5px solid rgba(47, 72, 66, 0.3); 
             position: fixed; pointer-events: none; border-radius: 50%; z-index: 10000; 
-            transition: width 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), height 0.3s, background 0.4s;
-            mix-blend-mode: multiply; 
+            transition: width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), height 0.4s, background 0.4s;
+            mix-blend-mode: multiply; transform: translate(-50%, -50%);
+            display: flex; align-items: center; justify-content: center;
         }
-        .ink-active { 
-            width: 60px !important; height: 60px !important; 
-            background: radial-gradient(circle, rgba(193, 162, 104, 0.25) 0%, transparent 80%) !important;
+        
+        /* 洇染状态 */
+        .ink-stain-active { 
+            width: 65px !important; height: 65px !important; 
+            background: radial-gradient(circle, rgba(193, 162, 104, 0.2) 0%, transparent 80%) !important;
             border-color: var(--c-accent) !important;
+            filter: blur(1.5px);
         }
 
-        /* 点击洇染动画 */
-        .ink-stain {
+        /* 鼠标点击时的墨点效果 */
+        .ink-click-stain {
             position: fixed; pointer-events: none; border-radius: 50%;
-            background: radial-gradient(circle, var(--c-primary) 0%, transparent 70%);
-            z-index: 9999; animation: inkFlow 0.8s ease-out forwards;
+            background: radial-gradient(circle, var(--c-primary) 0%, transparent 75%);
+            z-index: 9999; animation: inkExplosion 0.8s ease-out forwards;
         }
-        @keyframes inkFlow {
-            0% { transform: scale(0); opacity: 0.8; }
-            100% { transform: scale(4); opacity: 0; }
+        @keyframes inkExplosion {
+            0% { transform: scale(0) translate(-50%, -50%); opacity: 0.8; filter: blur(1px); }
+            100% { transform: scale(4) translate(-12.5%, -12.5%); opacity: 0; filter: blur(8px); }
         }
 
         /* 
-           ========================================
-           3. 沉浸式视差层 (PARALLAX BACKGROUND)
-           ======================================== 
+           ==========================================================================
+           SECTION 3: 沉浸式视差层 (PARALLAX SYSTEM)
+           ==========================================================================
         */
-        /* 前置水印大字：筑梦 */
+        /* 核心后置层：冀遗 */
+        .back-parallax-wrapper { position: fixed; width: 100vw; height: 100vh; pointer-events: none; z-index: -1; }
+        .back-word { position: absolute; font-weight: 900; opacity: 0.04; color: var(--c-primary); transition: transform 0.3s ease-out; }
+        #word-ji { font-size: 28vw; top: 10%; left: 8%; transform: rotate(-5deg); }
+        #word-yi { font-size: 25vw; bottom: 10%; right: 12%; color: var(--c-accent); transform: rotate(10deg); }
+
+        /* 核心前置层：筑梦 - 浮于所有卡片之上 */
         .front-parallax-wrapper { 
             position: fixed; width: 100vw; height: 100vh; pointer-events: none; 
-            z-index: 4000; mix-blend-mode: overlay; 
+            z-index: 4000; /* 高于顶部导航外的所有内容 */
+            mix-blend-mode: overlay; 
         }
         .front-word { 
-            position: absolute; font-size: 28vw; font-weight: 900; line-height: 1; 
-            opacity: 0.1; color: var(--c-primary); transition: transform 0.2s ease-out;
-            filter: blur(1px);
+            position: absolute; font-weight: 900; line-height: 1; 
+            opacity: 0.12; color: var(--c-primary); transition: transform 0.25s ease-out;
+            filter: blur(0.5px);
         }
-        #word-zhu { top: 5%; left: -5%; }
-        #word-meng { bottom: 5%; right: -2%; } /* 梦字位置优化 */
-
-        /* 后景：冀遗 */
-        .back-parallax-wrapper { position: fixed; width: 100vw; height: 100vh; pointer-events: none; z-index: -1; }
-        .back-word { position: absolute; font-size: 25vw; font-weight: 900; opacity: 0.03; color: var(--c-primary); }
-        #word-ji { top: 10%; left: 10%; }
-        #word-yi { bottom: 10%; right: 10%; color: var(--c-accent); }
+        #word-zhu { font-size: 30vw; top: -5%; left: -5%; }
+        #word-meng { font-size: 30vw; bottom: 0%; right: -2%; color: var(--c-accent); }
 
         /* 
-           ========================================
-           4. 侧边栏导航轴 (COLLECTION AXIS)
-           ======================================== 
+           ==========================================================================
+           SECTION 4: 侧边导航与系列轴 (SIDEBAR & AXIS)
+           ==========================================================================
         */
         .sidebar { 
             position: fixed; left: 0; top: 0; bottom: 0; width: var(--sidebar-width); 
             background: var(--c-white); border-right: 1.5px solid var(--c-primary); 
             display: flex; flex-direction: column; align-items: center; 
-            justify-content: space-between; padding: 40px 0; z-index: 3500;
+            justify-content: space-between; padding: 40px 0; z-index: 4500;
         }
-        .brand-plaque { 
+
+        .brand-seal { 
             background: var(--c-primary); color: #fff; padding: 25px 12px; border-radius: 2px; 
-            box-shadow: 4px 4px 0 var(--c-accent); transition: var(--trans-bounce);
+            box-shadow: 4px 4px 0 var(--c-accent); transition: var(--trans-spring);
         }
-        .brand-plaque:hover { transform: translate(4px, 4px) rotate(-3deg); box-shadow: 0 0 0 transparent; }
+        .brand-seal:hover { transform: translate(4px, 4px) rotate(-2deg); box-shadow: 0 0 0 transparent; }
         .brand-vertical { writing-mode: vertical-rl; font-size: 22px; font-weight: 900; letter-spacing: 6px; }
 
-        .series-axis { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 40px; position: relative; }
+        .series-axis { 
+            flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 40px; position: relative;
+        }
         .series-axis::after {
             content: ""; position: absolute; left: 50%; top: 0; height: 100%; width: 1px;
-            background: linear-gradient(to bottom, transparent, var(--c-grid), transparent); transform: translateX(-50%);
+            background: linear-gradient(to bottom, transparent, var(--c-grid) 20%, var(--c-grid) 80%, transparent);
+            transform: translateX(-50%);
         }
 
         .series-mark { 
-            font-family: var(--f-mono); font-size: 11px; transition: var(--trans-fast); color: #BBB;
-            display: flex; flex-direction: column; align-items: center; background: #fff; z-index: 2; padding: 10px 0;
+            font-family: var(--f-mono); font-size: 11px; transition: var(--trans-fast); 
+            color: #BBB; display: flex; flex-direction: column; align-items: center;
+            background: #fff; z-index: 2; padding: 10px 0;
         }
-        .series-mark span { writing-mode: vertical-rl; margin-top: 10px; font-size: 10px; opacity: 0; transition: 0.3s; transform: translateY(10px); }
-        .series-mark:hover, .series-mark.active { color: var(--c-primary); transform: scale(1.1); }
+        .series-mark span { 
+            writing-mode: vertical-rl; margin-top: 10px; font-size: 10px; font-weight: bold;
+            opacity: 0; transition: 0.3s; transform: translateY(10px);
+        }
+        .series-mark:hover, .series-mark.active { color: var(--c-primary); transform: scale(1.15); }
         .series-mark:hover span, .series-mark.active span { opacity: 1; transform: translateY(0); }
-        .series-mark.active { font-weight: 900; border: 1px solid var(--c-primary); padding: 10px 5px; }
+        .series-mark.active { color: var(--c-primary); font-weight: 900; border: 1px solid var(--c-primary); padding: 10px 5px; }
 
-        .social-icons { display: flex; flex-direction: column; gap: 20px; font-size: 20px; color: var(--c-primary); opacity: 0.6; }
-        .social-icons i:hover { color: var(--c-accent); transform: scale(1.2) rotate(10deg); transition: 0.3s; }
+        .social-footer { display: flex; flex-direction: column; gap: 25px; font-size: 22px; color: var(--c-primary); opacity: 0.6; }
+        .social-footer i { transition: var(--trans-fast); }
+        .social-footer i:hover { color: var(--c-accent); transform: scale(1.2) translateY(-5px); opacity: 1; }
 
         /* 
-           ========================================
-           5. 顶部导航与组件 (TOPBAR & MODALS)
-           ======================================== 
+           ==========================================================================
+           SECTION 5: 顶部全功能导航 (TOP NAVIGATION)
+           ==========================================================================
         */
         .top-bar { 
-            position: sticky; top: 0; padding: 0 60px; height: var(--header-height);
-            display: flex; justify-content: flex-end; align-items: center; gap: 30px; 
-            z-index: 3000; background: var(--c-topbar); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(47, 72, 66, 0.05);
+            position: sticky; top: 0; height: var(--header-height); padding: 0 60px;
+            display: flex; justify-content: flex-end; align-items: center; gap: 35px; 
+            z-index: 4200; background: var(--c-topbar); backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(47, 72, 66, 0.05);
         }
-        .search-engine { display: flex; align-items: center; border-bottom: 1.5px solid var(--c-primary); padding: 2px 8px; }
-        .search-engine input { background: none; border: none; outline: none; width: 180px; font-family: var(--f-serif); color: var(--c-primary); }
-        
+
+        .search-engine { display: flex; align-items: center; border-bottom: 1.5px solid var(--c-primary); padding: 2px 8px; transition: var(--trans-fast); }
+        .search-engine:focus-within { border-bottom-color: var(--c-accent); transform: translateY(-2px); }
+        .search-engine input { background: none; border: none; outline: none; width: 200px; font-family: var(--f-serif); color: var(--c-primary); font-size: 15px; }
+
         .surprise-bag-trigger { 
-            display: flex; align-items: center; gap: 10px; padding: 8px 20px; 
+            display: flex; align-items: center; gap: 12px; padding: 8px 25px; 
             background: var(--c-primary); color: #fff; border-radius: 40px; 
-            transition: var(--trans-bounce); font-family: var(--f-mono); font-size: 12px;
+            transition: var(--trans-spring); font-family: var(--f-mono); font-size: 12px;
+            position: relative;
         }
-        .surprise-bag-trigger:hover { background: var(--c-accent); transform: translateY(-3px); }
-        #cartCount { background: var(--c-danger); color: #fff; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+        .surprise-bag-trigger:hover { background: var(--c-accent); transform: translateY(-3px); box-shadow: 0 10px 20px rgba(193, 162, 104, 0.2); }
+        #cartCountBadge { background: var(--c-danger); color: #fff; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; position: absolute; top: -5px; right: 5px; }
 
-        .auth-btn { font-size: 13px; font-weight: bold; letter-spacing: 1px; color: var(--c-primary); transition: 0.3s; border-left: 1px solid var(--c-grid); padding-left: 20px; }
-        .auth-btn:hover { color: var(--c-accent); }
-
-        /* 登录弹窗 (LOGIN MODAL) */
-        .ink-modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(47, 72, 66, 0.4); backdrop-filter: blur(5px);
-            display: none; justify-content: center; align-items: center; z-index: 5000;
+        .auth-gate-btn { 
+            font-size: 13px; font-weight: 900; letter-spacing: 2px; color: var(--c-primary); 
+            transition: var(--trans-fast); border-left: 1px solid var(--c-grid); padding-left: 25px;
         }
-        .ink-modal-content {
-            background: var(--c-bg); padding: 50px; width: 400px; border: 2px solid var(--c-primary);
-            box-shadow: 20px 20px 0 var(--c-accent); position: relative;
-        }
-        .modal-close { position: absolute; top: 15px; right: 20px; font-size: 24px; }
-        .modal-title { font-size: 28px; margin-bottom: 30px; text-align: center; }
-        .ink-input { width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid var(--c-grid); background: none; font-family: var(--f-serif); outline: none; border-bottom: 2.5px solid var(--c-primary); }
-        .btn-ink-action { width: 100%; padding: 15px; background: var(--c-primary); color: #fff; border: none; font-weight: 900; letter-spacing: 4px; transition: 0.3s; }
-        .btn-ink-action:hover { background: var(--c-accent); }
-
-        /* 侧边购物车袋 (CART DRAWER) */
-        .cart-drawer {
-            position: fixed; top: 0; right: -400px; width: 380px; height: 100%;
-            background: #fff; border-left: 2.5px solid var(--c-primary);
-            z-index: 4500; transition: 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-            padding: 40px; box-shadow: -10px 0 30px rgba(0,0,0,0.05);
-        }
-        .cart-drawer.open { right: 0; }
-        .cart-header { font-size: 24px; border-bottom: 1.5px solid var(--c-primary); padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; }
+        .auth-gate-btn:hover { color: var(--c-accent); }
 
         /* 
-           ========================================
-           6. HERO 巨幕：广惠寺华塔 (HERO SECTION)
-           ======================================== 
+           ==========================================================================
+           SECTION 6: 弹窗与抽屉组件 (MODALS & DRAWERS)
+           ==========================================================================
         */
-        .main-content { margin-left: var(--sidebar-width); position: relative; }
-        .hero-section { height: 85vh; padding: 40px 100px; display: flex; align-items: center; overflow: hidden; position: relative; }
-        
-        /* 华塔 3D 透视盒 */
-        .hero-gate {
-            width: 55%; height: 90%; position: relative; overflow: hidden;
-            border: 1px solid var(--c-primary); box-shadow: 40px 40px 0 rgba(193, 162, 104, 0.15);
-            transition: 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        /* 数字化结缘弹窗 (Login) */
+        .ink-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(47, 72, 66, 0.4); backdrop-filter: blur(8px);
+            display: none; justify-content: center; align-items: center; z-index: 6000;
         }
-        .hero-gate:hover { box-shadow: 60px 60px 0 rgba(193, 162, 104, 0.2); transform: scale(1.02); }
-        .hero-img { 
-            width: 100%; height: 100%; object-fit: cover; 
-            transition: 1.5s var(--trans-smooth); transform: scale(1.1);
-            filter: contrast(1.1) saturate(0.95);
+        .ink-modal-box {
+            background: var(--c-bg); padding: 50px; width: 420px; border: 2.5px solid var(--c-primary);
+            box-shadow: 25px 25px 0 var(--c-accent); position: relative; transform: translateY(30px); opacity: 0; transition: 0.5s var(--trans-spring);
         }
-        /* 广惠寺华塔图片：我选用了最能体现“花塔”繁复结构的局部高清视觉图 */
-        .hero-img { background: url('https://img.zcool.cn/community/016ca55d57b4c6a801214814d94b7e.jpg@1280w_1l_2o_100sh.jpg') center/cover; }
+        .modal-active .ink-modal-box { transform: translateY(0); opacity: 1; }
+        .ink-modal-box h2 { font-size: 32px; margin-bottom: 40px; text-align: center; border-bottom: 1px solid var(--c-grid); padding-bottom: 15px; }
+        .ink-input-group { margin-bottom: 25px; }
+        .ink-input-group label { display: block; font-size: 11px; font-family: var(--f-mono); color: #888; margin-bottom: 5px; }
+        .ink-field { width: 100%; padding: 12px; border: none; background: none; border-bottom: 2px solid var(--c-primary); font-family: var(--f-serif); font-size: 16px; outline: none; }
+        .btn-ink-submit { width: 100%; padding: 16px; background: var(--c-primary); color: #fff; border: none; font-weight: 900; letter-spacing: 5px; transition: 0.3s; margin-top: 20px; }
+        .btn-ink-submit:hover { background: var(--c-accent); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
 
-        .hero-content { width: 45%; padding-left: 80px; z-index: 10; }
-        .hero-content .tagline { color: var(--c-accent); font-family: var(--f-mono); font-weight: bold; letter-spacing: 6px; font-size: 14px; display: block; margin-bottom: 20px; }
-        .hero-content h1 { font-size: 68px; line-height: 1.1; margin-bottom: 30px; }
-        .hero-content p { font-size: 18px; line-height: 2; color: #555; margin-bottom: 50px; text-align: justify; }
+        /* 惊喜袋抽屉 (Cart Drawer) */
+        .cart-drawer-layer {
+            position: fixed; top: 0; right: -450px; width: 420px; height: 100%;
+            background: var(--c-white); border-left: 3px solid var(--c-primary);
+            z-index: 5500; transition: 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+            padding: 50px; box-shadow: -20px 0 50px rgba(0,0,0,0.05);
+        }
+        .cart-drawer-layer.open { right: 0; }
+        .cart-drawer-header { font-size: 28px; font-weight: 900; border-bottom: 2.5px solid var(--c-primary); padding-bottom: 20px; margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center; }
 
         /* 
-           ========================================
-           7. 核心商城区域 (SHOP LAYOUT)
-           ======================================== 
+           ==========================================================================
+           SECTION 7: HERO 华塔巨幕核心 (HERO AREA)
+           ==========================================================================
+        */
+        .main-wrapper { margin-left: var(--sidebar-width); position: relative; z-index: 100; }
+
+        .hero-section {
+            height: 90vh; padding: 40px 100px; display: flex; align-items: center;
+            overflow: hidden; position: relative;
+        }
+
+        /* 广惠寺华塔巨幅视觉盒 */
+        .hero-visual-gate {
+            width: 58%; height: 90%; position: relative; overflow: hidden;
+            border: 1.5px solid var(--c-primary);
+            box-shadow: 45px 45px 0 rgba(193, 162, 104, 0.15);
+            transition: var(--trans-smooth);
+        }
+        .hero-visual-gate:hover { box-shadow: 60px 60px 0 rgba(193, 162, 104, 0.25); transform: scale(1.02); }
+        .hero-img-container {
+            width: 100%; height: 100%;
+            /* 广惠寺华塔视觉引用 - 展现花塔繁复结构 */
+            background: url('https://picsum.photos/id/1043/1200/1500') center/cover no-repeat;
+            transition: 1.8s var(--trans-smooth); transform: scale(1.1);
+            filter: contrast(1.05) saturate(0.9);
+        }
+        .hero-visual-gate:hover .hero-img-container { transform: scale(1.2) rotate(1deg); }
+
+        .hero-content-area { width: 42%; padding-left: 100px; z-index: 20; }
+        .hero-content-area .tagline { font-family: var(--f-mono); color: var(--c-accent); font-weight: 900; letter-spacing: 8px; font-size: 13px; margin-bottom: 25px; display: block; }
+        .hero-content-area h1 { font-size: 72px; line-height: 1.1; margin-bottom: 35px; font-weight: 900; }
+        .hero-content-area p { font-size: 19px; color: #555; line-height: 2.1; margin-bottom: 55px; text-align: justify; }
+
+        .btn-main-explore {
+            display: inline-flex; align-items: center; gap: 15px;
+            padding: 22px 60px; background: var(--c-primary); color: #fff;
+            font-weight: 900; letter-spacing: 5px; transition: var(--trans-spring);
+            position: relative; overflow: hidden;
+        }
+        .btn-main-explore:hover { background: var(--c-accent); transform: translateY(-5px); box-shadow: 0 20px 40px rgba(193, 162, 104, 0.3); }
+
+        /* 
+           ==========================================================================
+           SECTION 8: 核心商城与排版优化 (SHOP & GRID)
+           ==========================================================================
         */
         .shop-container { 
-            display: grid; grid-template-columns: 200px 1fr; 
-            /* 向左偏移 10% 左右，以更明显显现右侧的“梦”字 */
-            margin-right: 15vw;
-            padding: 80px 100px; gap: 80px; 
+            display: grid; grid-template-columns: 220px 1fr; 
+            /* 向左侧偏移，空出右侧空间给“梦”字 */
+            margin-right: 18vw; 
+            padding: 100px; gap: 100px; 
             border-top: 1px solid var(--c-grid);
+            background: linear-gradient(to bottom, transparent, #fff 10%, #fff 90%, transparent);
         }
 
-        /* 侧挂轻量分类栏 */
-        .v-filter { position: sticky; top: 150px; height: fit-content; display: flex; flex-direction: column; gap: 10px; }
-        .v-filter .label { font-family: var(--f-mono); font-size: 10px; color: #CCC; letter-spacing: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--c-grid); padding-bottom: 10px; }
-        .v-filter button { 
-            text-align: left; background: none; border: none; padding: 15px 20px; 
-            font-size: 15px; border-left: 2px solid transparent; transition: var(--trans-fast); color: #888;
+        /* 侧挂轻量级过滤器 */
+        .filter-aside { position: sticky; top: 150px; height: fit-content; }
+        .filter-label { font-family: var(--f-mono); font-size: 10px; color: #CCC; letter-spacing: 5px; margin-bottom: 25px; border-bottom: 1px solid var(--c-grid); padding-bottom: 15px; }
+        .filter-nav { display: flex; flex-direction: column; gap: 8px; }
+        .filter-nav button { 
+            text-align: left; padding: 16px 25px; font-size: 16px; 
+            color: #888; transition: var(--trans-fast); border-left: 2px solid transparent;
         }
-        .v-filter button:hover { color: var(--c-primary); padding-left: 25px; }
-        .v-filter button.active { border-left-color: var(--c-accent); color: var(--c-primary); font-weight: 900; background: rgba(193, 162, 104, 0.05); }
+        .filter-nav button:hover { color: var(--c-primary); padding-left: 35px; }
+        .filter-nav button.active { 
+            color: var(--c-primary); font-weight: 900; border-left-color: var(--c-accent); 
+            background: rgba(193, 162, 104, 0.08); 
+        }
 
-        /* 两行三列网格配置 */
+        /* 商品 2x3 网格引擎 */
         .product-grid { 
             display: grid; grid-template-columns: repeat(3, 1fr); 
-            grid-template-rows: repeat(2, auto); gap: 30px; 
-            perspective: 2000px;
+            grid-template-rows: repeat(2, auto); gap: 35px; 
+            perspective: 2500px;
         }
 
-        /* 商品卡片与标记 (BOX CARD) */
+        /* 
+           ==========================================================================
+           SECTION 9: 商品卡片与物理反馈 (BOX CARD)
+           ==========================================================================
+        */
         .box-card { 
-            background: #fff; padding: 20px; border: 1px solid #F0F0F0; position: relative;
-            transform-style: preserve-3d; transition: transform 0.6s var(--trans-bounce), box-shadow 0.4s ease;
+            background: #fff; padding: 20px; border: 1px solid #F2F2F2; position: relative;
+            transform-style: preserve-3d; transition: transform 0.6s var(--trans-spring), box-shadow 0.4s ease, opacity 0.5s ease;
             opacity: 0; transform: translateY(60px);
         }
         .box-card.revealed { opacity: 1; transform: translateY(0); }
         .box-card:hover { border-color: var(--c-accent); box-shadow: 0 30px 60px rgba(0,0,0,0.06); }
         
-        /* 标记系统 */
-        .card-no { position: absolute; top: 20px; left: 20px; font-family: var(--f-mono); font-size: 10px; color: #fff; background: var(--c-primary); padding: 2px 8px; z-index: 10; }
-        .card-rarity { position: absolute; top: 20px; right: 20px; font-size: 10px; font-weight: 900; background: var(--c-danger); color: #fff; padding: 2px 10px; z-index: 10; box-shadow: 4px 4px 0 rgba(0,0,0,0.1); }
+        /* 标记系统回归与增强 */
+        .card-no-tag { position: absolute; top: 20px; left: 20px; font-family: var(--f-mono); font-size: 10px; color: #fff; background: var(--c-primary); padding: 3px 10px; z-index: 10; letter-spacing: 1px; }
+        .card-ssr-tag { position: absolute; top: 20px; right: 20px; font-size: 10px; font-weight: 900; background: var(--c-danger); color: #fff; padding: 3px 12px; z-index: 10; box-shadow: 5px 5px 0 rgba(178, 34, 52, 0.2); }
 
-        .card-img-gate { height: 200px; overflow: hidden; background: #FAFAFA; position: relative; margin-bottom: 20px; border: 0.5px solid #F5F5F5; transform: translateZ(30px); }
-        .main-img { width: 100%; height: 100%; object-fit: cover; transition: 0.8s var(--trans-smooth); }
+        .card-img-gate { height: 210px; overflow: hidden; background: #FAFAFA; position: relative; margin-bottom: 20px; border: 0.5px solid #F5F5F5; transform: translateZ(30px); }
+        .box-card .main-img { width: 100%; height: 100%; object-fit: cover; transition: 0.8s var(--trans-smooth); }
         .box-card:hover .main-img { transform: scale(1.1) rotate(2deg); filter: brightness(1.05); }
 
-        .card-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; transform: translateZ(40px); }
-        .price { font-family: var(--f-mono); font-size: 22px; font-weight: 900; color: var(--c-danger); }
-        .cat-tag { font-size: 9px; text-transform: uppercase; color: #AAA; letter-spacing: 2px; border: 1px solid #EEE; padding: 1px 5px; }
-        
-        .card-title { font-size: 15px; color: #333; height: 45px; overflow: hidden; margin-bottom: 15px; transform: translateZ(40px); }
-        
-        .btn-add-cart { 
-            width: 100%; padding: 12px; background: var(--c-primary); color: #fff; border: none; 
-            font-size: 11px; font-weight: 900; letter-spacing: 2px; transition: 0.3s;
+        /* 卡片光感动态扫影 */
+        .card-img-gate::after {
+            content: ""; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transform: skewX(-20deg); pointer-events: none;
         }
-        .btn-add-cart:hover { background: var(--c-accent); letter-spacing: 4px; }
+        .box-card:hover .card-img-gate::after { left: 100%; transition: 0.7s var(--trans-smooth); }
 
-        /* 分页器 (PAGINATION) */
-        .paginator { margin-top: 60px; display: flex; justify-content: center; gap: 15px; }
-        .page-btn { width: 45px; height: 45px; border: 1.5px solid var(--c-primary); background: none; font-family: var(--f-mono); font-weight: bold; transition: var(--trans-fast); }
-        .page-btn:hover:not(.active) { background: rgba(47, 72, 66, 0.05); }
-        .page-btn.active { background: var(--c-primary); color: #fff; box-shadow: 4px 4px 0 var(--c-accent); }
+        .card-price-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; transform: translateZ(40px); }
+        .card-price { font-family: var(--f-mono); font-size: 24px; font-weight: 900; color: var(--c-danger); }
+        .card-type-tag { font-size: 9px; text-transform: uppercase; color: #AAA; letter-spacing: 2px; border: 1px solid #EEE; padding: 2px 6px; }
+        
+        .card-title { font-size: 15px; font-weight: 700; color: #333; height: 46px; overflow: hidden; line-height: 1.5; margin-bottom: 20px; transform: translateZ(45px); }
+        
+        .btn-add-bag { 
+            width: 100%; padding: 15px; background: var(--c-primary); color: #fff; border: none; 
+            font-size: 12px; font-weight: 900; letter-spacing: 3px; transition: 0.3s;
+        }
+        .btn-add-bag:hover { background: var(--c-accent); letter-spacing: 6px; }
 
-        .progress-bar { position: fixed; top: 0; left: 0; width: 0%; height: 5px; background: var(--c-accent); z-index: 5000; }
+        /* 
+           ==========================================================================
+           SECTION 10: 分页与进度条 (SYSTEM)
+           ==========================================================================
+        */
+        .paginator { margin-top: 80px; display: flex; justify-content: center; gap: 15px; }
+        .page-node { 
+            width: 50px; height: 50px; border: 1.5px solid var(--c-primary); 
+            background: none; font-family: var(--f-mono); font-weight: 900; 
+            transition: var(--trans-fast); display: flex; align-items: center; justify-content: center;
+        }
+        .page-node:hover:not(.active) { background: rgba(47, 72, 66, 0.05); }
+        .page-node.active { background: var(--c-primary); color: #fff; box-shadow: 6px 6px 0 var(--c-accent); }
+
+        .global-progress-bar { position: fixed; top: 0; left: 0; width: 0%; height: 6px; background: var(--c-accent); z-index: 5000; transition: width 0.1s; }
+
+        /* 响应式适配 (MEDIA QUERIES) */
+        @media (max-width: 1200px) {
+            .hero-section { flex-direction: column; height: auto; padding: 120px 40px; }
+            .hero-visual-gate, .hero-content-area { width: 100%; padding: 0; }
+            .hero-visual-gate { height: 450px; margin-bottom: 60px; }
+            .shop-container { margin-right: 0; grid-template-columns: 1fr; }
+            .product-grid { grid-template-columns: repeat(2, 1fr); }
+        }
     </style>
 </head>
 <body>
 
-    <!-- 交互 UI 层 -->
+    <!-- 交互核心层 -->
     <div id="cursor-dot"></div>
     <div id="cursor-wash"></div>
-    <div class="progress-bar" id="progressBar"></div>
+    <div class="global-progress-bar" id="progressBar"></div>
 
-    <!-- 沉浸式视差层 (冀遗筑梦) -->
+    <!-- [视差背景层：冀遗] -->
     <div class="back-parallax-wrapper">
         <div class="back-word" id="word-ji">冀</div>
         <div class="back-word" id="word-yi">遗</div>
     </div>
+
+    <!-- [筑梦：前景透明水印层] -->
     <div class="front-parallax-wrapper">
         <div class="front-word" id="word-zhu">筑</div>
         <div class="front-word" id="word-meng">梦</div>
     </div>
 
-    <!-- 登录弹窗系统 -->
-    <div class="ink-modal" id="loginModal">
-        <div class="ink-modal-content">
-            <button class="modal-close" onclick="engine.toggleLogin()">&times;</button>
-            <h2 class="modal-title">结缘 · 数字化平台</h2>
-            <input type="text" class="ink-input" placeholder="用户账号 / Account">
-            <input type="password" class="ink-input" placeholder="秘钥密码 / Password">
-            <button class="btn-ink-action" onclick="alert('数字化认证中...')">开启数字化之旅</button>
+    <!-- 数字化结缘弹窗 -->
+    <div class="ink-modal-overlay" id="loginModal">
+        <div class="ink-modal-box">
+            <button onclick="mysteryEngine.toggleLogin()" style="position:absolute; top:20px; right:25px; font-size:30px; opacity:0.3;">&times;</button>
+            <h2>结缘认证</h2>
+            <div class="ink-input-group">
+                <label>DIGITAL IDENTITY</label>
+                <input type="text" class="ink-field" placeholder="输入您的名号...">
+            </div>
+            <div class="ink-input-group">
+                <label>ACCESS KEY</label>
+                <input type="password" class="ink-field" placeholder="加密秘钥...">
+            </div>
+            <button class="btn-ink-submit" onclick="alert('数字化认证同步中...')">开启同步</button>
         </div>
     </div>
 
-    <!-- 侧边购物车袋 -->
-    <div class="cart-drawer" id="cartDrawer">
-        <div class="cart-header">
+    <!-- 惊喜袋侧边滑入抽屉 -->
+    <div class="cart-drawer-layer" id="cartDrawer">
+        <div class="cart-drawer-header">
             <span>惊喜袋 / BAG</span>
-            <button onclick="engine.toggleCart()" style="font-size: 20px;">&times;</button>
+            <button onclick="mysteryEngine.toggleCart()" style="background:none; border:none; font-size:24px;">&times;</button>
         </div>
-        <div id="cartList" style="opacity: 0.5; text-align: center; margin-top: 100px;">
-            <i class="fa fa-folder-open-o fa-3x"></i><br><br>袋中空空如也，快去搜寻遗珠吧
+        <div id="cartContentArea" style="text-align: center; margin-top: 150px; opacity: 0.3;">
+            <i class="fa fa-shopping-basket fa-4x"></i><br><br>
+            <p>袋中空空，快去搜寻历史的惊喜</p>
         </div>
     </div>
 
-    <!-- 侧边导航栏 -->
+    <!-- 全局侧边栏 -->
     <aside class="sidebar">
-        <div class="brand-plaque">
+        <div class="brand-seal" id="mainSeal">
             <div class="brand-vertical">冀遗筑梦</div>
         </div>
-        
+
         <nav class="series-axis">
             <div class="series-mark active" data-series="01">01<span>初始系列</span></div>
             <div class="series-mark" data-series="02">02<span>进化系列</span></div>
-            <div class="series-mark" data-series="03">03<span>珍藏系列</span></div>
-            <div class="series-mark" data-series="04">04<span>史诗系列</span></div>
+            <div class="series-mark" data-series="03">03<span>大师系列</span></div>
+            <div class="series-mark" data-series="04">04<span>史诗珍藏</span></div>
         </nav>
 
-        <div class="social-icons">
+        <div class="social-footer">
             <i class="fa fa-weixin"></i>
             <i class="fa fa-weibo"></i>
             <i class="fa fa-instagram"></i>
         </div>
     </aside>
 
-    <!-- 主容器 -->
-    <div class="main-content">
+    <!-- 主内容区 -->
+    <div class="main-wrapper">
         
-        <!-- 顶部操作栏 -->
+        <!-- 顶部全功能条 -->
         <header class="top-bar">
             <div class="search-engine">
                 <i class="fa fa-search"></i>
                 <input type="text" placeholder="寻找尘封的惊喜 (SEARCH)...">
             </div>
-            <div class="surprise-bag-trigger" onclick="engine.toggleCart()">
+
+            <div class="surprise-bag-trigger" onclick="mysteryEngine.toggleCart()">
                 <i class="fa fa-shopping-basket"></i>
                 <span>惊喜袋</span>
-                <strong id="cartCount">0</strong>
+                <div id="cartCountBadge">0</div>
             </div>
-            <div class="auth-btn" onclick="engine.toggleLogin()">结缘 / SIGN IN</div>
+
+            <div class="auth-gate-btn" onclick="mysteryEngine.toggleLogin()">结缘 / SIGN IN</div>
         </header>
 
-        <!-- HERO 视觉核心：华塔 -->
-        <section class="hero-section" id="heroArea">
-            <div class="hero-gate">
-                <!-- 华塔图片容器 -->
-                <div class="hero-img" id="heroMainImg"></div>
+        <!-- HERO 巨幕核心：正定广惠寺华塔 -->
+        <section class="hero-section" id="heroRegion">
+            <div class="hero-visual-gate">
+                <div class="hero-img-container" id="heroMainImg"></div>
             </div>
-            <div class="hero-content">
-                <span class="tagline">ZHENGDING SERIES · FLOWER TOWER</span>
-                <h1>广惠寺华塔<br>数字化复刻盲盒</h1>
+
+            <div class="hero-content-area">
+                <span class="tagline">WORLD HERITAGE COLLECTION NO.01</span>
+                <h1>广惠寺华塔<br>数字化神秘盒</h1>
                 <p>
-                    我们将正定古城“举世之孤例”进行高精度3D扫描。华塔塔身密布狮、象、佛、菩萨浮雕，通过数字解构重塑，让历史在指尖温热。
+                    我们将正定古城“举世之孤例”进行高精度3D数字化重构。华塔塔身密布的狮、象、佛、兽，通过数字拆解与艺术加工，让千年的繁复美感，在每一个开启瞬间重获新生。
                 </p>
-                <button class="btn-ink-action" style="width: auto; padding: 20px 60px;" onclick="document.getElementById('shopArea').scrollIntoView({behavior:'smooth'})">
-                    开启全系列盲盒之旅
+                <button class="btn-main-explore" onclick="document.getElementById('shopAnchor').scrollIntoView({behavior:'smooth'})">
+                    揭晓数字遗珠 <i class="fa fa-chevron-right"></i>
                 </button>
             </div>
         </section>
 
-        <!-- 商城核心 -->
-        <div class="shop-container" id="shopArea">
+        <!-- 商城核心布局 -->
+        <div class="shop-container" id="shopAnchor">
             
-            <!-- 垂直分类 -->
-            <aside class="v-filter">
-                <div class="label">EXPLORE TYPE</div>
-                <button class="active" data-cat="all">全部藏品系列</button>
-                <button data-cat="craft">手作工艺系列</button>
-                <button data-cat="sculpt">石木雕刻系列</button>
-                <button data-cat="paper">剪纸遗墨系列</button>
+            <!-- 垂直挂载过滤器 -->
+            <aside class="filter-aside">
+                <div class="filter-label">COLLECTIONS</div>
+                <nav class="filter-nav">
+                    <button class="active" data-cat="all">全部藏品全集</button>
+                    <button data-cat="craft">手作工艺系列</button>
+                    <button data-cat="stone">金石雕刻系列</button>
+                    <button data-cat="paper">剪纸遗墨系列</button>
+                    <button data-cat="hidden">隐藏款档案库</button>
+                </nav>
             </aside>
 
-            <!-- 商品网格 (2x3) -->
+            <!-- 商品 2x3 网格 -->
             <main>
                 <div class="product-grid" id="productGrid">
-                    <!-- JS 动态填充 -->
+                    <!-- 动态生成 6 个商品 -->
                 </div>
 
+                <!-- 系列级分页 -->
                 <div class="paginator">
-                    <button class="page-btn active">01</button>
-                    <button class="page-btn">02</button>
-                    <button class="page-btn">03</button>
+                    <button class="page-node active">01</button>
+                    <button class="page-node">02</button>
                 </div>
             </main>
         </div>
 
-        <footer style="padding: 100px; text-align: center; font-family: var(--f-mono); opacity: 0.3; font-size: 11px; letter-spacing: 2px;">
-            © 2026 JIYI ZHUMENG DIGITAL TECH. ZHENGDING HERITAGE ARCHIVE.
+        <footer style="padding: 100px; text-align: center; border-top: 1px solid var(--c-grid); background: #fff;">
+            <p style="font-family: var(--f-mono); font-size: 11px; opacity: 0.4; letter-spacing: 5px;">
+                © 2026 JIYI ZHUMENG DIGITAL HERITAGE. ALL RIGHTS RESERVED.
+            </p>
         </footer>
     </div>
 
     <!-- 
-       ========================================
-       8. 核心交互逻辑引擎 (ENGINE)
-       ======================================== 
+       ==========================================================================
+       SECTION 11: 核心交互逻辑引擎 (MYSTERY ENGINE)
+       ==========================================================================
     -->
     <script>
-        class BlindBoxEngine {
+        /**
+         * MysteryBoxEngine - 全局交互控制器
+         * 实现水墨交互、四级系列过滤、购物车抽屉、登录弹窗
+         */
+        class MysteryBoxEngine {
             constructor() {
                 this.state = {
                     cart: 0,
-                    currentPage: 1,
-                    currentSeries: '01',
-                    currentCat: 'all',
+                    series: '01',
+                    category: 'all',
                     data: []
                 };
                 
+                this.dom = {
+                    dot: document.getElementById('cursor-dot'),
+                    wash: document.getElementById('cursor-wash'),
+                    words: {
+                        zhu: document.getElementById('word-zhu'),
+                        meng: document.getElementById('word-meng'),
+                        ji: document.getElementById('word-ji'),
+                        yi: document.getElementById('word-yi')
+                    },
+                    hero: document.getElementById('heroMainImg'),
+                    grid: document.getElementById('productGrid'),
+                    login: document.getElementById('loginModal'),
+                    cart: document.getElementById('cartDrawer')
+                };
+
                 this.init();
             }
 
             init() {
-                this.dom = {
-                    dot: document.getElementById('cursor-dot'),
-                    wash: document.getElementById('cursor-wash'),
-                    zhu: document.getElementById('word-zhu'),
-                    meng: document.getElementById('word-meng'),
-                    ji: document.getElementById('word-ji'),
-                    yi: document.getElementById('word-yi'),
-                    hero: document.getElementById('heroMainImg'),
-                    progress: document.getElementById('progressBar'),
-                    grid: document.getElementById('productGrid'),
-                    login: document.getElementById('loginModal'),
-                    cartDrawer: document.getElementById('cartDrawer')
-                };
-
-                this.bindEvents();
-                this.generateMockData();
-                this.render();
+                this.bindGlobalEvents();
+                this.generateDatabase(); // 核心数据生成
+                this.render();           // 初始渲染
             }
 
-            bindEvents() {
-                // 全局鼠标监听
+            /**
+             * 绑定全局事件（光标、点击、视差、过滤）
+             */
+            bindGlobalEvents() {
+                // 1. 全局鼠标追踪：驱动水墨光标与多层视差
                 window.addEventListener('mousemove', (e) => {
                     this.handleCursor(e);
                     this.handleParallax(e);
                 });
 
-                // 点击洇开
-                window.addEventListener('mousedown', (e) => {
-                    const stain = document.createElement('div');
-                    stain.className = 'ink-stain';
-                    stain.style.left = e.clientX - 20 + 'px';
-                    stain.style.top = e.clientY - 20 + 'px';
-                    stain.style.width = '40px'; stain.style.height = '40px';
-                    document.body.appendChild(stain);
-                    setTimeout(() => stain.remove(), 800);
-                });
+                // 2. 点击水墨洇开动画
+                window.addEventListener('mousedown', (e) => this.createInkEffect(e));
 
-                // 序列过滤 (NO.1 - NO.4)
-                document.querySelectorAll('.series-mark').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        document.querySelectorAll('.series-mark').forEach(el => el.classList.remove('active'));
-                        const node = e.currentTarget;
-                        node.classList.add('active');
-                        this.state.currentSeries = node.dataset.series;
-                        this.render();
-                        document.getElementById('shopArea').scrollIntoView({behavior:'smooth'});
-                    });
-                });
-
-                // 类型过滤
-                document.querySelectorAll('.v-filter button').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        document.querySelectorAll('.v-filter button').forEach(el => el.classList.remove('active'));
-                        e.target.classList.add('active');
-                        this.state.currentCat = e.target.dataset.cat;
-                        this.render();
-                    });
-                });
-
-                // 滚动进度
+                // 3. 滚动进度监控
                 window.addEventListener('scroll', () => {
-                    const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
-                    const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-                    this.dom.progress.style.width = (winScroll / height) * 100 + "%";
+                    const scrolled = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+                    document.getElementById('progressBar').style.width = scrolled + '%';
+                });
+
+                // 4. 四级系列过滤 (NO.01 - NO.04)
+                document.querySelectorAll('.series-mark').forEach(mark => {
+                    mark.addEventListener('click', (e) => {
+                        document.querySelectorAll('.series-mark').forEach(el => el.classList.remove('active'));
+                        e.currentTarget.classList.add('active');
+                        this.state.series = e.currentTarget.dataset.series;
+                        this.render();
+                        // 自动平滑滚动到商品区
+                        document.getElementById('shopAnchor').scrollIntoView({behavior:'smooth'});
+                    });
+                });
+
+                // 5. 分类类型过滤
+                document.querySelectorAll('.filter-nav button').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.filter-nav button').forEach(el => el.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.state.category = e.target.dataset.cat;
+                        this.render();
+                    });
                 });
             }
 
+            /**
+             * 水墨光标核心逻辑
+             */
             handleCursor(e) {
                 const { clientX: x, clientY: y } = e;
                 this.dom.dot.style.transform = `translate(${x}px, ${y}px)`;
+                
+                // 墨晕延迟跟随
                 this.dom.wash.animate({
-                    transform: `translate(${x - 15}px, ${y - 15}px)`
+                    transform: `translate(${x}px, ${y}px)`
                 }, { duration: 600, fill: "forwards" });
 
-                const hoverable = e.target.closest('a, button, .box-card, .series-mark');
-                this.dom.wash.classList.toggle('ink-active', !!hoverable);
+                // 检测是否悬停在可点击物体上
+                const isHover = e.target.closest('a, button, .box-card, .series-mark, .social-footer i');
+                this.dom.wash.classList.toggle('ink-stain-active', !!isHover);
             }
 
+            /**
+             * 多层分色视差逻辑：筑梦可见度核心
+             */
             handleParallax(e) {
-                const x = (e.clientX - window.innerWidth / 2);
-                const y = (e.clientY - window.innerHeight / 2);
+                const moveX = (e.clientX - window.innerWidth / 2);
+                const moveY = (e.clientY - window.innerHeight / 2);
 
-                // 灵敏度定义
-                this.dom.zhu.style.transform = `translate(${x/10}px, ${y/8}px)`;
-                this.dom.meng.style.transform = `translate(${x/12}px, ${y/6}px)`;
-                this.dom.ji.style.transform = `translate(${x/25}px, ${y/20}px)`;
-                this.dom.yi.style.transform = `translate(${x/30}px, ${y/25}px)`;
-                this.dom.hero.style.transform = `scale(1.1) translate(${x/60}px, ${y/60}px)`;
+                // 前景字位移 - 极为灵敏 (筑梦)
+                this.dom.words.zhu.style.transform = `translate(${moveX / 8}px, ${moveY / 6}px)`;
+                this.dom.words.meng.style.transform = `translate(${moveX / 10}px, ${moveY / 5}px)`;
+
+                // 后景字位移 - 稳重 (冀遗)
+                this.dom.words.ji.style.transform = `translate(${moveX / 25}px, ${moveY / 20}px) rotate(-5deg)`;
+                this.dom.words.yi.style.transform = `translate(${moveX / 30}px, ${moveY / 25}px) rotate(10deg)`;
+
+                // 华塔大图微动
+                this.dom.hero.style.transform = `scale(1.1) translate(${moveX / 60}px, ${moveY / 60}px)`;
             }
 
-            toggleLogin() {
-                const display = this.dom.login.style.display;
-                this.dom.login.style.display = (display === 'flex') ? 'none' : 'flex';
+            createInkEffect(e) {
+                const div = document.createElement('div');
+                div.className = 'ink-click-stain';
+                div.style.left = e.clientX + 'px';
+                div.style.top = e.clientY + 'px';
+                document.body.appendChild(div);
+                setTimeout(() => div.remove(), 800);
             }
 
-            toggleCart() {
-                this.dom.cartDrawer.classList.toggle('open');
-            }
-
-            generateMockData() {
-                // 构建 4 个系列的数据，每个系列 12 个商品
-                const cats = ['craft', 'sculpt', 'paper'];
+            /**
+             * 模拟核心数据库：分系列生成商品
+             */
+            generateDatabase() {
+                const cats = ['craft', 'stone', 'paper', 'hidden'];
+                const rarities = ['SSR', 'SECRET', 'UR', 'R'];
+                
+                // 生成 4 个级别系列，每个系列 12 个数据，以便展示分页
                 for(let s=1; s<=4; s++) {
                     for(let i=1; i<=12; i++) {
                         this.state.data.push({
                             id: s * 100 + i,
                             series: `0${s}`,
-                            cat: cats[Math.floor(Math.random()*3)],
-                            name: `【序列0${s}】正定华塔·瑞兽盲盒 - ${i}号藏品`,
-                            price: 199 + s * 100,
-                            rarity: s === 4 ? 'SECRET' : (s === 3 ? 'UR' : 'SSR')
+                            cat: cats[Math.floor(Math.random()*4)],
+                            rarity: rarities[s-1],
+                            name: `【${rarities[s-1]}限定】广惠寺系列 ${s}号 · 第 ${i} 款数字盲盒`,
+                            price: 199 + (s * 100) + (i * 10)
                         });
                     }
                 }
             }
 
+            /**
+             * 核心渲染函数：2x3 强制网格逻辑
+             */
             render() {
-                this.dom.grid.innerHTML = '';
+                this.dom.grid.innerHTML = "";
                 
-                // 联合过滤：系列 + 分类
-                let list = this.state.data.filter(item => item.series === this.state.currentSeries);
-                if(this.state.currentCat !== 'all') {
-                    list = list.filter(item => item.cat === this.state.currentCat);
+                // 级联过滤逻辑
+                let filtered = this.state.data.filter(item => item.series === this.state.series);
+                if(this.state.category !== 'all') {
+                    filtered = filtered.filter(item => item.cat === this.state.category);
                 }
 
-                // 取前 6 个展示 (2x3)
-                const pageList = list.slice(0, 6);
+                // 只取前 6 个（2行3列固定逻辑）
+                const displayList = filtered.slice(0, 6);
 
-                pageList.forEach((item, index) => {
-                    const card = document.createElement('div');
-                    card.className = 'box-card';
-                    card.innerHTML = `
-                        <div class="card-no">NO.${item.id}</div>
-                        <div class="card-rarity">${item.rarity}</div>
-                        <div class="card-img-gate">
-                            <img src="https://placehold.co/400x500/2F4842/C1A268?text=BOX+0${this.state.currentSeries}" class="main-img">
-                        </div>
-                        <div class="card-meta">
-                            <span class="price">¥${item.price}</span>
-                            <span class="cat-tag">${item.cat}</span>
-                        </div>
-                        <h3 class="card-title">${item.name}</h3>
-                        <button class="btn-add-cart" onclick="engine.addToBag()">揭晓惊喜惊喜</button>
-                    `;
-                    
-                    this.bindTilt(card);
+                displayList.forEach((item, index) => {
+                    const card = this.createCard(item);
                     this.dom.grid.appendChild(card);
+                    
+                    // 物理阻尼绑定
+                    this.bindTiltEffect(card);
+                    
+                    // 异步阶梯加载动画
                     setTimeout(() => card.classList.add('revealed'), index * 100);
                 });
             }
 
-            bindTilt(card) {
+            createCard(data) {
+                const div = document.createElement('div');
+                div.className = 'box-card';
+                div.innerHTML = `
+                    <div class="card-no-tag">NO.${data.id}</div>
+                    <div class="card-ssr-tag">${data.rarity}</div>
+                    <div class="card-img-gate">
+                        <img src="https://placehold.co/400x500/2F4842/C1A268?text=${data.rarity}+BOX" class="main-img">
+                    </div>
+                    <div class="card-price-row">
+                        <span class="card-price">¥${data.price}</span>
+                        <span class="card-type-tag">${data.cat}</span>
+                    </div>
+                    <h3 class="card-title">${data.name}</h3>
+                    <button class="btn-add-bag" onclick="mysteryEngine.addToBag()">揭晓惊喜惊喜</button>
+                `;
+                return div;
+            }
+
+            bindTiltEffect(card) {
                 card.addEventListener('mousemove', (e) => {
                     const r = card.getBoundingClientRect();
                     const x = (e.clientX - r.left) / r.width - 0.5;
@@ -617,15 +751,35 @@
                 });
             }
 
+            toggleLogin() {
+                const modal = this.dom.login;
+                const isShowing = modal.style.display === 'flex';
+                if(!isShowing) {
+                    modal.style.display = 'flex';
+                    setTimeout(() => document.body.classList.add('modal-active'), 10);
+                } else {
+                    document.body.classList.remove('modal-active');
+                    setTimeout(() => modal.style.display = 'none', 500);
+                }
+            }
+
+            toggleCart() {
+                this.dom.cart.classList.toggle('open');
+            }
+
             addToBag() {
                 this.state.cart++;
-                document.getElementById('cartCount').textContent = this.state.cart;
-                const btn = document.getElementById('cartCount');
-                btn.animate([{transform:'scale(1)'},{transform:'scale(1.5)'},{transform:'scale(1)'}], {duration:300});
+                const badge = document.getElementById('cartCountBadge');
+                badge.textContent = this.state.cart;
+                badge.animate([
+                    {transform: 'scale(1)'}, {transform: 'scale(1.8)'}, {transform: 'scale(1)'}
+                ], {duration: 400});
+                alert("惊喜已入袋！");
             }
         }
 
-        const engine = new BlindBoxEngine();
+        // 启动旗舰引擎
+        const mysteryEngine = new MysteryBoxEngine();
     </script>
 </body>
 </html>
