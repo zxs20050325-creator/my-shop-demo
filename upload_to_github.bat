@@ -7,7 +7,7 @@ if exist .git (
 ) else (
     echo 初始化新的git仓库...
     git init
-    if %error% neq 0 (
+    if errorlevel 1 (
         echo 错误：无法初始化git仓库，请确保已安装Git
         pause
         exit /b 1
@@ -31,7 +31,7 @@ if errorlevel 1 (
     
     REM 提交更改
     git commit -m "feat: 上传冀遗筑梦项目文件"
-    if %error% neq 0 (
+    if errorlevel 1 (
         echo 警告：提交失败，可能没有更改需要提交
     )
 )
@@ -45,16 +45,19 @@ if "%REPO_URL%"=="" (
     REM 设置远程仓库
     git remote set-url origin %REPO_URL%
     
+    REM 推送前先拉取最新代码（如果有的话）
+    git pull origin master --allow-unrelated-histories 2>nul
+    
     REM 推送到远程仓库
     echo 正在推送到远程仓库...
     git push -u origin master --force-with-lease
     
-    if %error% equ 0 (
-        echo 成功上传到GitHub！
-    ) else (
+    if errorlevel 1 (
         echo 推送失败，请检查网络连接或仓库权限
         pause
         exit /b 1
+    ) else (
+        echo 成功上传到GitHub！
     )
 )
 
