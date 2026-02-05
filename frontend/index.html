@@ -106,9 +106,9 @@
         .filter-item.active { border-left-color: var(--c-accent); color: var(--c-primary); font-weight: 900; background: rgba(193, 162, 104, 0.08); }
 
         /* [8. 商品卡片比例调整] */
-        .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, auto); gap: 30px; perspective: 2500px; }
+        .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, auto); gap: 50px; perspective: 2500px; }
         .box-card { 
-            background: #fff; padding: 15px; border: 1.5px solid #F0F0F0; position: relative; transform-style: preserve-3d; transition: transform 0.6s var(--trans-spring), box-shadow 0.4s ease, opacity 0.5s ease; opacity: 0; transform: translateY(60px); 
+            background: #54b237; padding: 15px; border: 1.5px solid #68be36; position: relative; transform-style: preserve-3d; transition: transform 0.6s var(--trans-spring), box-shadow 0.4s ease, opacity 0.5s ease; opacity: 0; transform: translateY(60px); 
         }
         .box-card.revealed { opacity: 1; transform: translateY(0); }
         .box-card:hover { border-color: var(--c-accent); box-shadow: 0 25px 50px rgba(0,0,0,0.08); }
