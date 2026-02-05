@@ -480,7 +480,7 @@
                 const totalPriceElement = document.getElementById('total-price');
 
                 if (cartItems.length === 0) {
-                    cartItemsContainer.innerHTML = '<div class="empty-cart">购物车为空</div>';
+                    cartItemsContainer.innerHTML = '<div class="empty-cart">购物车为空<br><small>点击商品可加入购物车</small></div>';
                     itemCountElement.textContent = '0';
                     totalPriceElement.textContent = '0.00';
                     return;
