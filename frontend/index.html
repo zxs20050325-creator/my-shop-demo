@@ -52,6 +52,19 @@
 
         /* [3. 侧边栏还原] */
 <<<<<<< HEAD
+        .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: var(--sidebar-width); background: #fff; border-right: 1.5px solid var(--c-primary); display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 40px 0; z-index: 4500; }
+        .brand-plaque { background: var(--c-primary); color: #fff; padding: 20px 10px; border-radius: 2px; box-shadow: 4px 4px 0 var(--c-accent); transition: var(--trans-spring); }
+        .brand-vertical { writing-mode: vertical-rl; font-size: 20px; font-weight: 900; letter-spacing: 5px; }
+        
+        .series-axis { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 35px; position: relative; }
+        .series-axis::after { content: ""; position: absolute; left: 50%; top: 0; height: 100%; width: 1px; background: linear-gradient(to bottom, transparent, var(--c-grid), transparent); transform: translateX(-50%); }
+        .series-mark { font-family: var(--f-mono); font-size: 11px; transition: 0.3s; color: #BBB; display: flex; flex-direction: column; align-items: center; background: #fff; z-index: 2; padding: 5px; }
+        .series-mark span { writing-mode: vertical-rl; margin-top: 10px; font-size: 10px; opacity: 0; transition: 0.3s; transform: translateY(10px); color: var(--c-primary); }
+        .series-mark:hover, .series-mark.active { color: var(--c-primary); transform: scale(1.2); }
+        .series-mark:hover span, .series-mark.active span { opacity: 1; transform: translateY(0); }
+        .social-links { display: flex; flex-direction: column; gap: 20px; font-size: 22px; color: var(--c-primary); opacity: 0.6; }
+>>>>>>> 7acd5282920d759aefc9c1695e569f0cb1b0aa5d
+        /* [3. 侧边栏还原] */
         .sidebar { 
             position: fixed; 
             left: 0; top: 0; bottom: 0; 
@@ -533,8 +546,3 @@
                 alert("遗珍已入袋！");
             }
         }
-
-        const engine = new HeritageEngine();
-    </script>
-</body>
-</html>
