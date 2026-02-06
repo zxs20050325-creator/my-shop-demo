@@ -132,7 +132,7 @@
 
         /* 图片容器比例回归：350px 黄金高度 */
         .card-img-gate { height: 350px; width: 100%; overflow: hidden; background: #FAFAFA; position: relative; margin-bottom: 25px; border: 0.5px solid #F5F5F5; transform: translateZ(30px); }
-        .box-card .main-img { width: 100%; height: 100%; object-fit: cover; transition: 0.8s cubic-bezier(0.165, 0.84, 0.44, 1); }
+        .card-img-gate .main-img, .box-card .main-img { width: 100%; height: 100%; object-fit: cover; object-position: center; transition: 0.8s cubic-bezier(0.165, 0.84, 0.44, 1); }
         .box-card:hover .main-img { transform: scale(1.1) rotate(2deg); filter: brightness(1.05); }
 
         .card-price-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; transform: translateZ(40px); }
@@ -723,10 +723,3 @@
                 }, 2500);
             }
         }
-
-        const engine = new HeritageEngine();
-    </script>
-</body>
-```
-
-```
