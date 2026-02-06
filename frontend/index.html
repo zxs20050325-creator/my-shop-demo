@@ -560,7 +560,8 @@
                         price: 99 + (i * 20),
                         rarity: i % 5 === 0 ? 'SSR' : (i % 3 === 0 ? 'SR' : 'R'),
                         series: '01',
-                        isOpened: false
+                        isOpened: false,
+                        img: `${String(i + 1).padStart(3, '0')}.jpg`
                     }));
                 }
                 this.renderGrid();
@@ -581,10 +582,21 @@
                     const card = document.createElement('div');
                     card.className = `blind-card ${item.isOpened ? 'is-revealed' : ''} hover-target`;
                     
-                    // 真实图片拼接逻辑 (LEGACY PROTECTED)
+                    // 真实图片拼接逻辑 - 修复路径处理
                     let imgSrc = item.img;
-                    if(imgSrc && !imgSrc.startsWith('http')) imgSrc = `${this.API_BASE}/images/${imgSrc}`;
-                    if(!imgSrc) imgSrc = `https://placehold.co/400x600/2F4842/C1A268?text=NO+IMAGE`;
+                    if (imgSrc) {
+                        // 如果图片路径以 / 开头，直接拼接 API_BASE
+                        if (imgSrc.startsWith('/')) {
+                            imgSrc = `${this.API_BASE}${imgSrc}`;
+                        } 
+                        // 如果是相对路径且不以 http 开头
+                        else if (!imgSrc.startsWith('http')) {
+                            imgSrc = `${this.API_BASE}/images/${imgSrc}`;
+                        }
+                    }
+                    if (!imgSrc) {
+                        imgSrc = `https://placehold.co/400x600/2F4842/C1A268?text=NO+IMAGE`;
+                    }
 
                     card.innerHTML = `
                         <div class="reveal-vfx vfx-${item.rarity}" id="vfx-${item.id}"></div>

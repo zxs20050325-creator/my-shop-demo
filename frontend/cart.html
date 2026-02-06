@@ -652,10 +652,17 @@
                 const itemTotal = item.price || 0;
                 totalPrice += itemTotal;
                 
-                // 处理图片路径
+                // 处理图片路径 - 修复路径处理
                 let imgSrc = item.img || '';
-                if (imgSrc && !imgSrc.startsWith('http')) {
-                    imgSrc = `${API_BASE}/images/${imgSrc}`;
+                if (imgSrc) {
+                    // 如果图片路径以 / 开头，直接拼接 API_BASE
+                    if (imgSrc.startsWith('/')) {
+                        imgSrc = `${API_BASE}${imgSrc}`;
+                    } 
+                    // 如果是相对路径且不以 http 开头
+                    else if (!imgSrc.startsWith('http')) {
+                        imgSrc = `${API_BASE}/images/${imgSrc}`;
+                    }
                 }
                 if (!imgSrc) {
                     imgSrc = `https://placehold.co/400x600/2F4842/C1A268?text=NO+IMAGE`;
