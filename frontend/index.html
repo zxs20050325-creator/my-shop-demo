@@ -313,4 +313,275 @@
             <h2 style="text-align:center; margin-bottom:40px; font-size:32px;">结缘认证</h2>
             <input type="text" class="ink-input" placeholder="输入您的名号...">
             <input type="password" class="ink-input" placeholder="加密秘钥...">
-            <button class="btn-reveal" onclick="engine.showNotification('数字化同步中...', 2000)">开启同步</button>
+            <button class="btn-reveal" onclick="alert('数字化同步中...')">开启同步</button>
+        </div>
+    </div>
+
+    <div class="drawer-overlay" id="cartDrawer">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2.5px solid var(--c-primary); padding-bottom:20px; margin-bottom:40px;">
+            <span style="font-size: 28px; font-weight: 900;">惊喜袋 / BAG</span>
+            <button onclick="engine.toggleCart()" style="font-size:30px; background:none; border:none;">&times;</button>
+        </div>
+        <p style="text-align:center; margin-top:100px; opacity:0.3;">惊喜袋中尚无遗珍</p>
+    </div>
+
+    <script>
+        /**
+         * 旗舰版交互引擎 V5.0
+         * 包含：3D物理阻尼、水墨光标动画、四级级联过滤
+         */
+        class HeritageEngine {
+            constructor() {
+                this.state = { cart: 0, series: '01', category: 'all', data: [] };
+                this.dom = {
+                    dot: document.getElementById('cursor-dot'),
+                    wash: document.getElementById('cursor-wash'),
+                    zhu: document.getElementById('word-zhu'),
+                    meng: document.getElementById('word-meng'),
+                    heroImg: document.getElementById('heroImg'),
+                    grid: document.getElementById('productGrid'),
+                    login: document.getElementById('loginModal'),
+                    cart: document.getElementById('cartDrawer'),
+                    progress: document.getElementById('progressBar')
+                };
+                this.init();
+            }
+
+            init() {
+                this.bindGlobalEvents();
+                this.setupMagneticEffect();
+                this.generateDatabase(); 
+                this.render();
+            }
+
+            bindGlobalEvents() {
+                window.addEventListener('mousemove', (e) => {
+                    this.handleCursor(e);
+                    this.handleParallax(e);
+                });
+
+                window.addEventListener('mousedown', (e) => {
+                    const node = document.createElement('div');
+                    node.className = 'ink-click-node';
+                    node.style.left = e.clientX + 'px';
+                    node.style.top = e.clientY + 'px';
+                    document.body.appendChild(node);
+                    setTimeout(() => node.remove(), 800);
+                });
+
+                window.addEventListener('scroll', () => {
+                    const s = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+                    document.getElementById('progressBar').style.width = s + '%';
+                });
+
+                // 系列过滤
+                document.querySelectorAll('.series-mark').forEach(m => {
+                    m.addEventListener('click', (e) => {
+                        document.querySelectorAll('.series-mark').forEach(el => el.classList.remove('active'));
+                        e.currentTarget.classList.add('active');
+                        this.state.series = e.currentTarget.dataset.series;
+                        this.render();
+                        document.getElementById('shopArea').scrollIntoView({behavior:'smooth'});
+                    });
+                });
+
+                // 分类过滤
+                document.querySelectorAll('.filter-item').forEach(b => {
+                    b.addEventListener('click', (e) => {
+                        document.querySelectorAll('.filter-item').forEach(el => el.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.state.category = e.target.dataset.cat;
+                        this.render();
+                    });
+                });
+            }
+
+            handleCursor(e) {
+                this.dom.dot.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+                this.dom.wash.animate({ transform: `translate(${e.clientX}px, ${e.clientY}px)` }, { duration: 600, fill: "forwards" });
+                const isHover = e.target.closest('a, button, .box-card, .series-mark');
+                this.dom.wash.classList.toggle('ink-stain-active', !!isHover);
+            }
+
+            handleParallax(e) {
+                const mx = (e.clientX - window.innerWidth / 2);
+                const my = (e.clientY - window.innerHeight / 2);
+                this.dom.zhu.style.transform = `translate(${mx / 8}px, ${my / 6}px)`;
+                this.dom.meng.style.transform = `translate(${mx / 10}px, ${my / 5}px)`;
+                this.dom.heroImg.style.transform = `scale(1.1) translate(${mx / 60}px, ${my / 60}px)`;
+            }
+
+            setupMagneticEffect() {
+                const targets = document.querySelectorAll('.brand-plaque, .cart-trigger, .social-links i');
+                targets.forEach(t => {
+                    t.addEventListener('mousemove', (e) => {
+                        const r = t.getBoundingClientRect();
+                        const x = e.clientX - r.left - r.width/2;
+                        const y = e.clientY - r.top - r.height/2;
+                        t.style.transform = `translate(${x * 0.4}px, ${y * 0.4}px) scale(1.1)`;
+                    });
+                    t.addEventListener('mouseleave', () => t.style.transform = `translate(0,0) scale(1)`);
+                });
+            }
+
+            generateDatabase() {
+                const cats = ['stone', 'craft', 'paper', 'hidden'];
+                const rarities = ['SSR', 'SECRET', 'UR', 'R'];
+                for(let s=1; s<=4; s++) {
+                    for(let i=1; i<=12; i++) {
+                        this.state.data.push({
+                            id: s * 100 + i, series: `0${s}`,
+                            cat: cats[Math.floor(Math.random()*4)], rarity: rarities[s-1],
+                            name: `【序列0${s}】正定华塔·珍藏系列 ${i}号`,
+                            price: 199 + (s * 100) + (i * 10)
+                        });
+                    }
+                }
+            }
+
+            render() {
+                this.dom.grid.innerHTML = "";
+                let filtered = this.state.data.filter(it => it.series === this.state.series);
+                if(this.state.category !== 'all') filtered = filtered.filter(it => it.cat === this.state.category);
+                
+                filtered.slice(0, 6).forEach((item, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'box-card';
+                    card.innerHTML = `
+                        <div class="card-no">NO.${item.id}</div>
+                        <div class="card-ssr">${item.rarity}</div>
+                        <div class="card-img-gate">
+                            <img src="https://placehold.co/400x500/2F4842/C1A268?text=JIYI+BOX+${this.state.series}" class="main-img">
+                        </div>
+                        <div class="card-price-row">
+                            <span class="card-price">¥${item.price}</span>
+                            <span class="card-cat">${item.cat}</span>
+                        </div>
+                        <h3 class="card-title">${item.name}</h3>
+                        <div style="position: relative;">
+                            <button class="btn-reveal" onclick="engine.addToBag()">揭晓数字化惊喜</button>
+                            <button class="btn-show-real" onclick="engine.showRealPhoto(this, ${item.series}, ${item.id})">查看真实照片</button>
+                            <div class="real-photo-overlay" id="overlay-${item.id}">
+                                <div class="real-photo-content">
+                                    <img src="https://placehold.co/600x800/2F4842/C1A268?text=真实商品图片-${item.series}-${item.id}" alt="真实商品图片" onerror="this.onerror=null;this.src='https://placehold.co/600x800/E0DED9/2F4842?text=图片加载失败';"/>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    this.bindTilt(card);
+                    this.dom.grid.appendChild(card);
+                    setTimeout(() => card.classList.add('revealed'), index * 100);
+                });
+            }
+
+            bindTilt(card) {
+                card.addEventListener('mousemove', (e) => {
+                    const r = card.getBoundingClientRect();
+                    const x = (e.clientX - r.left) / r.width - 0.5;
+                    const y = (e.clientY - r.top) / r.height - 0.5;
+                    card.style.transform = `perspective(1000px) rotateY(${x*20}deg) rotateX(${-y*20}deg) scale(1.05)`;
+                });
+                card.addEventListener('mouseleave', () => card.style.transform = `perspective(1000px) rotateY(0) rotateX(0) scale(1)`);
+            }
+
+            toggleLogin() { this.dom.login.style.display = (this.dom.login.style.display === 'flex') ? 'none' : 'flex'; }
+            toggleCart() { 
+                this.dom.cart.classList.toggle('open');
+                
+                // 添加点击外部区域关闭功能
+                if(this.dom.cart.classList.contains('open')) {
+                    // 如果抽屉是打开的，添加点击外部关闭功能
+                    const closeCart = (e) => {
+                        if (!this.dom.cart.contains(e.target) && e.target !== document.querySelector('.cart-trigger')) {
+                            this.dom.cart.classList.remove('open');
+                            document.removeEventListener('click', closeCart);
+                        }
+                    };
+                    
+                    setTimeout(() => {
+                        document.addEventListener('click', closeCart);
+                    }, 10);
+                }
+            }
+            
+            addToBag() {
+                this.state.cart++;
+                document.getElementById('cartBadge').textContent = this.state.cart;
+                this.showNotification("遗珍已入袋！", 2000);
+            }
+            
+            showNotification(message, duration) {
+                // 创建通知元素
+                const notification = document.createElement('div');
+                notification.className = 'notification-toast';
+                notification.textContent = message;
+                
+                // 添加样式
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: rgba(47, 72, 66, 0.9);
+                    color: white;
+                    padding: 12px 24px;
+                    border-radius: 4px;
+                    z-index: 10000;
+                    font-family: var(--f-serif);
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    animation: slideInRight 0.3s ease-out;
+                `;
+                
+                // 添加到页面
+                document.body.appendChild(notification);
+                
+                // 自动移除
+                setTimeout(() => {
+                    notification.style.animation = 'slideOutRight 0.3s ease-out';
+                    setTimeout(() => {
+                        if(notification.parentNode) {
+                            notification.parentNode.removeChild(notification);
+                        }
+                    }, 300);
+                }, duration);
+            }
+            
+            showRealPhoto(element, series, id) {
+                const overlay = document.getElementById(`overlay-${id}`);
+                if(overlay) {
+                    overlay.classList.toggle('show');
+                    
+                    // 如果是第一次打开，加载真实图片
+                    if(overlay.classList.contains('show')) {
+                        const img = overlay.querySelector('img');
+                        // 构造真实的图片路径，这里假设后端有12张图片，命名格式为 series-number.jpg
+                        const photoNumber = ((id - 1) % 12) + 1; // 循环使用1-12的图片编号
+                        img.src = `./images/${series}-${photoNumber}.jpg`; // 假设图片存放在images文件夹下
+                        
+                        // 添加点击外部区域关闭功能
+                        const closeOverlay = (e) => {
+                            if (!overlay.contains(e.target) && e.target !== element) {
+                                // 添加2秒缓慢消失动画
+                                overlay.style.transition = 'opacity 2s ease-out, visibility 2s';
+                                overlay.classList.remove('show');
+                                
+                                // 移除事件监听器
+                                document.removeEventListener('click', closeOverlay);
+                            }
+                        };
+                        
+                        setTimeout(() => {
+                            document.addEventListener('click', closeOverlay);
+                        }, 10);
+                    }
+                }
+            }
+        }
+
+        const engine = new HeritageEngine();
+    </script>
+</body>
+<<<<<<< HEAD
+</html>
+=======
+</html>
+>>>>>>> 560cbcb8fa07f9130464168dd29388c4a957be39
