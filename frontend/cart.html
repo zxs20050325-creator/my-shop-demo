@@ -409,6 +409,27 @@
             color: white;
         }
         
+        /* [新增功能：非阻塞通知框] */
+        .toast-notification { 
+            position: fixed; 
+            top: 20px; 
+            right: 20px; 
+            background: var(--c-primary); 
+            color: white; 
+            padding: 12px 20px; 
+            border-radius: 4px; 
+            font-family: var(--f-mono); 
+            font-size: 12px; 
+            opacity: 0; 
+            transform: translateX(100%); 
+            transition: all 0.3s ease; 
+            z-index: 9998; 
+        }
+        .toast-notification.show { 
+            opacity: 1; 
+            transform: translateX(0); 
+        }
+        
         .floating-cart {
             position: fixed;
             bottom: 30px;
@@ -670,19 +691,44 @@
         function checkout() {
             const currentUser = localStorage.getItem('jiyi_user');
             if (!currentUser) {
-                alert('请先登录！');
-                window.location.href = 'login.html';
+                // alert('请先登录！');
+                showToast('请先登录！');
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
                 return;
             }
 
             const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
             if (cart.length === 0) {
-                alert('购物车为空');
+                // alert('购物车为空');
+                showToast('购物车为空');
                 return;
             }
             
             // 跳转到支付页面
             window.location.href = 'pay.html';
+        }
+        
+        // 非阻塞通知框函数
+        function showToast(message) {
+            // 创建或获取现有的toast元素
+            let toast = document.getElementById('toastNotification');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'toastNotification';
+                toast.className = 'toast-notification';
+                document.body.appendChild(toast);
+            }
+            
+            // 设置消息并显示
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            // 2秒后自动隐藏
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
         }
     </script>
 </body>
