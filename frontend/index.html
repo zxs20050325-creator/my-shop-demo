@@ -65,9 +65,9 @@
 
         /* [4. 筑梦水印强化] */
         .front-parallax-layer { position: fixed; width: 100vw; height: 100vh; pointer-events: none; z-index: 4000; mix-blend-mode: color-burn; }
-        .dream-watermark { position: absolute; font-weight: 900; line-height: 1; opacity: 0.4; color: var(--c-primary); transition: transform 0.2s ease-out; text-shadow: 0 0 20px rgba(47, 72, 66, 0.3); }
-        #word-zhu { font-size: 28vw; top: -3%; left: 3%; color: #1a2f2d; }
-        #word-meng { font-size: 32vw; bottom: 5%; right: 0%; color: #9b7d4d; text-shadow: 0 0 30px rgba(193, 162, 104, 0.6); opacity: 0.55; }
+        .dream-watermark { position: absolute; font-weight: 900; line-height: 1; opacity: 0.15; color: var(--c-primary); transition: transform 0.2s ease-out; }
+        #word-zhu { font-size: 32vw; top: 0%; left: -5%; }
+        #word-meng { font-size: 32vw; bottom: 5%; right: -5%; color: var(--c-accent); }
 
         /* [5. 顶部功能条] */
         .main-content { margin-left: var(--sidebar-width); position: relative; z-index: 100; }
@@ -105,23 +105,41 @@
         .filter-item:hover { color: var(--c-primary); padding-left: 35px; }
         .filter-item.active { border-left-color: var(--c-accent); color: var(--c-primary); font-weight: 900; background: rgba(193, 162, 104, 0.08); }
 
-        /* [8. 商品卡片比例调整] */
-        .product-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr); /* 每行三个商品卡 */
-            gap: 20px; /* 卡片之间的间隔 */
-            flex: 1;
-            perspective: 1500px; /* 增加视距让倾斜更微妙 */
+        /* [8. 商品卡片比例还原 2x3] */
+        .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, auto); gap: 40px; perspective: 2500px; }
+        .box-card { 
+            background: #fff; padding: 25px; border: 1.5px solid #F0F0F0; position: relative; transform-style: preserve-3d; transition: transform 0.6s var(--trans-spring), box-shadow 0.4s ease, opacity 0.5s ease; opacity: 0; transform: translateY(60px); 
         }
-        .product-card {
-            background: transparent;
-            position: relative;
-            transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); /* 平滑过渡 */
-            cursor: pointer;
-            transform-style: preserve-3d;
-            width: calc(45% - 20px); /* 调整宽度为更宽 */
-            margin-bottom: 40px; /* 行间距 */
-        }
+        .box-card.revealed { opacity: 1; transform: translateY(0); }
+        .box-card:hover { border-color: var(--c-accent); box-shadow: 0 40px 80px rgba(0,0,0,0.08); }
+        
+        .card-no { position: absolute; top: 25px; left: 25px; font-family: var(--f-mono); font-size: 10px; background: var(--c-primary); color: #fff; padding: 3px 10px; z-index: 10; letter-spacing: 1px; }
+        .card-ssr { position: absolute; top: 25px; right: 25px; font-size: 10px; font-weight: 900; background: var(--c-danger); color: #fff; padding: 3px 12px; z-index: 10; box-shadow: 4px 4px 0 rgba(0,0,0,0.1); }
+
+        .card-img-gate { height: 280px; width: 100%; overflow: hidden; background: #FAFAFA; position: relative; margin-bottom: 25px; border: 0.5px solid #F5F5F5; transform: translateZ(30px); }
+        .box-card .main-img { width: 100%; height: 100%; object-fit: cover; transition: 0.8s cubic-bezier(0.165, 0.84, 0.44, 1); }
+        .box-card:hover .main-img { transform: scale(1.1) rotate(2deg); filter: brightness(1.05); }
+
+        .card-price-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; transform: translateZ(40px); }
+        .card-price { font-family: var(--f-mono); font-size: 26px; font-weight: 900; color: var(--c-danger); }
+        .card-cat { font-size: 9px; text-transform: uppercase; color: #AAA; letter-spacing: 2px; border: 1px solid #EEE; padding: 2px 6px; }
+        
+        .card-title { font-size: 16px; font-weight: 700; color: #333; height: 50px; overflow: hidden; line-height: 1.5; margin-bottom: 20px; transform: translateZ(45px); }
+        
+        .btn-reveal { width: 100%; padding: 16px; background: var(--c-primary); color: #fff; border: none; font-size: 12px; font-weight: 900; letter-spacing: 3px; transition: 0.3s; }
+        .btn-reveal:hover { background: var(--c-accent); letter-spacing: 6px; }
+
+        /* [组件：弹窗与抽屉] */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(47, 72, 66, 0.5); backdrop-filter: blur(8px); display: none; justify-content: center; align-items: center; z-index: 6000; }
+        .modal-box { background: var(--c-bg); padding: 50px; width: 420px; border: 2.5px solid var(--c-primary); box-shadow: 25px 25px 0 var(--c-accent); position: relative; animation: modalPop 0.5s var(--trans-spring); }
+        @keyframes modalPop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .ink-modal-close { position: absolute; top: 20px; right: 25px; font-size: 30px; }
+        .ink-input { width: 100%; padding: 15px; margin-bottom: 25px; background: none; border: none; border-bottom: 2.5px solid var(--c-primary); font-family: var(--f-serif); font-size: 16px; outline: none; }
+
+        .drawer-overlay { position: fixed; top: 0; right: -450px; width: 420px; height: 100%; background: #fff; border-left: 3px solid var(--c-primary); z-index: 5500; transition: 0.6s var(--trans-spring); padding: 50px; box-shadow: -20px 0 50px rgba(0,0,0,0.05); }
+        .drawer-overlay.open { right: 0; }
+        
+        .progress-line { position: fixed; top: 0; left: 0; width: 0%; height: 6px; background: var(--c-accent); z-index: 5000; transition: width 0.1s; }
 
         @media (max-width: 1200px) {
             .hero-section { flex-direction: column; height: auto; padding: 120px 40px; }
@@ -378,15 +396,7 @@
                             <span class="card-cat">${item.cat}</span>
                         </div>
                         <h3 class="card-title">${item.name}</h3>
-                        <div style="position: relative;">
-                            <button class="btn-reveal" onclick="engine.addToBag()">揭晓数字化惊喜</button>
-                            <button class="btn-show-real" onclick="engine.showRealPhoto(this, ${item.series}, ${item.id})">查看真实照片</button>
-                            <div class="real-photo-overlay" id="overlay-${item.id}">
-                                <div class="real-photo-content">
-                                    <img src="https://placehold.co/600x800/2F4842/C1A268?text=真实商品图片-${item.series}-${item.id}" alt="真实商品图片" onerror="this.onerror=null;this.src='https://placehold.co/600x800/E0DED9/2F4842?text=图片加载失败';"/>
-                                </div>
-                            </div>
-                        </div>
+                        <button class="btn-reveal" onclick="engine.addToBag()">揭晓数字化惊喜</button>
                     `;
                     this.bindTilt(card);
                     this.dom.grid.appendChild(card);
@@ -405,103 +415,15 @@
             }
 
             toggleLogin() { this.dom.login.style.display = (this.dom.login.style.display === 'flex') ? 'none' : 'flex'; }
-            toggleCart() { 
-                this.dom.cart.classList.toggle('open');
-                
-                // 添加点击外部区域关闭功能
-                if(this.dom.cart.classList.contains('open')) {
-                    // 如果抽屉是打开的，添加点击外部关闭功能
-                    const closeCart = (e) => {
-                        if (!this.dom.cart.contains(e.target) && e.target !== document.querySelector('.cart-trigger')) {
-                            this.dom.cart.classList.remove('open');
-                            document.removeEventListener('click', closeCart);
-                        }
-                    };
-                    
-                    setTimeout(() => {
-                        document.addEventListener('click', closeCart);
-                    }, 10);
-                }
-            }
-            
+            toggleCart() { this.dom.cart.classList.toggle('open'); }
             addToBag() {
                 this.state.cart++;
                 document.getElementById('cartBadge').textContent = this.state.cart;
-                this.showNotification("遗珍已入袋！", 2000);
-            }
-            
-            showNotification(message, duration) {
-                // 创建通知元素
-                const notification = document.createElement('div');
-                notification.className = 'notification-toast';
-                notification.textContent = message;
-                
-                // 添加样式
-                notification.style.cssText = `
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    background: rgba(47, 72, 66, 0.9);
-                    color: white;
-                    padding: 12px 24px;
-                    border-radius: 4px;
-                    z-index: 10000;
-                    font-family: var(--f-serif);
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                    animation: slideInRight 0.3s ease-out;
-                `;
-                
-                // 添加到页面
-                document.body.appendChild(notification);
-                
-                // 自动移除
-                setTimeout(() => {
-                    notification.style.animation = 'slideOutRight 0.3s ease-out';
-                    setTimeout(() => {
-                        if(notification.parentNode) {
-                            notification.parentNode.removeChild(notification);
-                        }
-                    }, 300);
-                }, duration);
-            }
-            
-            showRealPhoto(element, series, id) {
-                const overlay = document.getElementById(`overlay-${id}`);
-                if(overlay) {
-                    overlay.classList.toggle('show');
-                    
-                    // 如果是第一次打开，加载真实图片
-                    if(overlay.classList.contains('show')) {
-                        const img = overlay.querySelector('img');
-                        // 构造真实的图片路径，这里假设后端有12张图片，命名格式为 series-number.jpg
-                        const photoNumber = ((id - 1) % 12) + 1; // 循环使用1-12的图片编号
-                        img.src = `./images/${series}-${photoNumber}.jpg`; // 假设图片存放在images文件夹下
-                        
-                        // 添加点击外部区域关闭功能
-                        const closeOverlay = (e) => {
-                            if (!overlay.contains(e.target) && e.target !== element) {
-                                // 添加2秒缓慢消失动画
-                                overlay.style.transition = 'opacity 2s ease-out, visibility 2s';
-                                overlay.classList.remove('show');
-                                
-                                // 移除事件监听器
-                                document.removeEventListener('click', closeOverlay);
-                            }
-                        };
-                        
-                        setTimeout(() => {
-                            document.addEventListener('click', closeOverlay);
-                        }, 10);
-                    }
-                }
+                alert("遗珍已入袋！");
             }
         }
 
         const engine = new HeritageEngine();
     </script>
 </body>
-<<<<<<< HEAD
 </html>
-=======
-</html>
->>>>>>> 560cbcb8fa07f9130464168dd29388c4a957be39
