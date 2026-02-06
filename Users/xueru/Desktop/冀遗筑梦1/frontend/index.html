@@ -96,29 +96,63 @@
         .hero-content h1 { font-size: 68px; line-height: 1.1; margin-bottom: 30px; font-weight: 900; }
         .hero-content p { font-size: 18px; line-height: 2.1; color: #555; margin-bottom: 50px; text-align: justify; }
 
-        /* [7. 商品商城与新版分类轴] */
-        .shop-container { display: grid; grid-template-columns: 200px 1fr; margin-right: 15vw; padding: 100px; gap: 80px; border-top: 1px solid var(--c-grid); }
+        /* [7. 商城布局 - 核心修改：2x3网格锁定] */
+        .shop-container { 
+            display: grid; 
+            grid-template-columns: 200px 1fr; 
+            margin-right: 15vw; 
+            padding: 100px; 
+            gap: 80px; 
+            border-top: 1px solid var(--c-grid); 
+        }
         
-        .filter-aside { position: sticky; top: 150px; height: fit-content; display: flex; flex-direction: column; gap: 15px; }
-        .filter-aside label { font-family: var(--f-mono); font-size: 10px; color: #BBB; letter-spacing: 4px; margin-bottom: 15px; border-bottom: 1px solid var(--c-grid); padding-bottom: 10px; }
-        .filter-item { text-align: left; padding: 15px 25px; font-size: 16px; color: #888; transition: 0.3s; border-left: 2px solid transparent; }
-        .filter-item:hover { color: var(--c-primary); padding-left: 35px; }
-        .filter-item.active { border-left-color: var(--c-accent); color: var(--c-primary); font-weight: 900; background: rgba(193, 162, 104, 0.08); }
+        .product-grid { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 40px; 
+            perspective: 2500px; 
+        }
 
-        /* [8. 商品卡片比例还原 2x3] */
-        .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, auto); gap: 40px; perspective: 2500px; }
+        /* 卡片尺寸还原：不再瘦长，自动填充网格宽度 */
         .box-card { 
-            background: #fff; padding: 25px; border: 1.5px solid #F0F0F0; position: relative; transform-style: preserve-3d; transition: transform 0.6s var(--trans-spring), box-shadow 0.4s ease, opacity 0.5s ease; opacity: 0; transform: translateY(60px); 
+            background: #fff; 
+            padding: 25px; 
+            border: 1.5px solid #F0F0F0; 
+            position: relative; 
+            transform-style: preserve-3d; 
+            transition: transform 0.6s var(--trans-spring), box-shadow 0.4s ease, opacity 0.5s ease; 
+            opacity: 0; 
+            transform: translateY(60px); 
+            width: 100%; /* 还原全宽 */
         }
         .box-card.revealed { opacity: 1; transform: translateY(0); }
         .box-card:hover { border-color: var(--c-accent); box-shadow: 0 40px 80px rgba(0,0,0,0.08); }
-        
+
+        /* 调整图片容器尺寸 */
+        .card-img-gate { 
+            height: 400px; /* 增加高度 */
+            width: 100%; 
+            overflow: hidden; 
+            background: #FAFAFA; 
+            position: relative; 
+            margin-bottom: 25px; 
+            border: 0.5px solid #F5F5F5; 
+            transform: translateZ(30px); 
+        }
+        .box-card .main-img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            transition: 0.8s cubic-bezier(0.165, 0.84, 0.44, 1); 
+        }
+        .box-card:hover .main-img { 
+            transform: scale(1.1) rotate(2deg); 
+            filter: brightness(1.05); 
+        }
+
+        /* [8. 商品卡片比例还原 2x3] */
         .card-no { position: absolute; top: 25px; left: 25px; font-family: var(--f-mono); font-size: 10px; background: var(--c-primary); color: #fff; padding: 3px 10px; z-index: 10; letter-spacing: 1px; }
         .card-ssr { position: absolute; top: 25px; right: 25px; font-size: 10px; font-weight: 900; background: var(--c-danger); color: #fff; padding: 3px 12px; z-index: 10; box-shadow: 4px 4px 0 rgba(0,0,0,0.1); }
-
-        .card-img-gate { height: 280px; width: 100%; overflow: hidden; background: #FAFAFA; position: relative; margin-bottom: 25px; border: 0.5px solid #F5F5F5; transform: translateZ(30px); }
-        .box-card .main-img { width: 100%; height: 100%; object-fit: cover; transition: 0.8s cubic-bezier(0.165, 0.84, 0.44, 1); }
-        .box-card:hover .main-img { transform: scale(1.1) rotate(2deg); filter: brightness(1.05); }
 
         .card-price-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; transform: translateZ(40px); }
         .card-price { font-family: var(--f-mono); font-size: 26px; font-weight: 900; color: var(--c-danger); }
@@ -147,6 +181,11 @@
             .hero-tower-gate { height: 450px; margin-bottom: 60px; }
             .shop-container { margin-right: 0; grid-template-columns: 1fr; }
             .product-grid { grid-template-columns: repeat(2, 1fr); }
+            
+            /* 调整小屏幕下的图片容器尺寸 */
+            .card-img-gate { 
+                height: 300px; /* 减少高度 */
+            }
         }
     </style>
 </head>
@@ -380,23 +419,30 @@
             render() {
                 this.dom.grid.innerHTML = "";
                 let filtered = this.state.data.filter(it => it.series === this.state.series);
-                if(this.state.category !== 'all') filtered = filtered.filter(it => it.cat === this.state.category);
+                if(this.state.category !== 'all') {
+                    filtered = filtered.filter(it => it.cat === this.state.category);
+                }
                 
-                filtered.slice(0, 6).forEach((item, index) => {
+                // 核心锁定：一行三个，两行共六个
+                const start = (this.state.currentPage - 1) * 6;
+                const end = start + 6;
+                const pageItems = filtered.slice(start, end);
+
+                pageItems.forEach((item, index) => {
                     const card = document.createElement('div');
                     card.className = 'box-card';
                     card.innerHTML = `
                         <div class="card-no">NO.${item.id}</div>
-                        <div class="card-ssr">${item.rarity}</div>
+                        <div class="card-ssr">${item.rarity || 'R'}</div>
                         <div class="card-img-gate">
-                            <img src="https://placehold.co/400x500/2F4842/C1A268?text=JIYI+BOX+${this.state.series}" class="main-img">
+                            <img src="${item.img || `https://placehold.co/400x600/2F4842/C1A268?text=BOX+${this.state.series}`}" class="main-img" onerror="this.onerror=null;this.src='https://placehold.co/400x600/2F4842/C1A268?text=BOX+0${this.state.series}';">
                         </div>
                         <div class="card-price-row">
                             <span class="card-price">¥${item.price}</span>
-                            <span class="card-cat">${item.cat}</span>
+                            <span class="card-cat">${item.category || item.cat || 'craft'}</span>
                         </div>
                         <h3 class="card-title">${item.name}</h3>
-                        <button class="btn-reveal" onclick="engine.addToBag()">揭晓数字化惊喜</button>
+                        <button class="btn-reveal" onclick="engine.addToBag(${item.id}, '${item.name}', ${item.price})">揭晓数字化惊喜</button>
                     `;
                     this.bindTilt(card);
                     this.dom.grid.appendChild(card);
