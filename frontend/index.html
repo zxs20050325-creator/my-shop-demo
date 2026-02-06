@@ -15,7 +15,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>冀遗筑梦 | 全球首个非遗盲盒数字化平台</title>
+    <title>冀遗筑梦 | 全球首个非遗盲盒平台</title>
     
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;700;900&family=Ma+Shan+Zheng&family=Cinzel:wght@700&display=swap" rel="stylesheet">
@@ -71,11 +71,11 @@
         #cursor-wash { width: 35px; height: 35px; border: 1.5px solid rgba(47, 72, 66, 0.3); position: fixed; pointer-events: none; border-radius: 50%; z-index: 10000; transform: translate(-50%, -50%); transition: width 0.3s, height 0.3s, background 0.3s; mix-blend-mode: multiply; }
         .hover-active #cursor-wash { width: 65px; height: 65px; background: rgba(193, 162, 104, 0.15); border-color: var(--c-accent); filter: blur(1px); }
 
-        /* [方案二：分层视差大字] */
-        .watermark-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; font-family: var(--f-art); }
-        .watermark-word { position: absolute; font-size: 32vw; line-height: 1; opacity: 0.34; transition: transform 0.2s var(--trans-smooth); }
-        #wm-zhu { top: -5%; left: 2%; color: var(--c-primary); }
-        #wm-meng { bottom: -2%; right: -2%; color: var(--c-accent); }
+        /* [4. 筑梦水印] */
+        .watermark-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; opacity: 0.4; font-family: var(--f-art); overflow: hidden; }
+        .watermark-word { position: absolute; font-size: 32vw; line-height: 1; color: var(--c-primary); font-weight: 900; text-shadow: 0 0 20px rgba(47, 72, 66, 0.3); }
+        #wm-zhu { top: -5%; left: 0%; }
+        #wm-meng { bottom: 0%; right: 0%; color: var(--c-accent); text-shadow: 0 0 20px rgba(193, 162, 104, 0.4); }
 
         /* 
            ========================================
@@ -256,6 +256,26 @@
         @keyframes modalPop { from { transform: scale(0.8) translateY(40px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
         .ink-field { width: 100%; padding: 15px; border: none; border-bottom: 2px solid var(--c-primary); background: transparent; font-size: 18px; margin-bottom: 30px; outline: none; }
 
+        /* [新增功能：滚动进度指示器] */
+        .scroll-progress-bar { position: fixed; top: 0; left: 0; width: 0%; height: 3px; background: var(--c-accent); z-index: 9999; transition: width 0.3s ease; }
+        
+        /* [新增功能：快速返回顶部按钮] */
+        .back-to-top { position: fixed; bottom: 120px; right: 30px; width: 45px; height: 45px; background: var(--c-primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; visibility: hidden; transition: all 0.3s ease; z-index: 4000; }
+        .back-to-top.visible { opacity: 1; visibility: visible; }
+        .back-to-top:hover { background: var(--c-accent); transform: translateY(-3px); }
+        
+        /* [新增功能：非阻塞通知框] */
+        .toast-notification { position: fixed; top: 20px; right: 20px; background: var(--c-primary); color: white; padding: 12px 20px; border-radius: 4px; font-family: var(--f-mono); font-size: 12px; opacity: 0; transform: translateX(100%); transition: all 0.3s ease; z-index: 9998; }
+        .toast-notification.show { opacity: 1; transform: translateX(0); }
+        
+        /* [新增功能：分享按钮样式] */
+        .share-btn { background: none; border: 1px solid var(--c-primary); color: var(--c-primary); padding: 6px 12px; font-family: var(--f-mono); font-size: 10px; border-radius: 3px; cursor: pointer; transition: all 0.2s ease; margin-top: 10px; }
+        .share-btn:hover { background: var(--c-primary); color: white; }
+        
+        /* [新增功能：文化故事链接] */
+        .culture-link { display: block; margin-top: 15px; color: var(--c-accent); font-size: 12px; text-decoration: none; font-family: var(--f-mono); letter-spacing: 1px; }
+        .culture-link:hover { text-decoration: underline; }
+
         @media (max-width: 1024px) {
             .hero-section { flex-direction: column; height: auto; padding: 120px 40px; }
             .hero-tower-portal { width: 100%; height: 450px; margin-bottom: 50px; }
@@ -274,7 +294,18 @@
         <div class="watermark-word" id="wm-zhu">筑</div>
         <div class="watermark-word" id="wm-meng">梦</div>
     </div>
-
+    
+    <!-- [新增功能：滚动进度指示器] -->
+    <div class="scroll-progress-bar" id="scrollProgressBar"></div>
+    
+    <!-- [新增功能：快速返回顶部按钮] -->
+    <div class="back-to-top" id="backToTop" onclick="app.scrollToTop()">
+        <i class="fa fa-arrow-up" style="font-size: 18px;"></i>
+    </div>
+    
+    <!-- [新增功能：非阻塞通知框容器] -->
+    <div class="toast-notification" id="toastNotification"></div>
+    
     <!-- [侧边栏：固定侧边系列轴] -->
     <aside class="sidebar">
         <div class="brand-plaque hover-target">
@@ -330,8 +361,8 @@
 
             <div class="hero-text-box">
                 <span style="font-family: var(--f-mono); color: var(--c-accent); font-weight: 900; letter-spacing: 6px; display: block; margin-bottom: 20px;">DIGITAL HERITAGE COLLECTION</span>
-                <h1>冀遗筑梦<br>河北古建数字化复刻</h1>
-                <p>我们以正定古城 “四塔之艺魂”—— 广惠寺华塔为例，进行毫米级数字化的AR重构。不仅收获微缩复刻的华塔构件文创，更可解锁对应部位的 3D 数字模型，拾取属于你的千年古建遗珠。</p>
+                <h1>广惠寺华塔<br>数字化复刻系列</h1>
+                <p>我们以正定古城广惠寺华塔为例，实现河北古建筑的AR复刻与盲盒数字交互的沉浸式互动体验。
                 <button class="btn-reveal-all hover-target" onclick="document.getElementById('shop').scrollIntoView({behavior:'smooth'})">揭晓全系列盲盒</button>
             </div>
         </section>
@@ -428,6 +459,10 @@
                 this.loadData();
                 this.syncSession();
                 this.renderCart();
+                // [新增功能初始化]
+                this.initScrollProgress();
+                this.initBackToTop();
+                this.initKeyboardShortcuts();
             }
 
             // ---------------------------------------------------------
@@ -479,6 +514,11 @@
                     const val = e.target.value.toLowerCase();
                     const filtered = this.state.allProducts.filter(p => p.name.includes(val));
                     this.renderItems(filtered.slice(0, 6));
+                });
+                
+                // [新增功能：页面加载完成提示]
+                window.addEventListener('load', () => {
+                    this.showToast('页面加载完成');
                 });
             }
 
@@ -549,17 +589,25 @@
                                 <h3 class="artifact-name">${item.name}</h3>
                                 <div style="display:flex; justify-content:space-between; align-items:flex-end;">
                                     <span class="artifact-price">¥${item.price}</span>
-                                    <button class="cart-trigger hover-target" onclick="app.addToCart(event, ${item.id})" style="padding:10px 15px;">
-                                        <i class="fa fa-plus"></i>
-                                    </button>
+                                    <div style="display:flex; gap:8px;">
+                                        <button class="cart-trigger hover-target" onclick="app.addToCart(event, ${item.id})" style="padding:10px 15px;">
+                                            <i class="fa fa-plus"></i>
+                                        </button>
+                                        <button class="share-btn hover-target" onclick="app.shareProduct(${item.id})">
+                                            SHARE
+                                        </button>
+                                    </div>
                                 </div>
+                                <a href="javascript:void(0)" class="culture-link hover-target" onclick="app.showCultureStory(${item.id})">
+                                    了解更多文化故事 →
+                                </a>
                             </div>
                         </div>
                     `;
 
                     // 点击拆封仪式
                     card.onclick = (e) => {
-                        if(e.target.closest('button')) return;
+                        if(e.target.closest('button') || e.target.closest('.culture-link')) return;
                         if(!item.isOpened) this.openCeremony(item, card);
                     };
 
@@ -684,6 +732,141 @@
 
             triggerCelebration() {
                 console.log("SSR Gacha Celebration!");
+            }
+
+            // ---------------------------------------------------------
+            // [新增功能：滚动进度指示器]
+            // ---------------------------------------------------------
+            initScrollProgress() {
+                window.addEventListener('scroll', () => {
+                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+                    const scrollPercent = (scrollTop / scrollHeight) * 100;
+                    document.getElementById('scrollProgressBar').style.width = `${Math.min(scrollPercent, 100)}%`;
+                });
+            }
+
+            // ---------------------------------------------------------
+            // [新增功能：快速返回顶部]
+            // ---------------------------------------------------------
+            initBackToTop() {
+                const backToTopBtn = document.getElementById('backToTop');
+                window.addEventListener('scroll', () => {
+                    if (window.pageYOffset > 300) {
+                        backToTopBtn.classList.add('visible');
+                    } else {
+                        backToTopBtn.classList.remove('visible');
+                    }
+                });
+            }
+
+            scrollToTop() {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            }
+
+            // ---------------------------------------------------------
+            // [新增功能：非阻塞通知系统]
+            // ---------------------------------------------------------
+            showToast(message, duration = 2000) {
+                const toast = document.getElementById('toastNotification');
+                toast.innerText = message;
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, duration);
+            }
+
+            // ---------------------------------------------------------
+            // [新增功能：商品分享功能]
+            // ---------------------------------------------------------
+            shareProduct(productId) {
+                const product = this.state.allProducts.find(p => p.id === productId);
+                if (!product) return;
+                
+                const shareText = `我在冀遗筑梦发现了一个精美的非遗盲盒：${product.name} - ¥${product.price}`;
+                const shareUrl = window.location.href;
+                
+                if (navigator.share) {
+                    navigator.share({
+                        title: '冀遗筑梦 - 非遗盲盒',
+                        text: shareText,
+                        url: shareUrl
+                    }).catch(() => {
+                        this.copyToClipboard(shareUrl);
+                        this.showToast('链接已复制到剪贴板');
+                    });
+                } else {
+                    this.copyToClipboard(shareUrl);
+                    this.showToast('链接已复制到剪贴板');
+                }
+            }
+
+            copyToClipboard(text) {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+            }
+
+            // ---------------------------------------------------------
+            // [新增功能：键盘快捷键支持]
+            // ---------------------------------------------------------
+            initKeyboardShortcuts() {
+                document.addEventListener('keydown', (e) => {
+                    // ESC 关闭所有弹窗
+                    if (e.key === 'Escape') {
+                        this.closeAllModals();
+                    }
+                    // T 返回顶部
+                    if (e.key === 't' || e.key === 'T') {
+                        this.scrollToTop();
+                    }
+                    // S 打开搜索
+                    if (e.key === 's' || e.key === 'S') {
+                        document.getElementById('searchInput').focus();
+                    }
+                });
+            }
+
+            closeAllModals() {
+                document.getElementById('loginModal').style.display = 'none';
+                document.getElementById('cartDrawer').classList.remove('open');
+                document.getElementById('drawerMask').classList.remove('active');
+            }
+
+            // ---------------------------------------------------------
+            // [新增功能：文化故事扩展]
+            // ---------------------------------------------------------
+            showCultureStory(productId) {
+                const product = this.state.allProducts.find(p => p.id === productId);
+                if (!product) return;
+                
+                // 创建文化故事模态框
+                const modal = document.createElement('div');
+                modal.className = 'ink-modal';
+                modal.innerHTML = `
+                    <div class="modal-box" style="width: 500px;">
+                        <span class="hover-target" style="position:absolute; top:20px; right:25px; font-size:30px;" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                        <h2 style="text-align:center; font-size:28px; margin-bottom:30px;">${product.name}</h2>
+                        <p style="line-height: 1.8; margin-bottom: 20px;">
+                            这件非遗作品承载着深厚的文化底蕴。${product.name}源于中国传统工艺，
+                            体现了匠人们对传统文化的传承与创新。每一件作品都是独一无二的艺术品，
+                            蕴含着丰富的历史故事和文化价值。
+                        </p>
+                        <div style="text-align: center;">
+                            <button class="btn-reveal-all hover-target" style="width: 200px;" onclick="app.shareProduct(${productId})">
+                                分享这件作品
+                            </button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                modal.style.display = 'flex';
             }
         }
 
