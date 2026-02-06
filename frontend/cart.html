@@ -691,7 +691,6 @@
         function checkout() {
             const currentUser = localStorage.getItem('jiyi_user');
             if (!currentUser) {
-                // alert('请先登录！');
                 showToast('请先登录！');
                 setTimeout(() => {
                     window.location.href = 'login.html';
@@ -701,7 +700,6 @@
 
             const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
             if (cart.length === 0) {
-                // alert('购物车为空');
                 showToast('购物车为空');
                 return;
             }
