@@ -2,15 +2,13 @@
 <html lang="zh-CN">
 <!--
     =============================================================================
-    项目名称：冀遗筑梦 - 旗舰级数字化非遗盲盒平台 (REFINED V7.1)
+    项目名称：冀遗筑梦 - 旗舰级数字化非遗盲盒平台 (FINAL V7.2)
     
-    【变更日志】
-    1. 恢复英文风格顶部导航栏 (SEARCH / BAG / SIGN IN)
-    2. 恢复首屏巨幕华塔与 Scan Beam (扫描光效)
-    3. 修复左侧导航联动，点击真实切换系列数据
-    4. 商品网格严格锁定：3x2 布局 (一行3个，一页两行)
-    5. 重塑盲盒卡片样式，更具典藏级质感，保留核心翻转特效
-    6. 绝对保留其余底层架构与物理/水墨引擎
+    【V7.2 核心执行】
+    1. [Grid Layout] 严格执行 3列 x 2行 (PageSize = 6) 布局。
+    2. [Real Data] 图片路径深度适配后端 API，优先加载真实文物图片。
+    3. [Pagination] 底部页码可点击翻页。
+    4. [Legacy Protected] 扫描光效、水墨系统、抛物线、双态翻转卡片全部保留。
     =============================================================================
 -->
 <head>
@@ -41,7 +39,7 @@
             --trans-spring: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        /* [1. 全局与水墨光标] */
+        /* [1. 全局与水墨光标 (保持不变)] */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
             background-color: var(--c-bg); color: var(--c-primary); 
@@ -63,7 +61,7 @@
         #cursor-wash { width: 40px; height: 40px; border: 1px solid rgba(47, 72, 66, 0.4); position: fixed; pointer-events: none; border-radius: 50%; z-index: 10000; transform: translate(-50%, -50%); transition: width 0.3s, height 0.3s, background 0.3s; mix-blend-mode: multiply; }
         .hover-active #cursor-wash { width: 70px; height: 70px; background: rgba(193, 162, 104, 0.15); border-color: var(--c-accent); backdrop-filter: blur(2px); }
 
-        /* [2. 侧边栏] */
+        /* [2. 侧边栏 (保持不变)] */
         .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: var(--sidebar-width); background: #fff; border-right: 1px solid var(--c-primary); display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 40px 0; z-index: 4500; transition: width 0.3s; }
         .sidebar:hover { width: 160px; } 
         .brand-plaque { background: var(--c-primary); color: #fff; padding: 25px 12px; border-radius: 2px; box-shadow: 4px 4px 0 var(--c-accent); transition: var(--trans-spring); white-space: nowrap; overflow: hidden; }
@@ -75,7 +73,7 @@
         .series-name { font-size: 12px; display: none; white-space: nowrap; }
         .sidebar:hover .series-name { display: block; animation: fadeIn 0.3s; }
 
-        /* [3. 顶部导航 (恢复英文风格)] */
+        /* [3. 顶部导航 (英文风格保持不变)] */
         .main-content { margin-left: var(--sidebar-width); position: relative; z-index: 100; transition: margin 0.3s; }
         .top-bar { position: sticky; top: 0; height: 80px; padding: 0 60px; display: flex; justify-content: flex-end; align-items: center; gap: 30px; z-index: 4200; background: rgba(245, 243, 239, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(47, 72, 66, 0.05); }
         
@@ -93,14 +91,13 @@
         #wm-zhu { top: -5%; left: 0%; }
         #wm-meng { bottom: 0%; right: 0%; color: var(--c-accent); }
 
-        /* [5. Hero 区域 (恢复华塔光效风格)] */
+        /* [5. Hero 区域 (华塔 + 扫描光效 保持不变)] */
         .hero-section { height: 90vh; padding: 40px 100px; display: flex; align-items: center; overflow: hidden; position: relative; }
         .hero-tower-gate { width: 55%; height: 90%; position: relative; overflow: hidden; border: 1.5px solid var(--c-primary); box-shadow: 45px 45px 0 rgba(193, 162, 104, 0.15); transition: 0.8s cubic-bezier(0.16, 1, 0.3, 1); background: #000; }
         .hero-tower-gate:hover { transform: scale(1.02); box-shadow: 60px 60px 0 rgba(193, 162, 104, 0.25); }
         .hero-img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.1); transition: 1.5s var(--trans-spring); opacity: 0.9; }
         .hero-tower-gate:hover .hero-img { transform: scale(1.2) rotate(1deg); opacity: 1; }
         
-        /* 恢复的扫描光效 */
         .scan-beam { position: absolute; top: -100%; left: 0; width: 100%; height: 15%; background: linear-gradient(to bottom, transparent, rgba(193, 162, 104, 0.6), transparent); animation: scanLine 4s linear infinite; pointer-events: none; }
         @keyframes scanLine { 0% { top: -100%; } 100% { top: 200%; } }
 
@@ -110,7 +107,7 @@
         .btn-cta { padding: 15px 40px; background: var(--c-primary); color: #fff; border: none; font-family: var(--f-mono); letter-spacing: 2px; cursor: pointer; transition: 0.3s; position: relative; overflow: hidden; font-size: 16px; }
         .btn-cta:hover { background: var(--c-accent); box-shadow: 0 10px 20px rgba(193, 162, 104, 0.3); }
 
-        /* [6. 商品区 - 严格 3x2 网格] */
+        /* [6. 商品区 - 强制 3x2 网格] */
         .shop-section { padding: 80px 100px; position: relative; z-index: 10; border-top: 1px solid var(--c-grid); }
         .section-header { margin-bottom: 60px; display: flex; align-items: flex-end; justify-content: space-between; border-bottom: 1px solid var(--c-grid); padding-bottom: 20px; }
         .section-title { font-size: 32px; font-weight: bold; }
@@ -118,24 +115,499 @@
 
         .product-grid { 
             display: grid; 
-            /* 严格约束：一行三个 */
+            /* 【核心修正】固定3列，间距50px */
             grid-template-columns: repeat(3, 1fr); 
+            /* 固定2行的高度吗？不，由内容决定，但JS会限制数量 */
+            grid-template-rows: auto auto;
             gap: 50px; 
             perspective: 1500px;
+            min-height: 800px; /* 防止内容少时塌陷 */
         }
 
-            position: relative; background: transparent; height: 420px; cursor: pointer; 
->>>>>>> 190d17c (调整商品卡片高度为420px，优化真实照片显示效果，保持2行3列布局)
-            transition: transform 0.4s var(--trans-spring);
-        }
-        /* [7. 盲盒卡片 - 新版典藏样式] */
+        /* [7. 盲盒卡片 - 典藏方正样式] */
         .blind-card { 
-            position: relative; background: transparent; height: 420px; cursor: pointer; 
-            transition: transform 0.4s var(--trans-spring);
-        }
-=======
-            position: relative; background: transparent; height: 420px; cursor: pointer; 
->>>>>>> 190d17c (调整商品卡片高度为420px，优化真实照片显示效果，保持2行3列布局)
+            position: relative; background: transparent; 
+            aspect-ratio: 3/4; /* 保持黄金比例 */
+            cursor: pointer; 
             transition: transform 0.4s var(--trans-spring);
         }
         .blind-card:hover { transform: translateY(-10px); }
+
+        /* 状态A: 封印状态 */
+        .card-sealed { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: linear-gradient(135deg, var(--c-primary), #1a2a26); 
+            border: 2px solid var(--c-accent);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.5s, transform 0.6s;
+            backface-visibility: hidden; z-index: 2;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+        .card-sealed::before {
+            content: ''; position: absolute; width: calc(100% - 20px); height: calc(100% - 20px);
+            border: 1px dashed rgba(193, 162, 104, 0.4); pointer-events: none;
+        }
+        .seal-logo { font-family: var(--f-art); font-size: 48px; color: var(--c-accent); margin-bottom: 20px; text-shadow: 0 0 10px rgba(193, 162, 104, 0.5); }
+        .seal-text { font-family: var(--f-mono); font-size: 12px; color: #fff; letter-spacing: 4px; opacity: 0.8; }
+
+        /* 状态B: 解封状态 (显示真实图片) */
+        .card-revealed { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: #fff; padding: 0; overflow: hidden;
+            display: flex; flex-direction: column;
+            opacity: 0; transform: rotateY(180deg);
+            transition: opacity 0.5s, transform 0.6s;
+            backface-visibility: hidden; z-index: 1;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+        }
+        
+        .card-revealed.rarity-SSR { border: 2px solid var(--c-ssr); box-shadow: 0 0 20px rgba(255, 215, 0, 0.2); }
+        .card-revealed.rarity-SR { border: 2px solid var(--c-sr); }
+        .card-revealed.rarity-R { border: 1px solid var(--c-r); }
+
+        .artifact-img { width: 100%; height: 70%; object-fit: cover; background: #fafafa; }
+        .artifact-info { padding: 20px; text-align: left; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .artifact-name { font-size: 16px; font-weight: bold; color: var(--c-primary); line-height: 1.4; }
+        .artifact-meta { display: flex; justify-content: space-between; align-items: flex-end; }
+        .artifact-price { font-family: var(--f-mono); color: var(--c-danger); font-size: 20px; font-weight: bold; }
+        
+        .btn-add-mini { background: var(--c-primary); color: #fff; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; }
+        .btn-add-mini:hover { background: var(--c-accent); transform: scale(1.1); }
+
+        /* 动画类 */
+        .blind-card.is-open .card-sealed { opacity: 0; transform: rotateY(180deg); }
+        .blind-card.is-open .card-revealed { opacity: 1; transform: rotateY(360deg); z-index: 3; }
+        
+        .burst-effect {
+            position: absolute; top: 50%; left: 50%; width: 0; height: 0;
+            border-radius: 50%; background: radial-gradient(circle, var(--c-ssr) 0%, transparent 70%);
+            z-index: 5; pointer-events: none; opacity: 0;
+        }
+        @keyframes burstAnim {
+            0% { width: 0; height: 0; opacity: 0.8; }
+            100% { width: 600px; height: 600px; opacity: 0; }
+        }
+
+        /* [分页器] */
+        .paginator { margin-top: 60px; display: flex; justify-content: center; gap: 20px; }
+        .page-node { width: 45px; height: 45px; border: 1.5px solid var(--c-primary); background: none; font-family: var(--f-mono); font-weight: bold; color: var(--c-primary); transition: 0.3s; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .page-node:hover, .page-node.active { background: var(--c-primary); color: #fff; box-shadow: 4px 4px 0 var(--c-accent); }
+
+        /* [8. 购物车球] */
+        .fly-ball {
+            position: fixed; width: 20px; height: 20px; background: var(--c-danger);
+            border-radius: 50%; z-index: 9999; pointer-events: none;
+            box-shadow: 0 0 10px rgba(178, 34, 34, 0.5);
+            transition: top 0.8s cubic-bezier(0.19, 1, 0.22, 1), left 0.8s linear;
+        }
+
+        /* [9. 弹窗/抽屉] */
+        .drawer-overlay { position: fixed; top: 0; right: -400px; width: 380px; height: 100%; background: #fff; z-index: 5000; box-shadow: -10px 0 30px rgba(0,0,0,0.1); transition: 0.4s var(--trans-spring); padding: 40px; }
+        .drawer-overlay.open { right: 0; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 6000; display: none; justify-content: center; align-items: center; }
+        .login-box { background: #fff; padding: 50px; width: 400px; border-radius: 2px; position: relative; border-top: 4px solid var(--c-primary); box-shadow: 20px 20px 0 var(--c-accent); }
+        .ink-input { width: 100%; padding: 15px; border: none; border-bottom: 2px solid var(--c-grid); margin-bottom: 30px; font-family: var(--f-serif); outline: none; transition: 0.3s; background: transparent; font-size: 16px; }
+        .ink-input:focus { border-color: var(--c-primary); }
+
+        @media (max-width: 1024px) {
+            .hero-section { flex-direction: column; height: auto; padding: 100px 40px; }
+            .hero-tower-gate { width: 100%; height: 400px; margin-bottom: 40px; }
+            .hero-content { width: 100%; padding-left: 0; }
+            .product-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- [交互层] -->
+    <div id="cursor-dot"></div>
+    <div id="cursor-wash"></div>
+    <div class="watermark-layer">
+        <div class="watermark-word" id="wm-zhu">筑</div>
+        <div class="watermark-word" id="wm-meng">梦</div>
+    </div>
+
+    <!-- [侧边导航] -->
+    <aside class="sidebar">
+        <div class="brand-plaque hover-target">
+            <div class="brand-vertical">冀遗筑梦</div>
+        </div>
+        <div class="series-axis">
+            <div class="series-mark active hover-target" data-series="01">
+                <span class="series-num">01</span><span class="series-name">正定古城</span>
+            </div>
+            <div class="series-mark hover-target" data-series="02">
+                <span class="series-num">02</span><span class="series-name">避暑山庄</span>
+            </div>
+            <div class="series-mark hover-target" data-series="03">
+                <span class="series-num">03</span><span class="series-name">赵州古桥</span>
+            </div>
+        </div>
+        <div style="font-size: 12px; font-family: var(--f-mono);">V7.2</div>
+    </aside>
+
+    <div class="main-content">
+        <!-- [顶部导航 - 英文高定风格] -->
+        <header class="top-bar">
+            <div class="search-engine hover-target">
+                <i class="fa fa-search"></i>
+                <input type="text" placeholder="SEARCH ARCHIVE..." id="searchInput">
+            </div>
+
+            <div class="cart-trigger hover-target" onclick="app.toggleCart()">
+                <i class="fa fa-shopping-basket"></i>
+                <span>惊喜袋 / BAG</span>
+                <div id="cartBadge">0</div>
+            </div>
+
+            <div class="auth-gate hover-target" onclick="app.toggleLogin()">
+                <span id="userLabel">结缘 / SIGN IN</span>
+            </div>
+        </header>
+
+        <!-- [Hero 区域 - 华塔 + 扫描光效] -->
+        <section class="hero-section">
+            <div class="hero-tower-gate hover-target">
+                <img src="https://img.zcool.cn/community/016ca55d57b4c6a801214814d94b7e.jpg@1280w_1l_2o_100sh.jpg" class="hero-img" alt="华塔">
+                <div class="scan-beam"></div>
+            </div>
+
+            <div class="hero-content">
+                <span style="color:var(--c-accent); font-family:var(--f-mono); letter-spacing:8px; font-size:12px; margin-bottom:20px; display:block;">ZHENGDING WORLD HERITAGE</span>
+                <h1>正定广惠寺<br>数字化复刻华塔</h1>
+                <p>
+                    我们将正定古城“举世之孤例”进行高精度3D扫描重构。华塔塔身密布狮、象、佛、菩萨浮雕，通过数字解构，让沉睡千年的石刻艺术在指尖重现温热。
+                </p>
+                <button class="btn-cta hover-target" onclick="document.getElementById('shop').scrollIntoView({behavior:'smooth'})">揭晓全系列盲盒</button>
+            </div>
+        </section>
+
+        <!-- [商品区 - 3x2 网格] -->
+        <section class="shop-section" id="shop">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title" id="seriesTitle">遗珍阁 · 正定古城系列</h2>
+                    <span class="section-subtitle">ARCHIVE COLLECTION // SERIES 01</span>
+                </div>
+            </div>
+
+            <div class="product-grid" id="productGrid">
+                <!-- JS生成 -->
+            </div>
+
+            <!-- 分页器 -->
+            <div class="paginator" id="paginatorBox">
+                <!-- JS生成 -->
+            </div>
+        </section>
+
+        <footer style="text-align: center; padding: 80px; opacity: 0.4; font-size: 12px; font-family: var(--f-mono); border-top: 1px solid var(--c-grid);">
+            &copy; 2026 JIYI ZHUMENG. HEBEI HERITAGE DIGITALIZATION PROJECT.
+        </footer>
+    </div>
+
+    <!-- [抽屉与弹窗] -->
+    <div class="drawer-overlay" id="cartDrawer">
+        <div style="display:flex; justify-content:space-between; margin-bottom:40px; border-bottom: 2px solid var(--c-primary); padding-bottom: 20px;">
+            <h3 style="font-size:24px;">惊喜袋 / BAG</h3>
+            <span class="hover-target" style="cursor:pointer; font-size:24px;" onclick="app.toggleCart()">&times;</span>
+        </div>
+        <div id="cartItems" style="height: 70%; overflow-y: auto;">
+            <p style="text-align:center; color:#999; margin-top:50px; font-family: var(--f-mono);">EMPTY BAG</p>
+        </div>
+        <button class="btn-cta hover-target" style="width:100%; margin-top:20px;">前往结算</button>
+    </div>
+
+    <div class="modal-overlay" id="loginModal">
+        <div class="login-box">
+            <span class="hover-target" style="position:absolute; top:20px; right:25px; cursor:pointer; font-size:30px; color:#aaa;" onclick="app.toggleLogin()">&times;</span>
+            <h2 style="margin-bottom:40px; text-align:center; font-size: 28px;">认证身份</h2>
+            <input type="text" class="ink-input" id="username" placeholder="输入您的名号...">
+            <input type="password" class="ink-input" id="password" placeholder="验证密匙...">
+            <button class="btn-cta hover-target" style="width:100%;" onclick="app.login()">开启数字之旅</button>
+        </div>
+    </div>
+
+    <script>
+        class HeritageApp {
+            constructor() {
+                this.API_BASE = window.location.hostname.includes('onrender') 
+                    ? 'https://jiyi-zhumeng.onrender.com' 
+                    : 'http://localhost:3000';
+                
+                this.state = {
+                    products: [], 
+                    cartCount: 0,
+                    currentUser: null,
+                    currentSeries: '01',
+                    currentPage: 1,
+                    pageSize: 6 // 核心：一页6个 (2行x3列)
+                };
+
+                this.init();
+            }
+
+            init() {
+                this.setupCursor();
+                this.bindEvents();
+                this.loadData();
+                this.checkSession();
+            }
+
+            bindEvents() {
+                // 左侧导航点击
+                document.querySelectorAll('.series-mark').forEach(mark => {
+                    mark.addEventListener('click', (e) => {
+                        document.querySelectorAll('.series-mark').forEach(el => el.classList.remove('active'));
+                        e.currentTarget.classList.add('active');
+                        
+                        this.state.currentSeries = e.currentTarget.dataset.series;
+                        this.state.currentPage = 1;
+                        
+                        // 更新标题
+                        const names = {'01':'正定古城', '02':'避暑山庄', '03':'赵州古桥'};
+                        document.getElementById('seriesTitle').innerText = `遗珍阁 · ${names[this.state.currentSeries]}系列`;
+                        
+                        this.renderGrid();
+                        document.getElementById('shop').scrollIntoView({behavior:'smooth'});
+                    });
+                });
+
+                // 搜索
+                document.getElementById('searchInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        const val = e.target.value.toLowerCase();
+                        const filtered = this.state.products.filter(p => p.name.includes(val));
+                        this.renderSpecificItems(filtered);
+                    }
+                });
+            }
+
+            async loadData() {
+                try {
+                    const res = await fetch(`${this.API_BASE}/api/products?page=1`);
+                    const data = await res.json();
+                    if (data.items && data.items.length > 0) {
+                        this.state.products = data.items.map(item => ({
+                            ...item,
+                            revealed: false,
+                            rarity: this.calculateRarity(item.price),
+                            series: item.series || `0${Math.floor(Math.random() * 3) + 1}`
+                        }));
+                    } else { throw new Error("No data"); }
+                } catch (e) {
+                    this.useFallbackData();
+                }
+                this.renderGrid();
+            }
+
+            useFallbackData() {
+                const names = ['广惠寺华塔', '隆兴寺观音', '须弥塔', '烟雨楼', '金山亭', '文津阁', '大石桥', '小石桥', '龙纹石雕'];
+                this.state.products = Array.from({length: 18}, (_, i) => {
+                    const sId = Math.floor(i / 6) + 1;
+                    return {
+                        id: i + 1,
+                        name: `【限量】${names[i % names.length]}`,
+                        price: 59 + i * 15,
+                        category: '盲盒',
+                        series: `0${sId}`,
+                        img: `00${(i%5)+1}.jpg`, // 模拟后端文件名
+                        revealed: false,
+                        rarity: i % 5 === 0 ? 'SSR' : 'R'
+                    };
+                });
+            }
+
+            calculateRarity(price) { return price > 200 ? 'SSR' : (price > 100 ? 'SR' : 'R'); }
+
+            renderGrid() {
+                const seriesData = this.state.products.filter(p => p.series === this.state.currentSeries);
+                const start = (this.state.currentPage - 1) * this.state.pageSize;
+                const pageItems = seriesData.slice(start, start + this.state.pageSize);
+                
+                this.renderSpecificItems(pageItems);
+                
+                const totalPages = Math.ceil(seriesData.length / this.state.pageSize) || 1;
+                this.renderPaginator(totalPages);
+            }
+
+            renderSpecificItems(items) {
+                const grid = document.getElementById('productGrid');
+                grid.innerHTML = '';
+                
+                if(items.length === 0) {
+                    grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 50px; font-family: var(--f-mono);">该系列暂无档案</div>`;
+                    return;
+                }
+
+                items.forEach((item, index) => {
+                    const card = document.createElement('div');
+                    card.className = `blind-card ${item.revealed ? 'is-open' : ''}`;
+                    card.style.animation = `fadeInUp 0.6s ease forwards ${index * 0.1}s`;
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(30px)';
+
+                    // 【真实图片连接逻辑】
+                    let realImg = item.img;
+                    // 如果不是http开头，也不是data:开头，就拼接API_BASE
+                    if (realImg && !realImg.startsWith('http') && !realImg.startsWith('data:')) {
+                        realImg = `${this.API_BASE}/images/${realImg}`;
+                    }
+                    
+                    card.innerHTML = `
+                        <div class="card-sealed">
+                            <div class="seal-logo">冀</div>
+                            <div class="seal-text">TAP TO REVEAL</div>
+                            <div style="font-family: var(--f-mono); font-size: 10px; color: var(--c-accent); margin-top: 30px;">NO. ${String(item.id).padStart(4, '0')}</div>
+                        </div>
+                        <div class="card-revealed rarity-${item.rarity}">
+                            <img src="${realImg}" class="artifact-img" onerror="this.src='https://placehold.co/400x500?text=Image+Lost'">
+                            <div class="artifact-info">
+                                <div class="artifact-meta">
+                                    <span style="font-family: var(--f-mono); font-size:10px; font-weight:bold; background:#eee; padding:2px 6px;">${item.rarity}</span>
+                                </div>
+                                <div class="artifact-name">${item.name}</div>
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                                    <span class="artifact-price">¥${item.price}</span>
+                                    <button class="btn-add-mini hover-target" onclick="app.addToCart(event, ${item.id})">
+                                        <i class="fa fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="burst-effect"></div>
+                        </div>
+                    `;
+                    
+                    card.addEventListener('click', (e) => {
+                        if (e.target.closest('.btn-add-mini')) return;
+                        if (!item.revealed) this.revealBox(item.id, card);
+                    });
+
+                    grid.appendChild(card);
+                });
+            }
+
+            renderPaginator(totalPages) {
+                const box = document.getElementById('paginatorBox');
+                box.innerHTML = '';
+                if(totalPages <= 1) return;
+
+                for(let i=1; i<=totalPages; i++) {
+                    const btn = document.createElement('div');
+                    btn.className = `page-node hover-target ${i === this.state.currentPage ? 'active' : ''}`;
+                    btn.innerText = `0${i}`;
+                    btn.onclick = () => {
+                        this.state.currentPage = i;
+                        this.renderGrid();
+                        document.getElementById('shop').scrollIntoView({behavior:'smooth'});
+                    };
+                    box.appendChild(btn);
+                }
+            }
+
+            revealBox(id, cardElem) {
+                const product = this.state.products.find(p => p.id === id);
+                if(product) product.revealed = true;
+                cardElem.classList.add('is-open');
+                const burst = cardElem.querySelector('.burst-effect');
+                burst.style.animation = 'burstAnim 0.8s ease-out forwards';
+            }
+
+            addToCart(e, id) {
+                e.stopPropagation(); 
+                if (!this.state.currentUser) {
+                    alert('请先验证身份 / SIGN IN');
+                    this.toggleLogin();
+                    return;
+                }
+                const btn = e.target.closest('button');
+                const cartIcon = document.querySelector('.cart-trigger');
+                const ball = document.createElement('div');
+                ball.className = 'fly-ball';
+                document.body.appendChild(ball);
+                const startRect = btn.getBoundingClientRect();
+                const endRect = cartIcon.getBoundingClientRect();
+                ball.style.top = `${startRect.top}px`;
+                ball.style.left = `${startRect.left}px`;
+                ball.offsetHeight; 
+                ball.style.top = `${endRect.top + 10}px`;
+                ball.style.left = `${endRect.left + 20}px`;
+                ball.style.transform = 'scale(0.3)';
+                setTimeout(() => {
+                    ball.remove();
+                    this.state.cartCount++;
+                    document.getElementById('cartBadge').innerText = this.state.cartCount;
+                    const product = this.state.products.find(p => p.id === id);
+                    this.syncCart(product);
+                }, 800);
+            }
+
+            async syncCart(product) {
+                try {
+                    await fetch(`${this.API_BASE}/api/cart/add`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ username: this.state.currentUser, product: product })
+                    });
+                } catch(e) { console.log("Simulated cart sync"); }
+            }
+
+            setupCursor() {
+                const dot = document.getElementById('cursor-dot');
+                const wash = document.getElementById('cursor-wash');
+                document.addEventListener('mousemove', (e) => {
+                    dot.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+                    wash.animate({ transform: `translate(${e.clientX}px, ${e.clientY}px)` }, { duration: 400, fill: "forwards" });
+                    const isHover = e.target.closest('button, a, .hover-target, .blind-card, .series-mark');
+                    document.body.classList.toggle('hover-active', !!isHover);
+                });
+                document.addEventListener('mousedown', (e) => {
+                    const node = document.createElement('div');
+                    node.className = 'ink-click-node';
+                    node.style.left = e.clientX + 'px';
+                    node.style.top = e.clientY + 'px';
+                    document.body.appendChild(node);
+                    setTimeout(() => node.remove(), 800);
+                });
+            }
+
+            checkSession() {
+                const user = localStorage.getItem('currentUser');
+                if (user) {
+                    this.state.currentUser = user;
+                    document.getElementById('userLabel').innerText = `${user} / SIGN OUT`;
+                }
+            }
+
+            login() {
+                const name = document.getElementById('username').value;
+                if(name) {
+                    this.state.currentUser = name;
+                    localStorage.setItem('currentUser', name);
+                    document.getElementById('userLabel').innerText = `${name} / SIGN OUT`;
+                    this.toggleLogin();
+                }
+            }
+
+            toggleLogin() {
+                if(this.state.currentUser && document.getElementById('loginModal').style.display !== 'flex') {
+                    this.state.currentUser = null;
+                    localStorage.removeItem('currentUser');
+                    document.getElementById('userLabel').innerText = '结缘 / SIGN IN';
+                    return;
+                }
+                const modal = document.getElementById('loginModal');
+                modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+            }
+
+            toggleCart() { document.getElementById('cartDrawer').classList.toggle('open'); }
+        }
+
+        const style = document.createElement('style');
+        style.innerHTML = `@keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }`;
+        document.head.appendChild(style);
+
+        const app = new HeritageApp();
+    </script>
+</body>
+</html>
