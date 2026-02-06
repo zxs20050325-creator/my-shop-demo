@@ -40,59 +40,188 @@
             left: 0; top: 0; bottom: 0;
             width: var(--sidebar-width);
             background: #fff;
-            border-right: 1px solid var(--c-primary);
+            border-right: 1.5px solid var(--c-primary);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: space-between;
             padding: 40px 0;
             z-index: 1000;
+            transition: 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+        .sidebar:hover { 
+            width: 140px; 
+            box-shadow: 15px 0 30px rgba(0,0,0,0.05); 
         }
         .brand-vertical {
             writing-mode: vertical-rl;
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 900;
-            letter-spacing: 8px;
+            letter-spacing: 5px;
             color: var(--c-primary);
-            border: 2px solid var(--c-primary);
-            padding: 15px 8px;
+            background: var(--c-primary);
+            color: #fff;
+            padding: 25px 12px;
+            border-radius: 2px;
+            box-shadow: 4px 4px 0 var(--c-accent);
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .brand-vertical:hover {
+            transform: translate(3px, 3px);
+            box-shadow: 0 0 0 transparent;
         }
         .time-ruler {
             flex: 1;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            gap: 40px;
-            position: relative;
-        }
-        .time-ruler::before {
-            content: '';
-            position: absolute;
-            top: 20px; bottom: 20px; left: 50%;
-            width: 1px; background: var(--c-grid);
-            transform: translateX(-50%);
+            gap: 35px;
+            width: 100%;
         }
         .dynasty-mark {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            opacity: 0.4;
+            transition: 0.3s;
+            cursor: pointer;
+            padding: 10px;
+            font-family: var(--f-mono);
+            font-weight: 900;
+            font-size: 14px;
+        }
+        .dynasty-mark.active, .dynasty-mark:hover {
+            opacity: 1;
+            color: var(--c-accent);
+            transform: translateX(5px);
+        }
+        .dynasty-text {
+            font-size: 11px;
+            font-weight: bold;
+            display: none;
+            white-space: nowrap;
+        }
+        .sidebar:hover .dynasty-text { 
+            display: block; 
+            animation: fadeIn 0.4s; 
+        }
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: 20px 0;
+        }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            opacity: 0.6;
+            transition: 0.3s;
+            color: var(--c-primary);
+            text-decoration: none;
             font-family: var(--f-mono);
             font-size: 12px;
-            background: #fff;
-            padding: 4px;
-            z-index: 2;
-            cursor: pointer;
-            transition: 0.3s;
-            color: var(--c-text-light);
         }
-        .dynasty-mark:hover, .dynasty-mark.active {
-            color: var(--c-primary);
-            font-weight: bold;
-            transform: scale(1.2);
+        .nav-link:hover {
+            opacity: 1;
+            color: var(--c-accent);
+            transform: translateX(5px);
+        }
+        .nav-text {
+            display: none;
+        }
+        .sidebar:hover .nav-text {
+            display: block;
         }
         .social-links i {
             display: block; margin-top: 20px;
             color: var(--c-primary); opacity: 0.5; cursor: pointer;
             transition: 0.3s;
         }
-        .social-links i:hover { opacity: 1; transform: translateY(-3px); }
+        .social-links i:hover { 
+            opacity: 1; 
+            transform: translateY(-3px); 
+        }
+        
+        .top-bar {
+            grid-area: top-bar;
+            height: 85px;
+            padding: 0 60px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 40px;
+            background: rgba(245, 243, 239, 0.7);
+            backdrop-filter: blur(15px);
+            transition: 0.3s;
+            z-index: 4200;
+        }
+        .top-bar.scrolled {
+            height: 70px;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+        .search-engine {
+            display: flex;
+            align-items: center;
+            border-bottom: 2px solid var(--c-primary);
+            padding: 2px 10px;
+            transition: 0.3s;
+        }
+        .search-engine input {
+            background: none;
+            border: none;
+            outline: none;
+            width: 180px;
+            font-family: var(--f-serif);
+            font-size: 15px;
+            color: var(--c-primary);
+        }
+        .cart-trigger {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 25px;
+            background: var(--c-primary);
+            color: #fff;
+            border-radius: 40px;
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            font-family: 'Cinzel', serif;
+            font-size: 12px;
+            position: relative;
+        }
+        .cart-trigger:hover {
+            background: var(--c-accent);
+            transform: translateY(-2px);
+        }
+        #cartBadge {
+            background: #B22222;
+            color: #fff;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            font-size: 10px;
+            font-weight: bold;
+            position: absolute;
+            top: -5px;
+            right: 5px;
+            box-shadow: 0 3px 8px rgba(178, 34, 34, 0.4);
+        }
+        .auth-btn {
+            font-family: 'Cinzel', serif;
+            font-size: 13px;
+            font-weight: 900;
+            color: var(--c-primary);
+            letter-spacing: 2px;
+            transition: 0.3s;
+            border-left: 1.5px solid var(--c-grid);
+            padding-left: 30px;
+        }
+        .auth-btn:hover {
+            color: var(--c-accent);
+        }
         
         .main-wrapper {
             margin-left: var(--sidebar-width);
@@ -358,12 +487,30 @@
     
     <aside class="sidebar">
         <div class="brand-vertical">冀遗筑梦</div>
-        <div class="time-ruler">
-            <div class="dynasty-mark">SUI</div>
-            <div class="dynasty-mark active">TANG</div>
-            <div class="dynasty-mark">SONG</div>
-            <div class="dynasty-mark">MING</div>
-            <div class="dynasty-mark">QING</div>
+        <nav class="time-ruler">
+            <div class="dynasty-mark active" data-series="01">
+                <span class="node-num">01</span><span class="dynasty-text">正定华塔</span>
+            </div>
+            <div class="dynasty-mark" data-series="02">
+                <span class="node-num">02</span><span class="dynasty-text">避暑山庄</span>
+            </div>
+            <div class="dynasty-mark" data-series="03">
+                <span class="node-num">03</span><span class="dynasty-text">赵州古桥</span>
+            </div>
+            <div class="dynasty-mark" data-series="04">
+                <span class="node-num">04</span><span class="dynasty-text">隐藏典藏</span>
+            </div>
+        </nav>
+        
+        <div class="nav-links">
+            <a href="favorites.html" class="nav-link">
+                <i class="fa fa-heart"></i>
+                <span class="nav-text">收藏夹</span>
+            </a>
+            <a href="cart.html" class="nav-link">
+                <i class="fa fa-shopping-bag"></i>
+                <span class="nav-text">购物车</span>
+            </a>
         </div>
         <div class="social-links">
             <i class="fa fa-weixin" title="AR小程序"></i>
@@ -372,12 +519,19 @@
     </aside>
 
     <div class="main-wrapper">
-        <header class="top-bar">
-            <div class="search-minimal">
-                <input type="text" id="search-input" placeholder="SEARCH...">
-                <button class="search-btn"><i class="fa fa-search" aria-hidden="true"></i></button>
+        <header class="top-bar" id="topBar">
+            <div class="search-engine">
+                <i class="fa fa-search"></i>
+                <input type="text" placeholder="SEARCH ARCHIVE..." id="searchInput">
             </div>
-            <div class="user-actions" id="auth-section">
+
+            <div class="cart-trigger" onclick="window.location.href='cart.html'">
+                <i class="fa fa-shopping-bag"></i>
+                <span>BAG</span>
+                <div id="cartBadge">0</div>
+            </div>
+
+            <div class="auth-btn" id="authSection">
                 <!-- JS填充 -->
             </div>
         </header>
@@ -412,174 +566,123 @@
         const API_BASE = isDeployed ? 'https://jiyi-zhumeng.onrender.com' : 'http://localhost:3000';
 
         window.onload = function() {
-            checkLoginStatus();
+            syncSession();
             loadCart();
-            initFloatingCart();
+            setupScrollHandler();
         };
 
-        // 检查登录状态
-        function checkLoginStatus() {
-            try {
-                const user = localStorage.getItem('currentUser');
-                const authSection = document.getElementById('auth-section');
-                if (user) {
-                    authSection.innerHTML = `
-                        <a href="profile.html">${user}</a>
-                        <a href="javascript:logout()">退出</a>
-                    `;
+        // 同步用户会话状态
+        function syncSession() {
+            const currentUser = localStorage.getItem('jiyi_user');
+            const authSection = document.getElementById('authSection');
+            if(currentUser) {
+                authSection.innerHTML = `${currentUser} / SIGN OUT`;
+                authSection.onclick = () => {
+                    localStorage.clear(); 
+                    location.reload();
+                };
+            } else {
+                authSection.innerHTML = "ACCOUNT / SIGN IN";
+                authSection.onclick = () => {
+                    window.location.href = 'login.html';
+                };
+            }
+        }
+
+        // 滚动处理
+        function setupScrollHandler() {
+            const topBar = document.getElementById('topBar');
+            window.addEventListener('scroll', () => {
+                if (window.pageYOffset > 50) {
+                    topBar.classList.add('scrolled');
                 } else {
-                    authSection.innerHTML = `
-                        <a href="login.html">登录</a>
-                        <a href="register.html">注册</a>
-                    `;
+                    topBar.classList.remove('scrolled');
                 }
-            } catch (e) {
-                console.warn('无法访问localStorage，可能是隐私模式');
-            }
-        }
-
-        // 初始化浮动购物车
-        async function initFloatingCart() {
-            try {
-                const user = localStorage.getItem('currentUser');
-                if(user) {
-                    const res = await fetch(`${API_BASE}/api/cart?username=${user}`);
-                    const cartItems = await res.json();
-                    document.getElementById('floatingCartCount').textContent = cartItems.length;
-                }
-            } catch (e) {
-                console.error('获取购物车信息失败:', e);
-            }
-        }
-
-        // 登出
-        function logout() {
-            try {
-                localStorage.removeItem('currentUser');
-            } catch (e) {
-                console.warn('无法访问localStorage');
-            }
-            window.location.reload();
+            });
         }
 
         // 加载购物车
-        async function loadCart() {
-            try {
-                const user = localStorage.getItem('currentUser');
-                if (!user) {
-                    alert('请先登录！');
-                    window.location.href = 'login.html';
-                    return;
-                }
-
-                const res = await fetch(`${API_BASE}/api/cart?username=${user}`);
-                const cartItems = await res.json();
-
-                const cartItemsContainer = document.getElementById('cart-items');
-                const itemCountElement = document.getElementById('item-count');
-                const totalPriceElement = document.getElementById('total-price');
-
-                if (cartItems.length === 0) {
-                    cartItemsContainer.innerHTML = '<div class="empty-cart">购物车为空<br><small>点击商品可加入购物车</small></div>';
-                    itemCountElement.textContent = '0';
-                    totalPriceElement.textContent = '0.00';
-                    return;
-                }
-
-                let totalPrice = 0;
-                let cartHTML = '';
-
-                cartItems.forEach((item, index) => {
-                    const itemTotal = item.price || 0;
-                    totalPrice += itemTotal;
-                    
-                    // 处理图片路径
-                    let imgSrc = item.img || '';
-                    if (imgSrc) {
-                        const imgName = imgSrc.split('/').pop();
-                        if (/(jpg|jpeg|png|gif|webp)$/i.test(imgName)) {
-                            imgSrc = `${API_BASE}/images/${imgName}`;
-                        } else {
-                            imgSrc = `https://placehold.co/400x400/E0DED9/2F4842?text=${encodeURIComponent(item.name)}`;
-                        }
-                    } else {
-                        imgSrc = `https://placehold.co/400x400/E0DED9/2F4842?text=${encodeURIComponent(item.name)}`;
-                    }
-
-                    cartHTML += `
-                        <div class="cart-item">
-                            <img src="${imgSrc}" class="cart-img" alt="${item.name}" onerror="this.onerror=null;this.src='https://placehold.co/120x120?text=No+Image';">
-                            <div class="cart-info">
-                                <div class="cart-title-name">${item.name}</div>
-                                <div class="cart-price">¥${item.price}</div>
-                            </div>
-                            <button class="btn-remove" onclick="removeFromCart(${index})">删除</button>
-                        </div>
-                    `;
-                });
-
-                cartItemsContainer.innerHTML = cartHTML;
-                itemCountElement.textContent = cartItems.length;
-                totalPriceElement.textContent = totalPrice.toFixed(2);
-            } catch (err) {
-                console.error('加载购物车失败:', err);
-                document.getElementById('cart-items').innerHTML = '<div class="empty-cart">加载失败，请稍后重试</div>';
-            }
-        }
-
-        // 从购物车移除商品
-        async function removeFromCart(index) {
-            try {
-                const user = localStorage.getItem('currentUser');
-                if (!user) {
-                    alert('请先登录！');
-                    window.location.href = 'login.html';
-                    return;
-                }
-
-                const res = await fetch(`${API_BASE}/api/cart/remove`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: user, index: index })
-                });
-
-                if (res.ok) {
-                    loadCart();
-                    initFloatingCart();
-                } else {
-                    alert('删除失败');
-                }
-            } catch (err) {
-                console.error('删除商品失败:', err);
-                alert('删除失败');
-            }
-        }
-
-        // 结算
-        function checkout() {
-            const user = localStorage.getItem('currentUser');
-            if (!user) {
+        function loadCart() {
+            const currentUser = localStorage.getItem('jiyi_user');
+            if (!currentUser) {
                 alert('请先登录！');
                 window.location.href = 'login.html';
                 return;
             }
 
-            // 检查购物车是否为空
-            fetch(`${API_BASE}/api/cart?username=${user}`)
-                .then(res => res.json())
-                .then(cartItems => {
-                    if (cartItems.length === 0) {
-                        alert('购物车为空');
-                        return;
-                    }
-                    
-                    // 跳转到支付页面
-                    window.location.href = 'pay.html';
-                })
-                .catch(err => {
-                    console.error('检查购物车失败:', err);
-                    alert('操作失败');
-                });
+            const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
+            document.getElementById('cartBadge').textContent = cart.length;
+
+            const cartItemsContainer = document.getElementById('cart-items');
+            const itemCountElement = document.getElementById('item-count');
+            const totalPriceElement = document.getElementById('total-price');
+
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = '<div class="empty-cart">购物车为空<br><small>点击商品可加入购物车</small></div>';
+                itemCountElement.textContent = '0';
+                totalPriceElement.textContent = '0.00';
+                return;
+            }
+
+            let totalPrice = 0;
+            let cartHTML = '';
+
+            cart.forEach((item, index) => {
+                const itemTotal = item.price || 0;
+                totalPrice += itemTotal;
+                
+                // 处理图片路径
+                let imgSrc = item.img || '';
+                if (imgSrc && !imgSrc.startsWith('http')) {
+                    imgSrc = `${API_BASE}/images/${imgSrc}`;
+                }
+                if (!imgSrc) {
+                    imgSrc = `https://placehold.co/400x600/2F4842/C1A268?text=NO+IMAGE`;
+                }
+
+                cartHTML += `
+                    <div class="cart-item">
+                        <img src="${imgSrc}" class="cart-img" alt="${item.name}" onerror="this.onerror=null;this.src='https://placehold.co/120x120?text=No+Image';">
+                        <div class="cart-info">
+                            <div class="cart-title-name">${item.name}</div>
+                            <div class="cart-price">¥${item.price}</div>
+                        </div>
+                        <button class="btn-remove" onclick="removeFromCart(${index})">删除</button>
+                    </div>
+                `;
+            });
+
+            cartItemsContainer.innerHTML = cartHTML;
+            itemCountElement.textContent = cart.length;
+            totalPriceElement.textContent = totalPrice.toFixed(2);
+        }
+
+        // 从购物车移除商品
+        function removeFromCart(index) {
+            const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
+            cart.splice(index, 1);
+            localStorage.setItem('jiyi_cart', JSON.stringify(cart));
+            loadCart();
+            document.getElementById('cartBadge').textContent = cart.length;
+        }
+
+        // 结算
+        function checkout() {
+            const currentUser = localStorage.getItem('jiyi_user');
+            if (!currentUser) {
+                alert('请先登录！');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
+            if (cart.length === 0) {
+                alert('购物车为空');
+                return;
+            }
+            
+            // 跳转到支付页面
+            window.location.href = 'pay.html';
         }
     </script>
 </body>

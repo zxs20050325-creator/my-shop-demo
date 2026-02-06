@@ -41,17 +41,28 @@ let userFavorites = {}; // 用户收藏
 
 app.get('/api/products', (req, res) => {
     const page = parseInt(req.query.page) || 1;
+    const series = req.query.series || null; // 新增系列筛选参数
     const limit = 6; 
-    const startIndex = (page - 1) * limit;
-    const endIndex = page * limit;
     
-    const paginatedItems = MOCK_PRODUCTS.slice(startIndex, endIndex);
+    // 先根据系列筛选
+    let filteredProducts = MOCK_PRODUCTS;
+    if (series) {
+        filteredProducts = MOCK_PRODUCTS.filter(product => 
+            product.series === series || 
+            (!product.series && series === '01') // 兼容没有series字段的旧数据
+        );
+    }
+    
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    
+    const paginatedItems = filteredProducts.slice(startIndex, endIndex);
     
     res.json({
         items: paginatedItems,
-        total: MOCK_PRODUCTS.length,
+        total: filteredProducts.length,
         page: page,
-        totalPages: Math.ceil(MOCK_PRODUCTS.length / limit)
+        totalPages: Math.ceil(filteredProducts.length / limit)
     });
 });
 

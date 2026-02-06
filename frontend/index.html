@@ -96,6 +96,8 @@
         .node-num { font-family: var(--f-mono); font-weight: 900; font-size: 14px; }
         .node-text { font-size: 11px; font-weight: bold; display: none; white-space: nowrap; }
         .sidebar:hover .node-text { display: block; animation: fadeIn 0.4s; }
+        .nav-link:hover { opacity: 1; color: var(--c-accent); transform: translateX(5px); }
+        .sidebar:hover .nav-text { display: block; }
 
         /* 顶部栏：透明高定风格 */
         .main-content { margin-left: var(--sidebar-width); position: relative; z-index: 100; }
@@ -327,6 +329,17 @@
             </div>
         </nav>
 
+        <!-- [新增功能：页面导航链接] -->
+        <div class="nav-links" style="display: flex; flex-direction: column; gap: 20px; padding: 20px 0;">
+            <a href="favorites.html" class="nav-link hover-target" style="display: flex; align-items: center; justify-content: center; gap: 8px; opacity: 0.6; transition: 0.3s; color: var(--c-primary); text-decoration: none; font-family: var(--f-mono); font-size: 12px;">
+                <i class="fa fa-heart"></i>
+                <span class="nav-text" style="display: none;">收藏夹</span>
+            </a>
+            <a href="cart.html" class="nav-link hover-target" style="display: flex; align-items: center; justify-content: center; gap: 8px; opacity: 0.6; transition: 0.3s; color: var(--c-primary); text-decoration: none; font-family: var(--f-mono); font-size: 12px;">
+                <i class="fa fa-shopping-bag"></i>
+                <span class="nav-text" style="display: none;">购物车</span>
+            </a>
+        </div>
         <div class="social-footer social-links">
             <i class="fa fa-weixin hover-target"></i>
             <i class="fa fa-weibo hover-target"></i>
