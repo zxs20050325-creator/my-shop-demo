@@ -42,8 +42,13 @@ let userFavorites = {}; // 用户收藏
 app.get('/api/products', (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = 6; 
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+    
+    const paginatedItems = MOCK_PRODUCTS.slice(startIndex, endIndex);
+    
     res.json({
-        items: MOCK_PRODUCTS.slice((page - 1) * limit, page * limit),
+        items: paginatedItems,
         total: MOCK_PRODUCTS.length,
         page: page,
         totalPages: Math.ceil(MOCK_PRODUCTS.length / limit)
@@ -79,30 +84,89 @@ app.post('/api/login', (req, res) => {
 // --- 购物车 ---
 app.post('/api/cart/add', (req, res) => {
     const { username, product } = req.body;
-    if (!userCarts[username]) userCarts[username] = [];
+    
+    // 如果没有用户名，使用默认值
+    if (!username) {
+        return res.status(400).json({ 
+            success: false, 
+            message: '缺少用户名' 
+        });
+    }
+    
+    if (!userCarts[username]) {
+        userCarts[username] = [];
+    }
+    
     userCarts[username].push(product);
     addLog(username, '加入购物车', product.name);
-    res.json({ success: true, count: userCarts[username].length });
+    res.json({ 
+        success: true, 
+        count: userCarts[username].length,
+        message: '添加成功'
+    });
 });
 
 app.get('/api/cart', (req, res) => {
     const { username } = req.query;
-    res.json(userCarts[username] || []);
+    
+    if (!username) {
+        return res.status(400).json({ 
+            success: false, 
+            message: '缺少用户名' 
+        });
+    }
+    
+    res.json({
+        success: true,
+        items: userCarts[username] || [],
+        count: userCarts[username] ? userCarts[username].length : 0
+    });
 });
 
 app.post('/api/cart/remove', (req, res) => {
     const { username, index } = req.body;
+    
+    if (!username) {
+        return res.status(400).json({ 
+            success: false, 
+            message: '缺少用户名' 
+        });
+    }
+    
     if (userCarts[username]) {
-        userCarts[username].splice(index, 1);
+        if (index >= 0 && index < userCarts[username].length) {
+            userCarts[username].splice(index, 1);
+        } else {
+            return res.status(400).json({ 
+                success: false, 
+                message: '无效的索引' 
+            });
         }
-    res.json({ success: true });
+    }
+    
+    res.json({ 
+        success: true,
+        count: userCarts[username] ? userCarts[username].length : 0
+    });
 });
 
 app.post('/api/cart/checkout', (req, res) => {
     const { username, totalPrice } = req.body;
+    
+    if (!username) {
+        return res.status(400).json({ 
+            success: false, 
+            message: '缺少用户名' 
+        });
+    }
+    
     totalRevenue += parseFloat(totalPrice);
     totalOrders += 1;
-    if (userCarts[username]) userCarts[username] = [];
+    
+    if (userCarts[username]) {
+        userCarts[username] = [];
+    }
+    
     addLog(username, '完成支付', `总额 ¥${totalPrice}`);
     res.json({ success: true });
 });
@@ -352,16 +416,18 @@ app.post('/api/admin/backup', (req, res) => {
     res.status(400).json({ success: false, message: '当前使用内存存储，不支持备份功能' });
 });
 
+// 导出app实例，以便在部署环境中使用
+module.exports = app;
+
 // 修改端口绑定逻辑，使其适用于Render部署
 const PORT = process.env.PORT || 3000;
 
 // 只在直接运行此文件时才监听端口
 if (require.main === module) {
-  app.listen(PORT, () => { 
+  app.listen(PORT, '0.0.0.0', () => { 
       console.log(`服务器启动在 http://localhost:${PORT}`);
       console.log(`当前数据：用户 ${users.length} 个，购物车 ${Object.keys(userCarts).length} 个，收藏 ${Object.keys(userFavorites).length} 个，日志 ${browseLogs.length} 条`);
   });
+} else {
+  console.log('以模块模式运行，跳过直接监听');
 }
-
-// 导出app实例，以便在部署环境中使用
-module.exports = app;

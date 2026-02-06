@@ -1,24 +1,24 @@
 services:
-  - name: shop-backend
+  - name: jiyi-zhumeng-backend
     type: web
     plan: free
     runtime: node
     repository: git@github.com:zxs20050325-creator/my-shop-demo.git
     rootDirectory: backend
     buildCommand: npm install
-    startCommand: node index.js  # 修改：直接使用node命令运行，而不是npm start
+    startCommand: node index.js
     envVars:
       - key: NODE_ENV
         value: production
 
-  - name: shop-frontend
-    type: static # 静态网站类型更适合前端
+  - name: jiyi-zhumeng-frontend
+    type: web
     plan: free
     runtime: static
     repository: git@github.com:zxs20050325-creator/my-shop-demo.git
     rootDirectory: frontend
     buildCommand: echo "No build required"
-    staticPublishPath: ./
+    startCommand: echo "Starting static server"
     envVars:
       - key: NODE_ENV
         value: production
