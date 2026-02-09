@@ -420,9 +420,9 @@
                         const distance = Math.hypot(x - centerX, y - centerY);
 
                         if (distance < 20) { // 减小触发半径
-                            const moveX = (x - centerX) * 0.03;
-                            const moveY = (y - centerY) * 0.05;
-                            m.style.transform = `translate(${moveX}px, ${moveY}px) scale(1.01)`;
+                            const moveX = (x - centerX) * 0.07;
+                            const moveY = (y - centerY) * 0.07;
+                            m.style.transform = `translate(${moveX}px, ${moveY}px) scale(1.1)`;
                             m.style.transition = 'transform 0.1s ease';
                         } else {
                             m.style.transform = `translate(0, 0) scale(1)`;
