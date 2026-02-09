@@ -419,9 +419,9 @@
                         const centerY = r.top + r.height / 2;
                         const distance = Math.hypot(x - centerX, y - centerY);
 
-                        if (distance < 50) { // 减小触发半径
-                            const moveX = (x - centerX) * 0.08;
-                            const moveY = (y - centerY) * 0.08;
+                        if (distance < 20) { // 减小触发半径
+                            const moveX = (x - centerX) * 0.03;
+                            const moveY = (y - centerY) * 0.05;
                             m.style.transform = `translate(${moveX}px, ${moveY}px) scale(1.01)`;
                             m.style.transition = 'transform 0.1s ease';
                         } else {
