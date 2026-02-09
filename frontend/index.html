@@ -102,7 +102,18 @@
         .hero-section { height: 90vh; padding: 40px 100px; display: flex; align-items: center; overflow: hidden; position: relative; }
         .hero-tower-portal { width: 56%; height: 85%; position: relative; overflow: hidden; border: 1.5px solid var(--c-primary); box-shadow: 40px 40px 0 rgba(193, 162, 104, 0.12); transition: 0.8s var(--trans-smooth); background: #000; }
         .hero-tower-portal:hover { transform: scale(1.02); box-shadow: 55px 55px 0 rgba(193, 162, 104, 0.2); }
-        .hero-tower-img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.1); transition: 2.5s var(--trans-smooth); opacity: 0.85; filter: contrast(1.1); background: url('https://img.zcool.cn/community/016ca55d57b4c6a801214814d94b7e.jpg@1280w_1l_2o_100sh.jpg') center/cover; }
+        .hero-tower-img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            transform: scale(1.1); 
+            transition: 2.5s var(--trans-smooth); 
+            opacity: 0.85; 
+            filter: contrast(1.1); 
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
         .hero-tower-portal:hover .hero-tower-img { transform: scale(1.2) rotate(0.5deg); opacity: 1; }
         .scan-beam { position: absolute; top: -100%; left: 0; width: 100%; height: 20%; background: linear-gradient(to bottom, transparent, rgba(193, 162, 104, 0.4), transparent); animation: scanLoop 4.5s linear infinite; pointer-events: none; z-index: 5; }
         @keyframes scanLoop { 0% { top: -100%; } 100% { top: 250%; } }
@@ -321,9 +332,16 @@
 
             init() {
                 this.setupCoreInteractions();
+                this.setupHeroImage();
                 this.loadData();
                 this.syncSession();
                 this.renderCart();
+            }
+
+            setupHeroImage() {
+                const heroImg = document.getElementById('heroImg');
+                const imgUrl = `${this.API_BASE}/images/001.jpg`;
+                heroImg.style.backgroundImage = `url('${imgUrl}')`;
             }
 
             // ---------------------------------------------------------
@@ -520,6 +538,22 @@
 
         const app = new HeritageApp();
         document.querySelectorAll('.series-node').forEach(n => n.onclick = () => app.changeSeries(n));
+        
+        // 设置hero图片
+        document.addEventListener('DOMContentLoaded', function() {
+            const heroImg = document.getElementById('heroImg');
+            if (heroImg) {
+                // 根据部署环境设置图片URL
+                let imageUrl;
+                if (window.location.hostname.includes('onrender.com')) {
+                    imageUrl = 'https://jiyi-zhumeng.onrender.com/images/001.jpg';
+                } else {
+                    // 本地开发环境
+                    imageUrl = '../backend/public/images/001.jpg';
+                }
+                heroImg.style.backgroundImage = `url('${imageUrl}')`;
+            }
+        });
     </script>
 </body>
 </html>
