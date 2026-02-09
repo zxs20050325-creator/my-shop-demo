@@ -2,14 +2,11 @@
 <html lang="zh-CN">
 <!--
     =============================================================================
-    项目名称：冀遗筑梦 - 数字化非遗盲盒平台 (SUPREME V8.9 - LIDAR SLICE CURSOR)
+    项目名称：冀遗筑梦 - 数字化非遗盲盒平台 (SUPREME V8.3 - MICRO MAGNETIC)
     
-    【V8.9 修改日志】
-    1. [Cursor Redesign] 更换为“扫描·切片”光标系统。
-       - 静止：青黛色竖线 (模拟数字探针)。
-       - 悬停：展开为矩形扫描框，内部出现金色激光束上下扫描。
-       - 寓意：对文物进行数字化CT扫描与建模。
-    2. [Physics] 保持极速微磁力参数。
+    【V8.3 修改说明】
+    1. [Magnetic Field] 磁吸效果已调至“极简/微动”级别 (力度 0.15 / 半径 80px)。
+    2. [Unchanged] 其他视觉、布局、逻辑代码完全保持 V8.2 原样。
     =============================================================================
 -->
 <head>
@@ -19,6 +16,7 @@
     
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;700;900&family=Ma+Shan+Zheng&family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="custom-cursor.css">
 
     <style>
         :root {
@@ -45,103 +43,26 @@
             --f-mono: 'Courier New', monospace;
             
             --sidebar-width: 90px;
-            
-            /* 动画变量 */
-            --trans-flash: all 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* 极速响应 */
-            --trans-spring: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);   /* 回弹 */
-            --trans-smooth: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);      /* 转场 */
+            --trans-spring: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            --trans-smooth: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);
         }
 
-        /* 1. 全局环境 */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            background-color: var(--c-bg); color: var(--c-primary); 
-            font-family: var(--f-serif); overflow-x: hidden; 
-            cursor: none; user-select: none;
-        }
-        
-        body::before { 
-            content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background-image: 
-                linear-gradient(var(--c-grid) 1.5px, transparent 1.5px), 
-                linear-gradient(90deg, var(--c-grid) 1.5px, transparent 1.5px); 
-            background-size: 60px 60px; z-index: -2; opacity: 0.5; pointer-events: none; 
-            transition: background 1s ease;
-        }
-
-        @media (hover: none) { body { cursor: auto; } #cursor-slice, #cursor-scanline { display: none; } }
-
-        /* [核心修改] V8.9 扫描切片光标 */
-        
-        /* 1. 主体：切片框 */
-        #cursor-slice {
-            position: fixed; top: 0; left: 0; z-index: 10000; pointer-events: none;
-            width: 2px; height: 24px; /* 默认形态：细竖线 */
-            background-color: var(--c-primary);
-            transform: translate(-50%, -50%);
-            transition: width 0.2s cubic-bezier(0.19, 1, 0.22, 1),
-                        height 0.2s cubic-bezier(0.19, 1, 0.22, 1),
-                        background-color 0.2s,
-                        border 0.2s;
-            box-shadow: 0 0 10px rgba(47, 72, 66, 0.2);
-        }
-
-        /* 2. 内部：激光束 */
-        #cursor-scanline {
-            position: fixed; top: 0; left: 0; z-index: 10001; pointer-events: none;
-            width: 0; height: 1px; /* 默认隐藏 */
-            background-color: var(--c-accent); /* 金色扫描线 */
-            transform: translate(-50%, -50%);
-            opacity: 0;
-            box-shadow: 0 0 5px var(--c-accent);
-        }
-
-        /* 3. 悬停交互态 (Hover) */
-        body.hover-active #cursor-slice {
-            width: 70px; height: 40px; /* 展开为矩形框 */
-            background-color: rgba(47, 72, 66, 0.05); /* 极淡的底色 */
-            border: 1.5px solid var(--c-primary); /* 边框 */
-            border-radius: 2px; /* 微圆角 */
-        }
-
-        body.hover-active #cursor-scanline {
-            width: 60px; /* 显现 */
-            opacity: 1;
-            /* 上下扫描动画 */
-            animation: scanVertical 1.2s linear infinite;
-        }
-
-        @keyframes scanVertical {
-            0% { transform: translate(-50%, -20px); opacity: 0; }
-            20% { opacity: 1; }
-            80% { opacity: 1; }
-            100% { transform: translate(-50%, 20px); opacity: 0; }
-        }
-
-        /* 4. 点击反馈 (Flash) */
-        body.click-active #cursor-slice {
-            background-color: rgba(193, 162, 104, 0.4);
-            border-color: var(--c-accent);
-            transform: translate(-50%, -50%) scale(0.95);
-        }
-
-        .ink-click-node { position: fixed; pointer-events: none; border-radius: 50%; background: radial-gradient(circle, var(--c-accent) 0%, transparent 70%); z-index: 9999; transform: translate(-50%, -50%); animation: inkFade 0.6s ease-out forwards; }
-        @keyframes inkFade { 0% { width: 0; height: 0; opacity: 0.6; } 100% { width: 120px; height: 120px; opacity: 0; } }
+        /* [Cursor CSS moved to custom-cursor.css] */
 
         /* [筑梦分层视差水印] */
         .watermark-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 500; font-family: var(--f-art); }
-        .watermark-word { position: absolute; font-size: 32vw; line-height: 1; opacity: 0.04; transition: transform 0.2s var(--trans-flash); }
+        .watermark-word { position: absolute; font-size: 32vw; line-height: 1; opacity: 0.04; transition: transform 0.2s var(--trans-smooth); }
         #wm-zhu { top: -5%; left: 2%; color: var(--c-primary); }
         #wm-meng { bottom: -2%; right: -2%; color: var(--c-accent); }
 
         /* 2. 侧边导航系统 */
-        .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: var(--sidebar-width); background: #fff; border-right: 1.5px solid var(--c-primary); display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 40px 0; z-index: 4500; transition: 0.3s var(--trans-flash); }
+        .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: var(--sidebar-width); background: #fff; border-right: 1.5px solid var(--c-primary); display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 40px 0; z-index: 4500; transition: 0.4s var(--trans-smooth); }
         .sidebar:hover { width: 140px; }
-        .brand-seal { background: var(--c-primary); color: #fff; padding: 25px 12px; border-radius: 2px; box-shadow: 4px 4px 0 var(--c-accent); transition: var(--trans-flash); }
+        .brand-seal { background: var(--c-primary); color: #fff; padding: 25px 12px; border-radius: 2px; box-shadow: 4px 4px 0 var(--c-accent); transition: var(--trans-spring); }
         .brand-vertical { writing-mode: vertical-rl; font-size: 20px; font-weight: 900; letter-spacing: 5px; }
 
         .series-axis { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 35px; width: 100%; }
-        .series-node { display: flex; align-items: center; justify-content: center; gap: 12px; opacity: 0.5; transition: var(--trans-flash); cursor: pointer; padding: 15px 10px; border-left: 3px solid transparent; }
+        .series-node { display: flex; align-items: center; justify-content: center; gap: 12px; opacity: 0.5; transition: 0.4s; cursor: pointer; padding: 15px 10px; border-left: 3px solid transparent; }
         .series-node[data-series="01"]:hover, .series-node[data-series="01"].active { background: var(--node-01); color: var(--c-primary); border-left-color: var(--c-primary); opacity: 1; }
         .series-node[data-series="02"]:hover, .series-node[data-series="02"].active { background: var(--node-02); color: var(--c-accent); border-left-color: var(--c-accent); opacity: 1; }
         .series-node[data-series="03"]:hover, .series-node[data-series="03"].active { background: var(--node-03); color: steelblue; border-left-color: steelblue; opacity: 1; }
@@ -149,7 +70,7 @@
 
         .node-num { font-family: var(--f-mono); font-weight: 900; font-size: 14px; }
         .node-text { font-size: 11px; font-weight: bold; display: none; white-space: nowrap; }
-        .sidebar:hover .node-text { display: block; animation: slideIn 0.3s; }
+        .sidebar:hover .node-text { display: block; animation: slideIn 0.4s; }
         @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
 
         /* 3. 顶部导航与搜索 */
@@ -158,9 +79,7 @@
         .search-engine { display: flex; align-items: center; border-bottom: 2px solid var(--c-primary); padding: 2px 10px; }
         .search-engine input { background: none; border: none; outline: none; width: 180px; font-family: var(--f-serif); font-size: 15px; }
         
-        .cart-trigger { display: flex; align-items: center; gap: 12px; padding: 10px 25px; background: var(--c-primary); color: #fff; border-radius: 40px; transition: var(--trans-flash); font-family: var(--f-eng); font-size: 12px; position: relative; }
-        .cart-trigger:hover { background: var(--c-accent); transform: translateY(-2px); }
-        
+        .cart-trigger { display: flex; align-items: center; gap: 12px; padding: 10px 25px; background: var(--c-primary); color: #fff; border-radius: 40px; transition: var(--trans-spring); font-family: var(--f-eng); font-size: 12px; position: relative; }
         #cartBadge { background: var(--c-danger); color: #fff; width: 18px; height: 18px; border-radius: 50%; font-size: 10px; font-weight: bold; position: absolute; top: -5px; right: 5px; }
 
         /* 4. Hero 视觉区 */
@@ -170,7 +89,7 @@
             border: 1.5px solid var(--c-primary); box-shadow: 40px 40px 0 rgba(193, 162, 104, 0.12); 
             transition: 0.8s var(--trans-smooth); background: #000; 
         }
-        .hero-tower-portal:hover { transform: scale(1.01); box-shadow: 55px 55px 0 rgba(193, 162, 104, 0.2); }
+        .hero-tower-portal:hover { transform: scale(1.02); box-shadow: 55px 55px 0 rgba(193, 162, 104, 0.2); }
         
         .hero-tower-img { 
             width: 100%; height: 100%; object-fit: cover; 
@@ -185,8 +104,8 @@
 
         .hero-text-box { width: 44%; padding-left: 90px; z-index: 10; }
         .hero-text-box h1 { font-size: 72px; line-height: 1.1; font-weight: 900; }
-        .btn-reveal-all { padding: 18px 50px; background: var(--c-primary); color: #fff; border: none; font-family: var(--f-eng); letter-spacing: 4px; transition: var(--trans-flash); }
-        .btn-reveal-all:hover { background: var(--c-accent); transform: translateY(-3px); box-shadow: 0 10px 20px rgba(193, 162, 104, 0.25); }
+        .btn-reveal-all { padding: 18px 50px; background: var(--c-primary); color: #fff; border: none; font-family: var(--f-eng); letter-spacing: 4px; transition: 0.4s var(--trans-spring); }
+        .btn-reveal-all:hover { background: var(--c-accent); transform: translateY(-5px); box-shadow: 0 15px 30px rgba(193, 162, 104, 0.25); }
 
         /* 5. 商城核心区 (3x2 布局) */
         .shop-section { padding: 100px; position: relative; z-index: 10; border-top: 1.5px solid var(--c-grid); background: linear-gradient(to bottom, transparent, #fff 10%, #fff 90%, transparent); }
@@ -199,8 +118,7 @@
         @keyframes skLoad { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
         /* 6. 盲盒卡片 */
-        .blind-card { position: relative; background: transparent; aspect-ratio: 3/4; transform-style: preserve-3d; transition: transform 0.3s var(--trans-flash); }
-        .blind-card:hover { transform: translateY(-5px); } /* 微上浮 */
+        .blind-card { position: relative; background: transparent; aspect-ratio: 3/4; transform-style: preserve-3d; transition: transform 0.6s var(--trans-spring); }
         .card-front { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(145deg, var(--c-primary), var(--c-dark)); border: 2px solid var(--c-accent); z-index: 2; backface-visibility: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.8s var(--trans-smooth); box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
         .seal-character { font-family: var(--f-art); font-size: 64px; color: var(--c-accent); margin-bottom: 25px; text-shadow: 0 0 15px rgba(193, 162, 104, 0.4); }
         .card-back { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 1; backface-visibility: hidden; transform: rotateY(180deg); opacity: 0; transition: 0.8s var(--trans-smooth); display: flex; flex-direction: column; border: 1px solid #eee; }
@@ -218,17 +136,17 @@
         .artifact-price { font-family: var(--f-mono); color: var(--c-danger); font-size: 24px; font-weight: 900; }
 
         /* 7. 惊喜袋 */
-        .drawer-mask { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 5000; opacity: 0; visibility: hidden; transition: 0.3s; }
+        .drawer-mask { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 5000; opacity: 0; visibility: hidden; transition: 0.4s; }
         .drawer-mask.active { opacity: 1; visibility: visible; }
-        .surprise-drawer { position: fixed; top: 0; right: -450px; width: 420px; height: 100%; background: var(--c-bg); z-index: 5500; padding: 50px; border-left: 2px solid var(--c-primary); transition: 0.4s cubic-bezier(0.19, 1, 0.22, 1); display: flex; flex-direction: column; }
+        .surprise-drawer { position: fixed; top: 0; right: -450px; width: 420px; height: 100%; background: var(--c-bg); z-index: 5500; padding: 50px; border-left: 2px solid var(--c-primary); transition: 0.6s var(--trans-smooth); display: flex; flex-direction: column; }
         .surprise-drawer.open { right: 0; }
         .shelf-container { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; overflow-y: auto; padding: 15px 5px; scrollbar-width: none; }
         .shelf-item { background: #fff; padding: 15px; border: 1.2px solid #ddd; box-shadow: 0 10px 30px rgba(0,0,0,0.05); display: flex; flex-direction: column; transition: 0.3s; }
         .shelf-item img { width: 100%; height: 120px; object-fit: cover; }
 
         .paginator { margin-top: 80px; display: flex; justify-content: center; gap: 20px; }
-        .page-node { width: 50px; height: 50px; border: 1.5px solid var(--c-primary); background: none; font-family: var(--f-mono); font-weight: 900; display: flex; align-items: center; justify-content: center; transition: var(--trans-flash); }
-        .page-node.active, .page-node:hover { background: var(--c-primary); color: #fff; box-shadow: 4px 4px 0 var(--c-accent); transform: scale(1.05); }
+        .page-node { width: 50px; height: 50px; border: 1.5px solid var(--c-primary); background: none; font-family: var(--f-mono); font-weight: 900; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
+        .page-node.active, .page-node:hover { background: var(--c-primary); color: #fff; box-shadow: 6px 6px 0 var(--c-accent); transform: scale(1.1); }
 
         .progress-line { position: fixed; top: 0; left: 0; width: 0%; height: 6px; background: var(--c-accent); z-index: 6000; }
         .toast-notification { position: fixed; top: 20px; right: 20px; background: var(--c-primary); color: white; padding: 12px 24px; border-radius: 4px; font-family: var(--f-mono); opacity: 0; transform: translateX(100%); transition: 0.3s; z-index: 9998; }
@@ -236,8 +154,8 @@
 
         /* 登录弹窗 */
         .ink-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(47,72,66,0.6); backdrop-filter: blur(10px); z-index: 8000; display: none; justify-content: center; align-items: center; }
-        .modal-box { background: var(--c-bg); padding: 60px; width: 450px; border: 3px solid var(--c-primary); box-shadow: 30px 30px 0 var(--c-accent); animation: modalPop 0.4s var(--trans-flash); position: relative; }
-        @keyframes modalPop { from { transform: scale(0.9) translateY(20px); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-box { background: var(--c-bg); padding: 60px; width: 450px; border: 3px solid var(--c-primary); box-shadow: 30px 30px 0 var(--c-accent); animation: modalPop 0.5s var(--trans-spring); position: relative; }
+        @keyframes modalPop { from { transform: scale(0.8) translateY(40px); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         .ink-field { width: 100%; padding: 15px; border: none; border-bottom: 2px solid var(--c-primary); background: transparent; font-size: 18px; margin-bottom: 30px; outline: none; }
 
         @media (max-width: 1024px) {
@@ -251,10 +169,9 @@
 </head>
 <body>
 
-    <!-- 交互 UI: 扫描光标系统 -->
-    <div id="cursor-slice"></div>   <!-- 切片框 -->
-    <div id="cursor-scanline"></div> <!-- 内部扫描线 -->
-    
+    <!-- 交互 UI -->
+    <div id="cursor-dot"></div>
+    <div id="cursor-wash"></div>
     <div class="progress-line" id="progressBar"></div>
     <div class="toast-notification" id="toastNotification"></div>
 
@@ -376,10 +293,9 @@
                     series: '01', page: 1, pageSize: 6
                 };
 
-                // 更新DOM引用到切片光标
                 this.dom = {
-                    slice: document.getElementById('cursor-slice'),
-                    scan: document.getElementById('cursor-scanline'),
+                    dot: document.getElementById('cursor-dot'),
+                    wash: document.getElementById('cursor-wash'),
                     grid: document.getElementById('productGrid'),
                     zhu: document.getElementById('wm-zhu'),
                     meng: document.getElementById('wm-meng'),
@@ -392,21 +308,26 @@
                 this.init();
             }
 
-            // [交互系统：极速微磁力 + 切片光标]
+            init() {
+                this.setupCoreInteractions();
+                this.loadData();
+                this.syncSession();
+                this.renderCart();
+            }
+
+            // [交互系统]
             setupCoreInteractions() {
                 window.addEventListener('mousemove', (e) => {
                     const { clientX: x, clientY: y } = e;
                     
-                    // 1. 光标跟随 (CSS transition负责平滑)
-                    this.dom.slice.style.left = x + 'px';
-                    this.dom.slice.style.top = y + 'px';
-                    this.dom.scan.style.left = x + 'px';
-                    this.dom.scan.style.top = y + 'px';
+                    // 水墨光标
+                    this.dom.dot.style.transform = `translate(${x}px, ${y}px)`;
+                    this.dom.wash.animate({ transform: `translate(${x}px, ${y}px)` }, { duration: 500, fill: "forwards" });
                     
                     const isHover = e.target.closest('a, button, .hover-target, .blind-card');
                     document.body.classList.toggle('hover-active', !!isHover);
 
-                    // 2. 磁性力场
+                    // 磁性力场 - 极简微动
                     const magnets = document.querySelectorAll('.magnetic-target');
                     magnets.forEach(m => {
                         const r = m.getBoundingClientRect();
@@ -414,18 +335,16 @@
                         const centerY = r.top + r.height / 2;
                         const distance = Math.hypot(x - centerX, y - centerY);
 
-                        if (distance < 50) { 
-                            m.style.transition = 'none'; 
-                            const moveX = (x - centerX) * 0.15; 
+                        if (distance < 80) { // 触发半径缩小
+                            const moveX = (x - centerX) * 0.15; // 力度减弱
                             const moveY = (y - centerY) * 0.15;
-                            m.style.transform = `translate(${moveX}px, ${moveY}px)`; 
+                            m.style.transform = `translate(${moveX}px, ${moveY}px) scale(1.02)`; // 极微缩放
                         } else {
-                            m.style.transition = 'var(--trans-flash)'; 
-                            m.style.transform = `translate(0, 0)`;
+                            m.style.transform = `translate(0, 0) scale(1)`;
                         }
                     });
 
-                    // 3. 分层视差
+                    // 分层视差
                     const mx = (x - window.innerWidth/2);
                     const my = (y - window.innerHeight/2);
                     this.dom.zhu.style.transform = `translate(${mx / 8}px, ${my / 6}px)`;
@@ -433,19 +352,14 @@
                     this.dom.hero.style.transform = `scale(1.1) translate(${mx / 80}px, ${my / 80}px)`;
                 });
 
-                // 点击反馈
+                // 洇染特效
                 window.addEventListener('mousedown', (e) => {
-                    document.body.classList.add('click-active');
                     const node = document.createElement('div');
                     node.className = 'ink-click-node';
                     node.style.left = e.clientX + 'px';
                     node.style.top = e.clientY + 'px';
                     document.body.appendChild(node);
                     setTimeout(() => node.remove(), 800);
-                });
-                
-                window.addEventListener('mouseup', () => {
-                    document.body.classList.remove('click-active');
                 });
 
                 // 滚动反馈
@@ -455,7 +369,7 @@
                 });
             }
 
-            // [业务逻辑]
+            // [数据逻辑]
             async loadData() {
                 this.dom.grid.innerHTML = Array.from({length: 6}, () => `<div class="skeleton-card"><div class="sk-img"></div></div>`).join('');
                 try {
@@ -508,14 +422,14 @@
 
                     card.onclick = (e) => { if(!e.target.closest('button') && !item.isOpened) this.openBox(item, card); };
                     
-                    // 物理阻尼翻转
+                    // 物理阻尼
                     card.onmousemove = (e) => {
                         const r = card.getBoundingClientRect();
                         const x = (e.clientX - r.left) / r.width - 0.5;
                         const y = (e.clientY - r.top) / r.height - 0.5;
-                        card.style.transform = `perspective(1200px) rotateY(${x*10}deg) rotateX(${-y*10}deg)`; // 角度减小，更稳重
+                        card.style.transform = `perspective(1200px) rotateY(${x*20}deg) rotateX(${-y*20}deg) scale(1.05)`;
                     };
-                    card.onmouseleave = () => card.style.transform = `perspective(1200px) rotateY(0) rotateX(0)`;
+                    card.onmouseleave = () => card.style.transform = `perspective(1200px) rotateY(0) rotateX(0) scale(1)`;
 
                     this.dom.grid.appendChild(card);
                     setTimeout(() => card.classList.add('revealed'), index * 120);
@@ -579,5 +493,9 @@
         const app = new UltimateEngine();
         document.querySelectorAll('.series-node').forEach(n => n.onclick = () => app.changeSeries(n));
     </script>
+    
+    <!-- 加载自定义光标脚本 -->
+    <script src="custom-cursor.js"></script>
+    <script src="common.js"></script>
 </body>
 </html>
