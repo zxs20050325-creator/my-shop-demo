@@ -1,31 +1,29 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <!--
-    =============================================================================
-    项目名称：冀遗筑梦 - 数字化非遗盲盒平台 (SUPREME V8.2 ULTIMATE KINETIC)
+    ============================================================================= 
+    项目名称：冀遗筑梦 - 数字化非遗盲盒平台 (SUPREME V8.2 - VISION FIXED)
     
-    【V8.2 核心更新说明】
-    1. [Scheme 2 - 磁性力场] TopBar 与侧边栏组件具备物理吸附交互感。
-    2. [Scheme 5 - 全场景洇染] 点击品类轴触发背景网格颜色平滑过渡动画。
-    3. [Integrated] 仪式感拆盒、分层视差、博古架长卷、骨架屏、API连接全保留。
+    【核心修正说明】
+    1. [Hero Image] 修正主页大图显示逻辑，采用高保真华塔视觉图作为基底。
+    2. [Scheme 2 - 磁性力场] TopBar 与侧边栏组件具备物理吸附交互感。
+    3. [Scheme 5 - 全场景洇染] 点击品类轴触发背景颜色转场。
+    4. [Integrated] 仪式感拆盒、分层视差、博古架长卷、骨架屏、API连接全保留。
     =============================================================================
 -->
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>冀遗筑梦 | 全球首个非遗盲盒平台</title>
     
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;700;900&family=Ma+Shan+Zheng&family=Cinzel:wght@700&display=swap" rel="stylesheet">
 
-    <!-- 引入公共CSS和JS -->
-    <link rel="stylesheet" href="../styles.css">
-    <script src="./common.js"></script>
-
     <style>
         :root {
             /* 品牌核心色 */
             --c-primary: #2F4842;    /* 青黛 */
+            --c-dark: #1a2b27;       /* 深墨 */
             --c-accent: #C1A268;     /* 鎏金 */
             --c-bg: #F5F3EF;         /* 宣纸白 */
             --c-grid: #E6E2DC;       /* 默认网格线颜色 */
@@ -34,7 +32,12 @@
             /* 稀有度色彩 */
             --c-ssr: #FFD700; --c-sr: #C0C0C0; --c-r: #8B5A2B;
             
-            /* 字体栈 */
+            /* 品类轴色差系 */
+            --node-01: rgba(47, 72, 66, 0.08);
+            --node-02: rgba(193, 162, 104, 0.12);
+            --node-03: rgba(70, 130, 180, 0.1);
+            --node-04: rgba(178, 34, 34, 0.08);
+
             --f-serif: 'Noto Serif SC', serif;
             --f-art: 'Ma Shan Zheng', serif; 
             --f-eng: 'Cinzel', serif;
@@ -53,154 +56,160 @@
             cursor: none; user-select: none;
         }
         
-        /* 宣纸纹理层 */
         body::before { 
             content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background-image: 
                 linear-gradient(var(--c-grid) 1.5px, transparent 1.5px), 
                 linear-gradient(90deg, var(--c-grid) 1.5px, transparent 1.5px); 
             background-size: 60px 60px; z-index: -2; opacity: 0.5; pointer-events: none; 
-            transition: background 1s ease; /* 用于全场景洇染转场 */
+            transition: background 1s ease;
         }
 
         #cursor-dot { width: 8px; height: 8px; background: var(--c-primary); position: fixed; pointer-events: none; border-radius: 50%; z-index: 10001; transform: translate(-50%, -50%); transition: transform 0.1s; box-shadow: 0 0 10px rgba(47, 72, 66, 0.4); }
-        #cursor-wash { width: 35px; height: 35px; border: 1.5px solid rgba(47, 72, 66, 0.3); position: fixed; pointer-events: none; border-radius: 50%; z-index: 10000; transform: translate(-50%, -50%); transition: width 0.3s, height 0.3s, background 0.3s; mix-blend-mode: multiply; }
+        #cursor-wash { width: 35px; height: 35px; border: 1.5px solid rgba(47, 72, 66, 0.3); position: fixed; pointer-events: none; border-radius: 50%; z-index: 10000; transform: translate(-50%, -50%); transition: width 0.4s, height 0.4s, background 0.4s; mix-blend-mode: multiply; }
         .hover-active #cursor-wash { width: 65px; height: 65px; background: rgba(193, 162, 104, 0.15); border-color: var(--c-accent); filter: blur(1px); }
+        .ink-click-node { position: fixed; pointer-events: none; border-radius: 50%; background: radial-gradient(circle, var(--c-primary) 0%, transparent 70%); z-index: 9999; transform: translate(-50%, -50%); animation: inkFade 0.8s ease-out forwards; }
+        @keyframes inkFade { 0% { width: 0; height: 0; opacity: 0.8; } 100% { width: 150px; height: 150px; opacity: 0; } }
 
-        /* [方案二：筑梦分层视差] */
-        .watermark-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; opacity: 0.4; font-family: var(--f-art); overflow: hidden; }
-        .watermark-word { position: absolute; font-size: 32vw; line-height: 1; color: var(--c-primary); font-weight: 900; text-shadow: 0 0 20px rgba(47, 72, 66, 0.3); }
-        #wm-zhu { top: -5%; left: 0%; transition: transform 0.15s ease-out; }
-        #wm-meng { bottom: 0%; right: 0%; color: var(--c-accent); text-shadow: 0 0 20px rgba(193, 162, 104, 0.4); transition: transform 0.25s ease-out; }
+        /* [筑梦分层视差水印] */
+        .watermark-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 500; font-family: var(--f-art); }
+        .watermark-word { position: absolute; font-size: 32vw; line-height: 1; opacity: 0.04; transition: transform 0.2s var(--trans-smooth); }
+        #wm-zhu { top: -5%; left: 2%; color: var(--c-primary); }
+        #wm-meng { bottom: -2%; right: -2%; color: var(--c-accent); }
 
-        /* 2. 导航系统 */
+        /* 2. 侧边导航系统 */
         .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: var(--sidebar-width); background: #fff; border-right: 1.5px solid var(--c-primary); display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 40px 0; z-index: 4500; transition: 0.4s var(--trans-smooth); }
-        .sidebar:hover { width: 140px; box-shadow: 15px 0 30px rgba(0,0,0,0.05); }
-        
+        .sidebar:hover { width: 140px; }
         .brand-seal { background: var(--c-primary); color: #fff; padding: 25px 12px; border-radius: 2px; box-shadow: 4px 4px 0 var(--c-accent); transition: var(--trans-spring); }
         .brand-vertical { writing-mode: vertical-rl; font-size: 20px; font-weight: 900; letter-spacing: 5px; }
 
         .series-axis { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 35px; width: 100%; }
-        .series-node { display: flex; align-items: center; justify-content: center; gap: 12px; opacity: 0.4; transition: 0.3s; cursor: pointer; padding: 10px; }
-        .series-node.active, .series-node:hover { opacity: 1; color: var(--c-accent); transform: translateX(5px); }
+        .series-node { display: flex; align-items: center; justify-content: center; gap: 12px; opacity: 0.5; transition: 0.4s; cursor: pointer; padding: 15px 10px; border-left: 3px solid transparent; }
+        .series-node[data-series="01"]:hover, .series-node[data-series="01"].active { background: var(--node-01); color: var(--c-primary); border-left-color: var(--c-primary); opacity: 1; }
+        .series-node[data-series="02"]:hover, .series-node[data-series="02"].active { background: var(--node-02); color: var(--c-accent); border-left-color: var(--c-accent); opacity: 1; }
+        .series-node[data-series="03"]:hover, .series-node[data-series="03"].active { background: var(--node-03); color: steelblue; border-left-color: steelblue; opacity: 1; }
+        .series-node[data-series="04"]:hover, .series-node[data-series="04"].active { background: var(--node-04); color: var(--c-danger); border-left-color: var(--c-danger); opacity: 1; }
+
         .node-num { font-family: var(--f-mono); font-weight: 900; font-size: 14px; }
         .node-text { font-size: 11px; font-weight: bold; display: none; white-space: nowrap; }
-        .sidebar:hover .node-text { display: block; animation: fadeIn 0.4s; }
+        .sidebar:hover .node-text { display: block; animation: slideIn 0.4s; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
 
+        /* 3. 顶部导航与搜索 */
         .main-content { margin-left: var(--sidebar-width); position: relative; z-index: 100; }
-        .top-bar { position: sticky; top: 0; height: 85px; padding: 0 60px; display: flex; justify-content: flex-end; align-items: center; gap: 40px; z-index: 4200; background: rgba(245, 243, 239, 0.7); backdrop-filter: blur(15px); transition: 0.3s; }
+        .top-bar { position: sticky; top: 0; height: 85px; padding: 0 60px; display: flex; justify-content: flex-end; align-items: center; gap: 40px; z-index: 4200; background: rgba(245, 243, 239, 0.7); backdrop-filter: blur(15px); border-bottom: 1px solid rgba(47, 72, 66, 0.05); transition: 0.3s; }
+        .search-engine { display: flex; align-items: center; border-bottom: 2px solid var(--c-primary); padding: 2px 10px; }
+        .search-engine input { background: none; border: none; outline: none; width: 180px; font-family: var(--f-serif); font-size: 15px; }
         
-        .search-engine { display: flex; align-items: center; border-bottom: 2px solid var(--c-primary); padding: 2px 10px; transition: 0.3s; }
-        .search-engine input { background: none; border: none; outline: none; width: 180px; font-family: var(--f-serif); font-size: 15px; color: var(--c-primary); }
-        
-        .cart-trigger { display: flex; align-items: center; gap: 12px; padding: 10px 25px; background: var(--c-primary); color: #fff; border-radius: 40px; transition: var(--trans-spring); font-family: var(--f-eng); font-size: 12px; position: relative; will-change: transform; }
-        #cartBadge { background: var(--c-danger); color: #fff; width: 18px; height: 18px; border-radius: 50%; font-size: 10px; font-weight: bold; position: absolute; top: -5px; right: 5px; box-shadow: 0 3px 8px rgba(178, 34, 34, 0.4); }
+        .cart-trigger { display: flex; align-items: center; gap: 12px; padding: 10px 25px; background: var(--c-primary); color: #fff; border-radius: 40px; transition: var(--trans-spring); font-family: var(--f-eng); font-size: 12px; position: relative; }
+        #cartBadge { background: var(--c-danger); color: #fff; width: 18px; height: 18px; border-radius: 50%; font-size: 10px; font-weight: bold; position: absolute; top: -5px; right: 5px; }
 
-        .auth-btn { font-family: var(--f-eng); font-size: 13px; font-weight: 900; color: var(--c-primary); letter-spacing: 2px; transition: 0.3s; border-left: 1.5px solid var(--c-grid); padding-left: 30px; will-change: transform; }
-
-        /* 3. Hero 区域 */
-        .hero-section { height: 90vh; padding: 40px 100px; display: flex; align-items: center; overflow: hidden; position: relative; }
-        .hero-tower-portal { width: 56%; height: 85%; position: relative; overflow: hidden; border: 1.5px solid var(--c-primary); box-shadow: 40px 40px 0 rgba(193, 162, 104, 0.12); transition: 0.8s var(--trans-smooth); background: #000; }
+        /* 
+           ========================================
+           4. Hero 视觉区：核心图片显示修正
+           ======================================== 
+        */
+        .hero-section { height: 92vh; padding: 40px 100px; display: flex; align-items: center; overflow: hidden; position: relative; }
+        .hero-tower-portal { 
+            width: 56%; height: 85%; position: relative; overflow: hidden; 
+            border: 1.5px solid var(--c-primary); box-shadow: 40px 40px 0 rgba(193, 162, 104, 0.12); 
+            transition: 0.8s var(--trans-smooth); background: #000; 
+        }
         .hero-tower-portal:hover { transform: scale(1.02); box-shadow: 55px 55px 0 rgba(193, 162, 104, 0.2); }
+        
+        /* [核心修正] 直接在 CSS 里设置高清背景图，防止路径错误 */
         .hero-tower-img { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover; 
-            transform: scale(1.1); 
-            transition: 2.5s var(--trans-smooth); 
-            opacity: 0.85; 
-            filter: contrast(1.1); 
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
+            width: 100%; height: 100%; object-fit: cover; 
+            transform: scale(1.1); transition: 2.5s var(--trans-smooth); 
+            opacity: 0.85; filter: contrast(1.1); 
+            background: url('https://img.zcool.cn/community/016ca55d57b4c6a801214814d94b7e.jpg@1280w_1l_2o_100sh.jpg') center/cover no-repeat;
         }
         .hero-tower-portal:hover .hero-tower-img { transform: scale(1.2) rotate(0.5deg); opacity: 1; }
+        
         .scan-beam { position: absolute; top: -100%; left: 0; width: 100%; height: 20%; background: linear-gradient(to bottom, transparent, rgba(193, 162, 104, 0.4), transparent); animation: scanLoop 4.5s linear infinite; pointer-events: none; z-index: 5; }
         @keyframes scanLoop { 0% { top: -100%; } 100% { top: 250%; } }
 
         .hero-text-box { width: 44%; padding-left: 90px; z-index: 10; }
-        .hero-text-box h1 { font-size: 72px; line-height: 1.15; margin-bottom: 30px; font-weight: 900; }
-        
-        .btn-reveal-all { padding: 18px 50px; background: var(--c-primary); color: #fff; border: none; font-family: var(--f-eng); letter-spacing: 4px; transition: 0.4s var(--trans-spring); position: relative; }
+        .hero-text-box h1 { font-size: 72px; line-height: 1.1; font-weight: 900; }
+        .btn-reveal-all { padding: 18px 50px; background: var(--c-primary); color: #fff; border: none; font-family: var(--f-eng); letter-spacing: 4px; transition: 0.4s var(--trans-spring); }
         .btn-reveal-all:hover { background: var(--c-accent); transform: translateY(-5px); box-shadow: 0 15px 30px rgba(193, 162, 104, 0.25); }
 
-        /* 4. 商城核心与骨架屏 */
+        /* 5. 商城核心区 (3x2 布局) */
         .shop-section { padding: 100px; position: relative; z-index: 10; border-top: 1.5px solid var(--c-grid); background: linear-gradient(to bottom, transparent, #fff 10%, #fff 90%, transparent); }
-        .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: auto auto; gap: 60px; perspective: 2000px; min-height: 900px; }
+        .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 60px; perspective: 2000px; min-height: 900px; }
 
-        /* [方案五：骨架屏] */
+        /* [骨架屏] */
         .skeleton-card { aspect-ratio: 3/4; background: #fff; padding: 20px; border: 1px solid #eee; display: flex; flex-direction: column; gap: 20px; }
         .sk-img { width: 100%; height: 70%; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: skLoad 1.5s infinite; }
         .sk-text { width: 80%; height: 20px; background: #f0f0f0; border-radius: 2px; }
         @keyframes skLoad { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-        /* 5. [方案一：拆封多阶动效] */
+        /* 6. 盲盒卡片 */
         .blind-card { position: relative; background: transparent; aspect-ratio: 3/4; transform-style: preserve-3d; transition: transform 0.6s var(--trans-spring); }
         .card-front { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(145deg, var(--c-primary), var(--c-dark)); border: 2px solid var(--c-accent); z-index: 2; backface-visibility: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.8s var(--trans-smooth); box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
-        .card-front .seal-character { font-family: var(--f-art); font-size: 64px; color: var(--c-accent); margin-bottom: 25px; text-shadow: 0 0 15px rgba(193, 162, 104, 0.4); }
+        .seal-character { font-family: var(--f-art); font-size: 64px; color: var(--c-accent); margin-bottom: 25px; text-shadow: 0 0 15px rgba(193, 162, 104, 0.4); }
         .card-back { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 1; backface-visibility: hidden; transform: rotateY(180deg); opacity: 0; transition: 0.8s var(--trans-smooth); display: flex; flex-direction: column; border: 1px solid #eee; }
-        
         .blind-card.is-revealed .card-front { opacity: 0; transform: rotateY(180deg) scale(0.8); }
         .blind-card.is-revealed .card-back { opacity: 1; transform: rotateY(360deg); z-index: 3; }
+        
         .reveal-vfx { position: absolute; top: 50%; left: 50%; width: 0; height: 0; transform: translate(-50%, -50%); border-radius: 50%; pointer-events: none; z-index: 10; opacity: 0; }
-        .vfx-SSR { background: radial-gradient(circle, var(--c-ssr) 0%, transparent 70%); }
-        @keyframes burstReveal { 0% { width: 0; height: 0; opacity: 0.9; } 100% { width: 600px; height: 600px; opacity: 0; filter: blur(20px); } }
+        @keyframes burstReveal { 0% { width: 0; height: 0; opacity: 0.9; } 100% { width: 650px; height: 650px; opacity: 0; filter: blur(20px); } }
 
-        /* 商品内容细节 */
-        .artifact-visual { width: 100%; height: 180px; overflow: hidden; background: #fafafa; position: relative; }
-        .artifact-img { width: 100%; height: 100%; object-fit: contain; transition: 1s var(--trans-smooth); }
+        .artifact-visual { width: 100%; height: 65%; overflow: hidden; background: #fafafa; }
+        .artifact-img { width: 100%; height: 100%; object-fit: cover; transition: 1s var(--trans-smooth); }
         .artifact-info { padding: 25px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .artifact-rarity { font-family: var(--f-mono); font-size: 10px; font-weight: 900; background: #f0f0f0; padding: 2px 8px; width: fit-content; }
         .artifact-name { font-size: 17px; font-weight: 900; color: var(--c-primary); line-height: 1.4; height: 48px; overflow: hidden; }
         .artifact-price { font-family: var(--f-mono); color: var(--c-danger); font-size: 24px; font-weight: 900; }
 
-        /* 6. [方案三：横向博古架惊喜袋] - 侧边版 */
+        /* 7. 惊喜袋 - 420px 宽度优化 */
         .drawer-mask { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 5000; opacity: 0; visibility: hidden; transition: 0.4s; }
         .drawer-mask.active { opacity: 1; visibility: visible; }
         .surprise-drawer { position: fixed; top: 0; right: -450px; width: 420px; height: 100%; background: var(--c-bg); z-index: 5500; padding: 50px; border-left: 2px solid var(--c-primary); transition: 0.6s var(--trans-smooth); display: flex; flex-direction: column; }
         .surprise-drawer.open { right: 0; }
-        .shelf-container { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; overflow-y: auto; padding: 20px 0; scrollbar-width: none; }
-        .shelf-item { background: #fff; padding: 12px; border: 1px solid #ddd; box-shadow: 0 10px 30px rgba(0,0,0,0.05); display: flex; flex-direction: column; transition: 0.3s; }
-        .shelf-item img { width: 100%; height: 120px; object-fit: contain; }
-        .shelf-item .item-n { font-size: 12px; font-weight: bold; margin-top: 10px; line-height: 1.3; height: 32px; overflow: hidden; }
+        .shelf-container { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; overflow-y: auto; padding: 15px 5px; scrollbar-width: none; }
+        .shelf-item { background: #fff; padding: 15px; border: 1.2px solid #ddd; box-shadow: 0 10px 30px rgba(0,0,0,0.05); display: flex; flex-direction: column; transition: 0.3s; }
+        .shelf-item img { width: 100%; height: 120px; object-fit: cover; }
 
-        /* 7. 其他组件 */
         .paginator { margin-top: 80px; display: flex; justify-content: center; gap: 20px; }
         .page-node { width: 50px; height: 50px; border: 1.5px solid var(--c-primary); background: none; font-family: var(--f-mono); font-weight: 900; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
         .page-node.active, .page-node:hover { background: var(--c-primary); color: #fff; box-shadow: 6px 6px 0 var(--c-accent); transform: scale(1.1); }
-        .progress-line { position: fixed; top: 0; left: 0; width: 0%; height: 6px; background: var(--c-accent); z-index: 7000; }
-        .scroll-progress-bar { position: fixed; top: 0; left: 0; width: 0%; height: 4px; background: var(--c-accent); z-index: 9999; }
+
+        .progress-line { position: fixed; top: 0; left: 0; width: 0%; height: 6px; background: var(--c-accent); z-index: 6000; }
         .toast-notification { position: fixed; top: 20px; right: 20px; background: var(--c-primary); color: white; padding: 12px 24px; border-radius: 4px; font-family: var(--f-mono); opacity: 0; transform: translateX(100%); transition: 0.3s; z-index: 9998; }
         .toast-notification.show { opacity: 1; transform: translateX(0); }
+
+        /* 登录弹窗 */
         .ink-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(47,72,66,0.6); backdrop-filter: blur(10px); z-index: 8000; display: none; justify-content: center; align-items: center; }
-        .modal-box { background: var(--c-bg); padding: 60px; width: 450px; border: 3px solid var(--c-primary); box-shadow: 30px 30px 0 var(--c-accent); position: relative; animation: modalPop 0.5s var(--trans-spring); }
+        .modal-box { background: var(--c-bg); padding: 60px; width: 450px; border: 3px solid var(--c-primary); box-shadow: 30px 30px 0 var(--c-accent); animation: modalPop 0.5s var(--trans-spring); position: relative; }
         @keyframes modalPop { from { transform: scale(0.8) translateY(40px); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         .ink-field { width: 100%; padding: 15px; border: none; border-bottom: 2px solid var(--c-primary); background: transparent; font-size: 18px; margin-bottom: 30px; outline: none; }
 
         @media (max-width: 1024px) {
             .hero-section { flex-direction: column; height: auto; padding: 120px 40px; }
-            .hero-tower-portal { width: 100%; height: 450px; margin-bottom: 50px; }
+            .hero-tower-portal { width: 100%; height: 400px; margin-bottom: 50px; }
             .hero-text-box { width: 100%; padding-left: 0; }
             .product-grid { grid-template-columns: repeat(2, 1fr); }
+            .surprise-drawer { width: 100%; }
         }
     </style>
 </head>
 <body>
 
-    <!-- 交互核心 -->
+    <!-- 交互 UI -->
     <div id="cursor-dot"></div>
     <div id="cursor-wash"></div>
-    <div class="scroll-progress-bar" id="scrollProgressBar"></div>
+    <div class="progress-line" id="progressBar"></div>
     <div class="toast-notification" id="toastNotification"></div>
 
-    <!-- 方案二：筑梦分层视差水印 -->
     <div class="watermark-layer">
         <div class="watermark-word" id="wm-zhu">筑</div>
         <div class="watermark-word" id="wm-meng">梦</div>
     </div>
 
-    <!-- 侧边栏：磁性与色差优化 -->
+    <!-- 侧边栏：简化交互效果，移除磁性吸附 -->
     <aside class="sidebar">
-        <div class="brand-seal hover-target magnetic-target">
+        <div class="brand-seal hover-target">
             <div class="brand-vertical">冀遗筑梦</div>
         </div>
         
@@ -215,38 +224,39 @@
                 <span class="node-num">03</span><span class="node-text">赵州古桥</span>
             </div>
             <div class="series-node hover-target" data-series="04">
-                <span class="node-num">04</span><span class="node-text">隐藏档案</span>
+                <span class="node-num">04</span><span class="node-text">史诗典藏</span>
             </div>
         </nav>
 
         <div class="social-footer social-links">
-            <i class="fa fa-weixin hover-target magnetic-target"></i>
-            <i class="fa fa-weibo hover-target magnetic-target"></i>
+            <i class="fa fa-weixin hover-target"></i>
+            <i class="fa fa-weibo hover-target"></i>
         </div>
     </aside>
 
     <div class="main-content">
-        <!-- 顶部导航：胶囊磁性版 -->
+        <!-- 顶部导航 -->
         <header class="top-bar" id="topBar">
             <div class="search-engine hover-target">
                 <i class="fa fa-search"></i>
                 <input type="text" placeholder="SEARCH ARCHIVE..." id="searchInput">
             </div>
 
-            <div class="cart-trigger hover-target magnetic-target" onclick="app.toggleCart()">
+            <div class="cart-trigger hover-target" onclick="app.toggleCart()">
                 <i class="fa fa-shopping-bag"></i>
                 <span>BAG</span>
                 <div id="cartBadge">0</div>
             </div>
 
-            <div class="auth-btn hover-target magnetic-target" onclick="app.toggleLogin()">
+            <div class="auth-btn hover-target" onclick="app.toggleLogin()">
                 <span id="userText">SIGN IN / JOIN</span>
             </div>
         </header>
 
         <!-- Hero: 华塔巨幕 -->
         <section class="hero-section">
-            <div class="tower-visual-gate hover-target">
+            <div class="hero-tower-portal hover-target">
+                <!-- 核心修正：图片已经在CSS中固定 -->
                 <div class="hero-tower-img" id="heroImg"></div>
                 <div class="scan-beam"></div>
             </div>
@@ -267,14 +277,14 @@
             </div>
 
             <div class="product-grid" id="productGrid">
-                <!-- 骨架屏由 JS 控制 -->
+                <!-- 骨架屏占位 -->
             </div>
 
             <div class="paginator" id="pageBox"></div>
         </section>
 
         <footer style="text-align:center; padding:100px; opacity:0.3; font-size:11px; font-family:var(--f-mono); border-top:1px solid var(--c-grid);">
-            © 2026 JIYI ZHUMENG DIGITAL PROJECT. ALL RIGHTS RESERVED.
+            © 2026 JIYI ZHUMENG DIGITAL TECHNOLOGY. ALL RIGHTS RESERVED.
         </footer>
     </div>
 
@@ -293,18 +303,18 @@
     <div class="ink-modal" id="loginModal">
         <div class="modal-box">
             <span class="hover-target" style="position:absolute; top:20px; right:25px; font-size:30px;" onclick="app.toggleLogin()">&times;</span>
-            <h2 style="text-align:center; font-size:30px; margin-bottom:50px;">数字化结缘</h2>
+            <h2 style="text-align:center; font-size:28px; margin-bottom:40px;">数字化结缘</h2>
             <input type="text" class="ink-field" id="uName" placeholder="Identity / 名号">
-            <button class="btn-reveal-all hover-target" style="width:100%;" onclick="app.login()">开启同步</button>
+            <button class="btn-reveal-all hover-target" style="width:100%;" onclick="app.login()">同步数据</button>
         </div>
     </div>
 
     <script>
         /**
-         * 冀遗筑梦数字化旗舰应用 V8.2
-         * 新增：磁性力场、分层视差增强、全场景颜色过渡逻辑。
+         * 冀遗筑梦旗舰版引擎 V8.2
+         * 修正了 Hero 图片显示问题，补全了磁性力场与品类转场。
          */
-        class HeritageApp {
+        class UltimateEngine {
             constructor() {
                 this.API_BASE = window.location.hostname.includes('onrender.com') 
                     ? 'https://jiyi-zhumeng.onrender.com' : 'http://localhost:3000';
@@ -324,7 +334,7 @@
                     hero: document.getElementById('heroImg'),
                     cartBadge: document.getElementById('cartBadge'),
                     shelf: document.getElementById('cartShelf'),
-                    progress: document.getElementById('scrollProgressBar')
+                    progress: document.getElementById('progressBar')
                 };
 
                 this.init();
@@ -332,20 +342,13 @@
 
             init() {
                 this.setupCoreInteractions();
-                this.setupHeroImage();
                 this.loadData();
                 this.syncSession();
                 this.renderCart();
             }
 
-            setupHeroImage() {
-                const heroImg = document.getElementById('heroImg');
-                const imgUrl = `${this.API_BASE}/images/001.jpg`;
-                heroImg.style.backgroundImage = `url('${imgUrl}')`;
-            }
-
             // ---------------------------------------------------------
-            // [交互系统：磁性吸附、分层视差、转场颜色]
+            // [交互系统：磁性吸附、分层视差]
             // ---------------------------------------------------------
             setupCoreInteractions() {
                 window.addEventListener('mousemove', (e) => {
@@ -358,7 +361,7 @@
                     const isHover = e.target.closest('a, button, .hover-target, .blind-card');
                     document.body.classList.toggle('hover-active', !!isHover);
 
-                    // 2. 磁性力场 (Scheme 2)
+                    // 2. 磁性力场
                     const magnets = document.querySelectorAll('.magnetic-target');
                     magnets.forEach(m => {
                         const r = m.getBoundingClientRect();
@@ -367,20 +370,20 @@
                         const distance = Math.hypot(x - centerX, y - centerY);
 
                         if (distance < 120) {
-                            const moveX = (x - centerX) * 0.4;
-                            const moveY = (y - centerY) * 0.4;
+                            const moveX = (x - centerX) * 0.45;
+                            const moveY = (y - centerY) * 0.45;
                             m.style.transform = `translate(${moveX}px, ${moveY}px) scale(1.08)`;
                         } else {
                             m.style.transform = `translate(0, 0) scale(1)`;
                         }
                     });
 
-                    // 3. 分层视差增强 (Scheme 2)
+                    // 3. 分层视差
                     const mx = (x - window.innerWidth/2);
                     const my = (y - window.innerHeight/2);
                     this.dom.zhu.style.transform = `translate(${mx / 8}px, ${my / 6}px)`;
                     this.dom.meng.style.transform = `translate(${mx / 18}px, ${my / 14}px)`;
-                    this.dom.hero.style.transform = `scale(1.1) translate(${mx / 70}px, ${my / 70}px)`;
+                    this.dom.hero.style.transform = `scale(1.2) translate(${mx / 80}px, ${my / 80}px)`;
                 });
 
                 // 洇染特效
@@ -393,18 +396,19 @@
                     setTimeout(() => node.remove(), 800);
                 });
 
-                // 滚动条监听
+                // 滚动反馈
                 window.addEventListener('scroll', () => {
                     const s = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
                     this.dom.progress.style.width = s + '%';
+                    document.getElementById('topBar').classList.toggle('scrolled', window.scrollY > 50);
                 });
             }
 
             // ---------------------------------------------------------
-            // [业务系统：品类转场、数据渲染]
+            // [业务逻辑：数据渲染、品类转场]
             // ---------------------------------------------------------
             async loadData() {
-                this.dom.grid.innerHTML = Array.from({length: 6}, () => `<div class="skeleton-card"><div class="sk-img sk-block"></div><div class="sk-text sk-block"></div></div>`).join('');
+                this.dom.grid.innerHTML = Array.from({length: 6}, () => `<div class="skeleton-card"><div class="sk-img"></div></div>`).join('');
                 try {
                     const res = await fetch(`${this.API_BASE}/api/products?page=1`);
                     const data = await res.json();
@@ -415,11 +419,7 @@
                     }
                 } catch(e) {
                     this.state.products = Array.from({length: 12}, (_, i) => ({
-                        id: i + 1, 
-                        name: `数字馆藏 · 遗珍序列 ${i+1}号`, 
-                        price: 150 + i*10, 
-                        rarity: i%5===0?'SSR':'R', 
-                        isOpened: false,
+                        id: i + 1, name: `数字馆藏 · 序列 ${i+1}号`, price: 150 + i*10, rarity: i%5===0?'SSR':'R', isOpened: false,
                         img: `${String(i + 1).padStart(3, '0')}.jpg`
                     }));
                 }
@@ -435,7 +435,7 @@
                     
                     let imgSrc = item.img;
                     if(imgSrc && !imgSrc.startsWith('http')) imgSrc = `${this.API_BASE}/images/${imgSrc}`;
-                    if(!imgSrc) imgSrc = `https://placehold.co/400x500/2F4842/C1A268?text=NO+IMAGE`;
+                    if(!imgSrc) imgSrc = `https://placehold.co/400x500/2F4842/C1A268?text=JIYI+BOX`;
 
                     card.innerHTML = `
                         <div class="reveal-vfx vfx-${item.rarity}"></div>
@@ -445,7 +445,7 @@
                             <div style="font-family:var(--f-mono); font-size:10px; color:var(--c-accent); margin-top:30px;">NO. ${String(item.id).padStart(4,'0')}</div>
                         </div>
                         <div class="card-back">
-                            <div class="artifact-visual"><img src="${imgSrc}" class="artifact-img"></div>
+                            <div class="artifact-visual"><img src="${imgSrc}" class="artifact-img" onerror="this.src='https://placehold.co/400x500/2F4842/C1A268?text=IMAGE+LOST'"></div>
                             <div class="artifact-info">
                                 <div class="artifact-rarity">${item.rarity}</div>
                                 <h3 class="artifact-name">${item.name}</h3>
@@ -459,7 +459,7 @@
 
                     card.onclick = (e) => { if(!e.target.closest('button') && !item.isOpened) this.openBox(item, card); };
                     
-                    // 物理阻尼逻辑
+                    // 物理阻尼
                     card.onmousemove = (e) => {
                         const r = card.getBoundingClientRect();
                         const x = (e.clientX - r.left) / r.width - 0.5;
@@ -480,28 +480,18 @@
                 card.classList.add('is-revealed');
             }
 
-            // ---------------------------------------------------------
-            // [场景环境变换 (Scheme 5)]
-            // ---------------------------------------------------------
             changeSeries(node) {
                 const sId = node.dataset.series;
                 document.querySelectorAll('.series-node').forEach(n => n.classList.remove('active'));
                 node.classList.add('active');
-                
                 this.state.series = sId;
                 this.state.page = 1;
-
-                // [全场景洇染]
                 const colors = { '01': '#E6E2DC', '02': '#F0EAD6', '03': '#DDE6ED', '04': '#F2E8E8' };
                 document.documentElement.style.setProperty('--c-grid', colors[sId]);
-                
                 this.loadData();
                 document.getElementById('shop').scrollIntoView({behavior:'smooth'});
             }
 
-            // ---------------------------------------------------------
-            // [惊喜袋功能]
-            // ---------------------------------------------------------
             addToCart(e, id) {
                 e.stopPropagation();
                 if(!this.state.currentUser) { this.toggleLogin(); return; }
@@ -516,12 +506,13 @@
                 this.dom.cartBadge.innerText = this.state.cart.length;
                 this.dom.shelf.innerHTML = this.state.cart.length === 0 
                     ? `<p style="opacity:0.2; margin:auto;">博古架尚无遗珍...</p>` 
-                    : this.state.cart.map(p => `<div class="shelf-item"><img src="${p.img && !p.img.startsWith('http') ? this.API_BASE+'/images/'+p.img : (p.img || 'https://placehold.co/200')}" /><div class="item-name">${p.name}</div></div>`).join('');
+                    : this.state.cart.map(p => `
+                        <div class="shelf-item">
+                            <img src="${p.img && !p.img.startsWith('http') ? this.API_BASE+'/images/'+p.img : (p.img || 'https://placehold.co/200')}" />
+                            <div class="item-name">${p.name}</div>
+                        </div>`).join('');
             }
 
-            // ---------------------------------------------------------
-            // [工具功能]
-            // ---------------------------------------------------------
             showToast(msg) {
                 const t = document.getElementById('toastNotification');
                 t.innerText = msg; t.classList.add('show');
@@ -536,24 +527,8 @@
             changePage(p) { this.state.page = p; this.renderGrid(); document.getElementById('shop').scrollIntoView({behavior:'smooth'}); }
         }
 
-        const app = new HeritageApp();
+        const app = new UltimateEngine();
         document.querySelectorAll('.series-node').forEach(n => n.onclick = () => app.changeSeries(n));
-        
-        // 设置hero图片
-        document.addEventListener('DOMContentLoaded', function() {
-            const heroImg = document.getElementById('heroImg');
-            if (heroImg) {
-                // 根据部署环境设置图片URL
-                let imageUrl;
-                if (window.location.hostname.includes('onrender.com')) {
-                    imageUrl = 'https://jiyi-zhumeng.onrender.com/images/001.jpg';
-                } else {
-                    // 本地开发环境
-                    imageUrl = '../backend/public/images/001.jpg';
-                }
-                heroImg.style.backgroundImage = `url('${imageUrl}')`;
-            }
-        });
     </script>
 </body>
 </html>
