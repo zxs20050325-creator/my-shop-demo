@@ -1,3 +1,30 @@
+/**
+ * common.js - 冀遗筑梦项目公共JavaScript
+ * 包含跨页面共享的函数和配置
+ */
+
+// 设置API基础URL，以便在部署时调整
+const isDeployed = window.location.hostname.includes('onrender.com');
+const API_BASE = isDeployed ? 'https://jiyi-zhumeng.onrender.com' : 'http://localhost:3000';
+
+// 全局购物车数量更新函数
+function updateCartCount() {
+    const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
+    const count = cart.length;
+    
+    // 更新所有显示购物车数量的元素
+    document.querySelectorAll('#cartBadge, #floatingCartCount').forEach(el => {
+        el.textContent = count;
+    });
+}
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', function() {
+    // 如果存在，则更新购物车数量
+    if (document.querySelector('#cartBadge')) {
+        updateCartCount();
+    }
+});
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -5,20 +32,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>支付页面 - 冀遗筑梦</title>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 引入公共CSS和JS -->
+    <link rel="stylesheet" href="styles.css">
+    <script src="common.js"></script>
+
     <style>
-        /* ========================================
-           0. 设计系统 (Design System)
-           ======================================== */
-        :root {
-            --c-primary: #2F4842;    /* 青黛 - 文字/主调 */
-            --c-accent: #C1A268;     /* 鎏金 - 强调/按钮 */
-            --c-bg: #F2F0EB;         /* 宣纸灰 - 背景 */
-            --c-grid: #E0DED9;       /* 网格线 */
-            --c-text-light: #8A9A96; /* 辅助文字 */
-            --f-serif: 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
-            --f-mono: 'Courier New', Courier, monospace;
-            --sidebar-width: 80px;
-        }
+        /* 支付页面特定样式 */
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -223,20 +243,7 @@
             color: var(--c-accent);
         }
         
-        .main-wrapper {
-            margin-left: var(--sidebar-width);
-            min-height: 100vh;
-            display: grid;
-            grid-template-columns: 240px 1fr;
-            grid-template-rows: auto auto 1fr;
-            grid-template-areas:
-                "top-bar top-bar"
-                "hero hero"
-                "filter content";
-        }
-        
         .pay-container {
-            grid-area: content;
             padding: 40px 60px;
             display: flex;
             flex-direction: column;
@@ -557,20 +564,20 @@
                 totalPrice += itemTotal;
                 
                 itemsHTML += `
-                    <div class="payment-item">
+                    <div class="order-item">
                         <span class="item-name">${item.name}</span>
                         <span class="item-price">¥${item.price}</span>
                     </div>
                 `;
             });
 
-            document.getElementById('payment-items').innerHTML = itemsHTML;
+            document.getElementById('order-items').innerHTML = itemsHTML;
             document.getElementById('total-amount').textContent = totalPrice.toFixed(2);
         }
 
         // 处理支付
         function processPayment() {
-            const paymentMethod = document.querySelector('input[name="payment-method"]:checked');
+            const paymentMethod = document.querySelector('input[name="payment"]:checked');
             if (!paymentMethod) {
                 alert('请选择支付方式');
                 return;

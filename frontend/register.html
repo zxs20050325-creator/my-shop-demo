@@ -1,3 +1,44 @@
+// 公共函数库
+
+// 设置API基础URL，以便在部署时调整
+const isDeployed = window.location.hostname.includes('onrender.com');
+const API_BASE = isDeployed ? 'https://jiyi-zhumeng.onrender.com' : 'http://localhost:3000';
+
+// 同步用户会话状态
+function syncSession() {
+    const currentUser = localStorage.getItem('jiyi_user');
+    const authSection = document.getElementById('authSection');
+    if(currentUser) {
+        authSection.innerHTML = `${currentUser} / SIGN OUT`;
+        authSection.onclick = () => {
+            localStorage.clear(); 
+            location.reload();
+        };
+    } else {
+        // 在注册页面，显示登录链接
+        authSection.innerHTML = "";
+    }
+}
+
+// 滚动处理
+function setupScrollHandler() {
+    const topBar = document.getElementById('topBar');
+    window.addEventListener('scroll', () => {
+        if (window.pageYOffset > 50) {
+            topBar.classList.add('scrolled');
+        } else {
+            topBar.classList.remove('scrolled');
+        }
+    });
+}
+
+// 更新购物车数量显示
+function updateCartCount() {
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    const count = cart.length;
+    document.getElementById('cartBadge').textContent = count;
+    document.getElementById('floatingCartCount').textContent = count;
+}
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -5,224 +46,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>用户注册 - 冀遗筑梦</title>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <style>
-        /* ========================================
-           0. 设计系统 (Design System)
-           ======================================== */
-        :root {
-            --c-primary: #2F4842;    /* 青黛 - 文字/主调 */
-            --c-accent: #C1A268;     /* 鎏金 - 强调/按钮 */
-            --c-bg: #F2F0EB;         /* 宣纸灰 - 背景 */
-            --c-grid: #E0DED9;       /* 网格线 */
-            --c-text-light: #8A9A96; /* 辅助文字 */
-            --f-serif: 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
-            --f-mono: 'Courier New', Courier, monospace;
-            --sidebar-width: 80px;
-        }
+    
+    <!-- 引入公共CSS和JS -->
+    <link rel="stylesheet" href="./styles.css">
+    <script src="./common.js"></script>
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background-color: var(--c-bg);
-            color: var(--c-primary);
-            font-family: var(--f-serif);
-            overflow-x: hidden;
-            background-image: 
-                linear-gradient(var(--c-grid) 1px, transparent 1px),
-                linear-gradient(90deg, var(--c-grid) 1px, transparent 1px);
-            background-size: 40px 40px;
-            background-position: center top;
-        }
-        a { text-decoration: none; color: inherit; }
-        button { font-family: inherit; }
-        
-        .sidebar {
-            position: fixed;
-            left: 0; top: 0; bottom: 0;
-            width: var(--sidebar-width);
-            background: #fff;
-            border-right: 1.5px solid var(--c-primary);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            padding: 40px 0;
-            z-index: 1000;
-            transition: 0.4s cubic-bezier(0.19, 1, 0.22, 1);
-        }
-        .sidebar:hover { 
-            width: 140px; 
-            box-shadow: 15px 0 30px rgba(0,0,0,0.05); 
-        }
-        .brand-vertical {
-            writing-mode: vertical-rl;
-            font-size: 20px;
-            font-weight: 900;
-            letter-spacing: 5px;
-            color: var(--c-primary);
-            background: var(--c-primary);
-            color: #fff;
-            padding: 25px 12px;
-            border-radius: 2px;
-            box-shadow: 4px 4px 0 var(--c-accent);
-            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .brand-vertical:hover {
-            transform: translate(3px, 3px);
-            box-shadow: 0 0 0 transparent;
-        }
-        .time-ruler {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 35px;
-            width: 100%;
-        }
-        .dynasty-mark {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            opacity: 0.4;
-            transition: 0.3s;
-            cursor: pointer;
-            padding: 10px;
-            font-family: var(--f-mono);
-            font-weight: 900;
-            font-size: 14px;
-        }
-        .dynasty-mark.active, .dynasty-mark:hover {
-            opacity: 1;
-            color: var(--c-accent);
-            transform: translateX(5px);
-        }
-        .dynasty-text {
-            font-size: 11px;
-            font-weight: bold;
-            display: none;
-            white-space: nowrap;
-        }
-        .sidebar:hover .dynasty-text { 
-            display: block; 
-            animation: fadeIn 0.4s; 
-        }
-        .nav-links {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            padding: 20px 0;
-        }
-        .nav-link {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            opacity: 0.6;
-            transition: 0.3s;
-            color: var(--c-primary);
-            text-decoration: none;
-            font-family: var(--f-mono);
-            font-size: 12px;
-        }
-        .nav-link:hover {
-            opacity: 1;
-            color: var(--c-accent);
-            transform: translateX(5px);
-        }
-        .nav-text {
-            display: none;
-        }
-        .sidebar:hover .nav-text {
-            display: block;
-        }
-        .social-links i {
-            display: block; margin-top: 20px;
-            color: var(--c-primary); opacity: 0.5; cursor: pointer;
-            transition: 0.3s;
-        }
-        .social-links i:hover { 
-            opacity: 1; 
-            transform: translateY(-3px); 
-        }
-        
-        .top-bar {
-            grid-area: top-bar;
-            height: 85px;
-            padding: 0 60px;
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            gap: 40px;
-            background: rgba(245, 243, 239, 0.7);
-            backdrop-filter: blur(15px);
-            transition: 0.3s;
-            z-index: 4200;
-        }
-        .top-bar.scrolled {
-            height: 70px;
-            background: rgba(255, 255, 255, 0.95);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-        }
-        .search-engine {
-            display: flex;
-            align-items: center;
-            border-bottom: 2px solid var(--c-primary);
-            padding: 2px 10px;
-            transition: 0.3s;
-        }
-        .search-engine input {
-            background: none;
-            border: none;
-            outline: none;
-            width: 180px;
-            font-family: var(--f-serif);
-            font-size: 15px;
-            color: var(--c-primary);
-        }
-        .cart-trigger {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 25px;
-            background: var(--c-primary);
-            color: #fff;
-            border-radius: 40px;
-            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-            font-family: 'Cinzel', serif;
-            font-size: 12px;
-            position: relative;
-        }
-        .cart-trigger:hover {
-            background: var(--c-accent);
-            transform: translateY(-2px);
-        }
-        #cartBadge {
-            background: #B22222;
-            color: #fff;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            font-size: 10px;
-            font-weight: bold;
-            position: absolute;
-            top: -5px;
-            right: 5px;
-            box-shadow: 0 3px 8px rgba(178, 34, 34, 0.4);
-        }
-        .auth-btn {
-            font-family: 'Cinzel', serif;
-            font-size: 13px;
-            font-weight: 900;
-            color: var(--c-primary);
-            letter-spacing: 2px;
-            transition: 0.3s;
-            border-left: 1.5px solid var(--c-grid);
-            padding-left: 30px;
-        }
-        .auth-btn:hover {
-            color: var(--c-accent);
-        }
-        
+    <style>
+        /* 注册页面特定样式 */
         .register-container {
             grid-area: content;
             padding: 40px 60px;
@@ -326,62 +156,6 @@
             background: var(--c-primary);
             color: white;
         }
-        
-        .floating-cart {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 60px;
-            height: 60px;
-            background: var(--c-primary);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 24px;
-            cursor: pointer;
-            z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            transition: all 0.3s;
-        }
-        .floating-cart:hover {
-            transform: scale(1.1);
-            background: var(--c-accent);
-        }
-        .cart-count {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #ff4757;
-            color: white;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            font-size: 12px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        @media (max-width: 768px) {
-            .sidebar { display: none; }
-            .main-wrapper { 
-                margin-left: 0; 
-                grid-template-columns: 1fr; 
-                grid-template-areas:
-                    "top-bar"
-                    "hero"
-                    "content";
-            }
-            .register-container {
-                padding: 20px;
-            }
-            .register-form {
-                padding: 30px;
-            }
-            .floating-cart { width: 50px; height: 50px; font-size: 20px; }
-        }
     </style>
 </head>
 <body>
@@ -477,48 +251,25 @@
     </div>
 
     <script>
-        // 设置API基础URL，以便在部署时调整
-        const isDeployed = window.location.hostname.includes('onrender.com');
-        const API_BASE = isDeployed ? 'https://jiyi-zhumeng.onrender.com' : 'http://localhost:3000';
-
         window.onload = function() {
             syncSession();
             setupScrollHandler();
+            updateCartCount();
         };
-
-        // 同步用户会话状态
-        function syncSession() {
-            const currentUser = localStorage.getItem('jiyi_user');
-            const authSection = document.getElementById('authSection');
-            if(currentUser) {
-                authSection.innerHTML = `${currentUser} / SIGN OUT`;
-                authSection.onclick = () => {
-                    localStorage.clear(); 
-                    location.reload();
-                };
-            } else {
-                // 在注册页面，显示登录链接
-                authSection.innerHTML = "";
-            }
-        }
-
-        // 滚动处理
-        function setupScrollHandler() {
-            const topBar = document.getElementById('topBar');
-            window.addEventListener('scroll', () => {
-                if (window.pageYOffset > 50) {
-                    topBar.classList.add('scrolled');
-                } else {
-                    topBar.classList.remove('scrolled');
-                }
-            });
-        }
 
         // 注册
         async function register(event) {
             event.preventDefault();
             
-            const username = document.getElementById('username').value;
+            const username = document.getElementById('reg-username').value;
+            const password = document.getElementById('reg-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+
+            // 简单验证
+            if (password !== confirmPassword) {
+                alert('两次输入的密码不一致！');
+                return;
+            }
 
             // 简单的本地存储注册
             localStorage.setItem('jiyi_user', username);

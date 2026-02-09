@@ -5,397 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>用户登录 - 冀遗筑梦</title>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <style>
-        /* ========================================
-           0. 设计系统 (Design System)
-           ======================================== */
-        :root {
-            --c-primary: #2F4842;    /* 青黛 - 文字/主调 */
-            --c-accent: #C1A268;     /* 鎏金 - 强调/按钮 */
-            --c-bg: #F2F0EB;         /* 宣纸灰 - 背景 */
-            --c-grid: #E0DED9;       /* 网格线 */
-            --c-text-light: #8A9A96; /* 辅助文字 */
-            --f-serif: 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
-            --f-mono: 'Courier New', Courier, monospace;
-            --sidebar-width: 80px;
-        }
+    
+    <!-- 引入公共CSS和JS -->
+    <link rel="stylesheet" href="../styles.css">
+    <script src="./common.js"></script>
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background-color: var(--c-bg);
-            color: var(--c-primary);
-            font-family: var(--f-serif);
-            overflow-x: hidden;
-            background-image: 
-                linear-gradient(var(--c-grid) 1px, transparent 1px),
-                linear-gradient(90deg, var(--c-grid) 1px, transparent 1px);
-            background-size: 40px 40px;
-            background-position: center top;
-        }
-        a { text-decoration: none; color: inherit; }
-        button { font-family: inherit; }
-        
-        .sidebar {
-            position: fixed;
-            left: 0; top: 0; bottom: 0;
-            width: var(--sidebar-width);
-            background: #fff;
-            border-right: 1.5px solid var(--c-primary);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            padding: 40px 0;
-            z-index: 1000;
-            transition: 0.4s cubic-bezier(0.19, 1, 0.22, 1);
-        }
-        .sidebar:hover { 
-            width: 140px; 
-            box-shadow: 15px 0 30px rgba(0,0,0,0.05); 
-        }
-        .brand-vertical {
-            writing-mode: vertical-rl;
-            font-size: 20px;
-            font-weight: 900;
-            letter-spacing: 5px;
-            color: var(--c-primary);
-            background: var(--c-primary);
-            color: #fff;
-            padding: 25px 12px;
-            border-radius: 2px;
-            box-shadow: 4px 4px 0 var(--c-accent);
-            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .brand-vertical:hover {
-            transform: translate(3px, 3px);
-            box-shadow: 0 0 0 transparent;
-        }
-        .time-ruler {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 35px;
-            width: 100%;
-        }
-        .dynasty-mark {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            opacity: 0.4;
-            transition: 0.3s;
-            cursor: pointer;
-            padding: 10px;
-            font-family: var(--f-mono);
-            font-weight: 900;
-            font-size: 14px;
-        }
-        .dynasty-mark.active, .dynasty-mark:hover {
-            opacity: 1;
-            color: var(--c-accent);
-            transform: translateX(5px);
-        }
-        .dynasty-text {
-            font-size: 11px;
-            font-weight: bold;
-            display: none;
-            white-space: nowrap;
-        }
-        .sidebar:hover .dynasty-text { 
-            display: block; 
-            animation: fadeIn 0.4s; 
-        }
-        .nav-links {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            padding: 20px 0;
-        }
-        .nav-link {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            opacity: 0.6;
-            transition: 0.3s;
-            color: var(--c-primary);
-            text-decoration: none;
-            font-family: var(--f-mono);
-            font-size: 12px;
-        }
-        .nav-link:hover {
-            opacity: 1;
-            color: var(--c-accent);
-            transform: translateX(5px);
-        }
-        .nav-text {
-            display: none;
-        }
-        .sidebar:hover .nav-text {
-            display: block;
-        }
-        .social-links i {
-            display: block; margin-top: 20px;
-            color: var(--c-primary); opacity: 0.5; cursor: pointer;
-            transition: 0.3s;
-        }
-        .social-links i:hover { 
-            opacity: 1; 
-            transform: translateY(-3px); 
-        }
-        
-        .top-bar {
-            grid-area: top-bar;
-            height: 85px;
-            padding: 0 60px;
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            gap: 40px;
-            background: rgba(245, 243, 239, 0.7);
-            backdrop-filter: blur(15px);
-            transition: 0.3s;
-            z-index: 4200;
-        }
-        .top-bar.scrolled {
-            height: 70px;
-            background: rgba(255, 255, 255, 0.95);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-        }
-        .search-engine {
-            display: flex;
-            align-items: center;
-            border-bottom: 2px solid var(--c-primary);
-            padding: 2px 10px;
-            transition: 0.3s;
-        }
-        .search-engine input {
-            background: none;
-            border: none;
-            outline: none;
-            width: 180px;
-            font-family: var(--f-serif);
-            font-size: 15px;
-            color: var(--c-primary);
-        }
-        .cart-trigger {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 25px;
-            background: var(--c-primary);
-            color: #fff;
-            border-radius: 40px;
-            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-            font-family: 'Cinzel', serif;
-            font-size: 12px;
-            position: relative;
-        }
-        .cart-trigger:hover {
-            background: var(--c-accent);
-            transform: translateY(-2px);
-        }
-        #cartBadge {
-            background: #B22222;
-            color: #fff;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            font-size: 10px;
-            font-weight: bold;
-            position: absolute;
-            top: -5px;
-            right: 5px;
-            box-shadow: 0 3px 8px rgba(178, 34, 34, 0.4);
-        }
-        .auth-btn {
-            font-family: 'Cinzel', serif;
-            font-size: 13px;
-            font-weight: 900;
-            color: var(--c-primary);
-            letter-spacing: 2px;
-            transition: 0.3s;
-            border-left: 1.5px solid var(--c-grid);
-            padding-left: 30px;
-        }
-        .auth-btn:hover {
-            color: var(--c-accent);
-        }
-        
-        .main-wrapper {
-            margin-left: var(--sidebar-width);
-            min-height: 100vh;
-            display: grid;
-            grid-template-columns: 240px 1fr;
-            grid-template-rows: auto auto 1fr;
-            grid-template-areas:
-                "top-bar top-bar"
-                "hero hero"
-                "filter content";
-        }
-        
+    <style>
+        /* 登录页面特定样式 */
         .login-container {
-            grid-area: content;
-            padding: 40px 60px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .login-form {
-            background: white;
-            padding: 40px;
-            border-radius: 8px;
-            width: 100%;
             max-width: 400px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-            border: 1px solid var(--c-grid);
-        }
-        
-        .form-title {
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 24px;
-            color: var(--c-primary);
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            color: var(--c-primary);
-            font-family: var(--f-mono);
-            font-size: 14px;
-        }
-        
-        .form-input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid var(--c-grid);
-            border-radius: 4px;
-            font-size: 16px;
-            color: var(--c-primary);
-            background: #fafafa;
-        }
-        
-        .form-input:focus {
-            outline: none;
-            border-color: var(--c-accent);
+            margin: 100px auto;
+            padding: 40px;
             background: white;
+            border: 1px solid var(--c-primary);
+            border-radius: 4px;
         }
         
-        .form-button {
+        .login-form input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid var(--c-grid);
+            font-family: var(--f-serif);
+        }
+        
+        .login-btn {
             width: 100%;
             padding: 12px;
             background: var(--c-primary);
             color: white;
             border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: 0.3s;
             font-family: var(--f-mono);
+            letter-spacing: 2px;
         }
         
-        .form-button:hover {
+        .login-btn:hover {
             background: var(--c-accent);
-        }
-        
-        .form-footer {
-            text-align: center;
-            margin-top: 20px;
-            color: var(--c-text-light);
-            font-family: var(--f-mono);
-            font-size: 14px;
-        }
-        
-        .form-footer a {
-            color: var(--c-accent);
-            text-decoration: none;
-        }
-        
-        .back-link {
-            display: inline-block;
-            padding: 10px 16px;
-            background: #fff;
-            color: var(--c-primary);
-            text-decoration: none;
-            border: 1px solid var(--c-primary);
-            border-radius: 4px;
-            transition: 0.3s;
-            width: fit-content;
-            font-family: var(--f-mono);
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
-        
-        .back-link:hover {
-            background: var(--c-primary);
-            color: white;
-        }
-        
-        .floating-cart {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 60px;
-            height: 60px;
-            background: var(--c-primary);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 24px;
-            cursor: pointer;
-            z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            transition: all 0.3s;
-        }
-        .floating-cart:hover {
-            transform: scale(1.1);
-            background: var(--c-accent);
-        }
-        .cart-count {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #ff4757;
-            color: white;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            font-size: 12px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        @media (max-width: 768px) {
-            .sidebar { display: none; }
-            .main-wrapper { 
-                margin-left: 0; 
-                grid-template-columns: 1fr; 
-                grid-template-areas:
-                    "top-bar"
-                    "hero"
-                    "content";
-            }
-            .login-container {
-                padding: 20px;
-            }
-            .login-form {
-                padding: 30px;
-            }
-            .floating-cart { width: 50px; height: 50px; font-size: 20px; }
         }
     </style>
-</head>
 <body>
     <div class="floating-cart" onclick="window.location.href='cart.html'">
         <i class="fa fa-shopping-cart"></i>
@@ -466,15 +113,15 @@
                 
                 <div class="form-group">
                     <label class="form-label" for="username">用户名</label>
-                    <input type="text" id="username" class="form-input" placeholder="请输入用户名" required>
+                    <input type="text" id="username" class="login-form-input" placeholder="请输入用户名" required>
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label" for="password">密码</label>
-                    <input type="password" id="password" class="form-input" placeholder="请输入密码" required>
+                    <input type="password" id="password" class="login-form-input" placeholder="请输入密码" required>
                 </div>
                 
-                <button type="submit" class="form-button">登录</button>
+                <button type="submit" class="login-btn">登录</button>
                 
                 <div class="form-footer">
                     还没有账户？ <a href="register.html">立即注册</a>

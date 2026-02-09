@@ -1,0 +1,248 @@
+/**
+ * 冀遗筑梦 - 公共JavaScript工具库
+ * 包含跨页面共享的通用函数和工具方法
+ */
+
+// ========================================
+// 1. 状态管理工具
+// ========================================
+
+/**
+ * 获取本地存储的用户信息
+ * @returns {string|null} 用户名或null
+ */
+function getCurrentUser() {
+    return localStorage.getItem('jiyi_user');
+}
+
+/**
+ * 设置当前用户
+ * @param {string} username - 用户名
+ */
+function setCurrentUser(username) {
+    if (username) {
+        localStorage.setItem('jiyi_user', username);
+    } else {
+        localStorage.removeItem('jiyi_user');
+    }
+}
+
+/**
+ * 获取购物车数据
+ * @returns {Array} 购物车商品数组
+ */
+function getCartData() {
+    try {
+        const cart = localStorage.getItem('jiyi_cart');
+        return cart ? JSON.parse(cart) : [];
+    } catch (e) {
+        console.error('购物车数据解析错误:', e);
+        return [];
+    }
+}
+
+/**
+ * 设置购物车数据
+ * @param {Array} cart - 购物车商品数组
+ */
+function setCartData(cart) {
+    try {
+        localStorage.setItem('jiyi_cart', JSON.stringify(cart));
+    } catch (e) {
+        console.error('购物车数据保存错误:', e);
+    }
+}
+
+/**
+ * 获取收藏夹数据
+ * @returns {Array} 收藏夹商品ID数组
+ */
+function getFavoritesData() {
+    try {
+        const favorites = localStorage.getItem('jiyi_favorites');
+        return favorites ? JSON.parse(favorites) : [];
+    } catch (e) {
+        console.error('收藏夹数据解析错误:', e);
+        return [];
+    }
+}
+
+/**
+ * 设置收藏夹数据
+ * @param {Array} favorites - 收藏夹商品ID数组
+ */
+function setFavoritesData(favorites) {
+    try {
+        localStorage.setItem('jiyi_favorites', JSON.stringify(favorites));
+    } catch (e) {
+        console.error('收藏夹数据保存错误:', e);
+    }
+}
+
+// ========================================
+// 2. UI工具函数
+// ========================================
+
+/**
+ * 显示非阻塞式通知
+ * @param {string} message - 通知消息
+ * @param {number} duration - 显示时长（毫秒），默认2000ms
+ */
+function showToast(message, duration = 2000) {
+    // 查找现有的toast元素
+    let toast = document.getElementById('toastNotification');
+    if (!toast) {
+        // 创建toast元素
+        toast = document.createElement('div');
+        toast.id = 'toastNotification';
+        toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(47, 72, 66, 0.9);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 4px;
+            font-family: var(--f-serif);
+            font-size: 14px;
+            z-index: 10000;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            pointer-events: none;
+        `;
+        document.body.appendChild(toast);
+    }
+    
+    // 更新内容并显示
+    toast.innerText = message;
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateX(0)';
+    
+    // 自动隐藏
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
+    }, duration);
+}
+
+/**
+ * 切换模态框显示状态
+ * @param {string} modalId - 模态框ID
+ */
+function toggleModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+    }
+}
+
+/**
+ * 关闭所有模态框
+ */
+function closeAllModals() {
+    const modals = document.querySelectorAll('.modal, #loginModal, #cartDrawer, #drawerMask');
+    modals.forEach(modal => {
+        modal.style.display = 'none';
+        modal.classList.remove('open', 'active');
+    });
+}
+
+// ========================================
+// 3. API工具函数
+// ========================================
+
+/**
+ * 获取API基础URL
+ * @returns {string} API基础URL
+ */
+function getApiBase() {
+    // 根据部署环境动态设置API地址
+    if (window.location.hostname.includes('onrender.com')) {
+        return 'https://jiyi-zhumeng.onrender.com';
+    }
+    // 开发环境默认使用相对路径
+    return '';
+}
+
+/**
+ * 安全地构建图片URL
+ * @param {string} imagePath - 图片路径
+ * @returns {string} 完整的图片URL
+ */
+function buildImageUrl(imagePath) {
+    if (!imagePath) {
+        return 'https://placehold.co/200';
+    }
+    
+    // 如果已经是完整URL，直接返回
+    if (imagePath.startsWith('http')) {
+        return imagePath;
+    }
+    
+    // 构建相对于API的图片路径
+    const apiBase = getApiBase();
+    return apiBase ? `${apiBase}/images/${imagePath}` : `./images/${imagePath}`;
+}
+
+// ========================================
+// 4. 事件监听器工具
+// ========================================
+
+/**
+ * 添加点击外部区域关闭功能
+ * @param {HTMLElement} targetElement - 目标元素
+ * @param {Function} onCloseCallback - 关闭回调函数
+ */
+function addClickOutsideHandler(targetElement, onCloseCallback) {
+    function handleClickOutside(event) {
+        if (targetElement && !targetElement.contains(event.target)) {
+            onCloseCallback();
+        }
+    }
+    
+    document.addEventListener('click', handleClickOutside);
+    return handleClickOutside; // 返回处理器以便后续移除
+}
+
+/**
+ * 移除点击外部区域关闭处理器
+ * @param {Function} handler - 处理器函数
+ */
+function removeClickOutsideHandler(handler) {
+    document.removeEventListener('click', handler);
+}
+
+// ========================================
+// 5. 初始化函数
+// ========================================
+
+/**
+ * 初始化公共功能
+ */
+function initCommonFeatures() {
+    // 添加全局点击外部关闭支持（如果存在相关元素）
+    const cartDrawer = document.getElementById('cartDrawer');
+    const drawerMask = document.getElementById('drawerMask');
+    
+    if (cartDrawer && drawerMask) {
+        addClickOutsideHandler(cartDrawer, () => {
+            cartDrawer.classList.remove('open');
+            drawerMask.classList.remove('active');
+        });
+    }
+    
+    // 添加ESC键关闭模态框支持
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            closeAllModals();
+        }
+    });
+}
+
+// 页面加载完成后初始化
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCommonFeatures);
+} else {
+    initCommonFeatures();
+}
