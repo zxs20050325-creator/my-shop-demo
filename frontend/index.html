@@ -106,8 +106,8 @@
         @keyframes inkFade { 0% { width: 0; height: 0; opacity: 0.8; } 100% { width: 150px; height: 150px; opacity: 0; } }
 
         /* [筑梦分层视差水印] */
-        .watermark-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 500; font-family: var(--f-art); transform-style: preserve-3d; perspective: 1000px; }
-        .watermark-word { position: absolute; font-size: 32vw; line-height: 1; opacity: 0.04; transition: transform 0.2s var(--trans-smooth); transform-style: preserve-3d; }
+        .watermark-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 500; font-family: var(--f-art); }
+        .watermark-word { position: absolute; font-size: 32vw; line-height: 1; opacity: 0.04; transition: transform 0.2s var(--trans-smooth); }
         #wm-zhu { top: -5%; left: 2%; color: var(--c-primary); }
         #wm-meng { bottom: -2%; right: -2%; color: var(--c-accent); }
 
@@ -139,21 +139,18 @@
         #cartBadge { background: var(--c-danger); color: #fff; width: 18px; height: 18px; border-radius: 50%; font-size: 10px; font-weight: bold; position: absolute; top: -5px; right: 5px; }
 
         /* 4. Hero 视觉区 */
-        .hero-section { height: 92vh; padding: 40px 100px; display: flex; align-items: center; overflow: hidden; position: relative; transform-style: preserve-3d; perspective: 2000px; }
+        .hero-section { height: 92vh; padding: 40px 100px; display: flex; align-items: center; overflow: hidden; position: relative; }
         .hero-tower-portal { 
             width: 56%; height: 85%; position: relative; overflow: hidden; 
             border: 1.5px solid var(--c-primary); box-shadow: 40px 40px 0 rgba(193, 162, 104, 0.12); 
             transition: 0.8s var(--trans-smooth); background: #000; 
-            transform-style: preserve-3d; transition: transform 0.8s var(--trans-smooth);
         }
-        .hero-tower-portal:hover { transform: scale(1.02) translateZ(20px); box-shadow: 55px 55px 0 rgba(193, 162, 104, 0.2); }
-        
+        .hero-tower-portal:hover { transform: scale(1.02); box-shadow: 55px 55px 0 rgba(193, 162, 104, 0.2); }
         .hero-tower-img { 
             width: 100%; height: 100%; object-fit: cover; 
-            transform: scale(1.1) translateZ(10px); transition: 2.5s var(--trans-smooth); 
+            transform: scale(1.1); transition: 2.5s var(--trans-smooth); 
             opacity: 0.85; filter: contrast(1.1); 
             background: url('https://img.zcool.cn/community/016ca55d57b4c6a801214814d94b7e.jpg@1280w_1l_2o_100sh.jpg') center/cover no-repeat;
-            transform-style: preserve-3d;
         }
         .hero-tower-portal:hover .hero-tower-img { transform: scale(1.2) rotate(0.5deg); opacity: 1; }
         
@@ -166,8 +163,8 @@
         .btn-reveal-all:hover { background: var(--c-accent); transform: translateY(-5px); box-shadow: 0 15px 30px rgba(193, 162, 104, 0.25); }
 
         /* 5. 商城核心区 (3x2 布局) */
-        .shop-section { padding: 100px; position: relative; z-index: 10; border-top: 1.5px solid var(--c-grid); background: linear-gradient(to bottom, transparent, #fff 10%, #fff 90%, transparent); transform-style: preserve-3d; perspective: 3000px; }
-        .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 60px; perspective: 2000px; min-height: 900px; transform-style: preserve-3d; }
+        .shop-section { padding: 100px; position: relative; z-index: 10; border-top: 1.5px solid var(--c-grid); background: linear-gradient(to bottom, transparent, #fff 10%, #fff 90%, transparent); }
+        .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 60px; perspective: 1500px; min-height: 900px; }
 
         /* 骨架屏 */
         .skeleton-card { aspect-ratio: 3/4; background: #fff; padding: 20px; border: 1px solid #eee; display: flex; flex-direction: column; gap: 20px; }
@@ -482,24 +479,21 @@
 
                     card.onclick = (e) => { if(!e.target.closest('button') && !item.isOpened) this.openBox(item, card); };
                     
-                    // 增强3D效果：鼠标跟随的3D旋转和深度感
+                    // 核心3D交互：鼠标跟随旋转
                     card.addEventListener('mousemove', (e) => {
                         const rect = card.getBoundingClientRect();
-                        const x = e.clientX - rect.left;
-                        const y = e.clientY - rect.top;
+                        const x = e.clientX - rect.left - rect.width / 2;
+                        const y = e.clientY - rect.top - rect.height / 2;
                         
-                        // 计算鼠标位置与卡片中心的偏移
-                        const centerX = rect.width / 2;
-                        const centerY = rect.height / 2;
-                        const rotateX = (y - centerY) / 15;
-                        const rotateY = (centerX - x) / 15;
+                        // 简洁的3D旋转计算
+                        const rotateX = y * 0.05;
+                        const rotateY = -x * 0.05;
                         
-                        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.05)`;
-                        card.style.transformOrigin = 'center';
+                        card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.05)`;
                     });
                     
                     card.onmouseleave = () => {
-                        card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)';
+                        card.style.transform = 'rotateX(0) rotateY(0) scale(1)';
                     };
 
                     this.dom.grid.appendChild(card);
