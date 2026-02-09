@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <!--
-    =============================================================================
-    项目名称：冀遗筑梦 - 数字化非遗盲盒平台 (SUPREME V8.3 - MICRO MAGNETIC)
+    ============================================================================= 
+    项目名称：冀遗筑梦 - 数字化非遗盲盒平台 (SUPREME V8.2 - VISION FIXED)
     
-    【V8.3 修改说明】
-    1. [Magnetic Field] 磁吸效果已调至“极简/微动”级别 (力度 0.15 / 半径 80px)。
-    2. [Unchanged] 其他视觉、布局、逻辑代码完全保持 V8.2 原样。
+    【核心修正说明】
+    1. [Hero Image] 修正主页大图显示逻辑，采用高保真华塔视觉图作为基底。
+    2. [Scheme 2 - 磁性力场] TopBar 与侧边栏组件具备物理吸附交互感。
+    3. [Scheme 5 - 全场景洇染] 点击品类轴触发背景颜色转场。
+    4. [Integrated] 仪式感拆盒、分层视差、博古架长卷、骨架屏、API连接全保留。
     =============================================================================
 -->
 <head>
@@ -52,6 +54,24 @@
             background-color: var(--c-bg); color: var(--c-primary); 
             font-family: var(--f-serif); overflow-x: hidden; 
             cursor: none; user-select: none;
+        }
+        
+        /* 轻量级自定义光标 */
+        #custom-cursor {
+            position: fixed;
+            width: 12px;
+            height: 12px;
+            border: 2px solid var(--c-primary);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+        
+        #custom-cursor.hover {
+            transform: translate(-50%, -50%) scale(1.2);
+            border-color: var(--c-accent);
         }
         
         body::before { 
@@ -189,6 +209,9 @@
 </head>
 <body>
 
+    <!-- 轻量级自定义光标 -->
+    <div id="custom-cursor"></div>
+    
     <!-- 交互 UI -->
     <div id="cursor-dot"></div>
     <div id="cursor-wash"></div>
@@ -512,6 +535,29 @@
 
         const app = new UltimateEngine();
         document.querySelectorAll('.series-node').forEach(n => n.onclick = () => app.changeSeries(n));
+    </script>
+    <script>
+        // 轻量级自定义光标脚本
+        document.addEventListener('DOMContentLoaded', function() {
+            const cursor = document.getElementById('custom-cursor');
+            
+            // 鼠标移动
+            document.addEventListener('mousemove', function(e) {
+                cursor.style.left = e.clientX + 'px';
+                cursor.style.top = e.clientY + 'px';
+            });
+            
+            // 鼠标悬停效果
+            const interactiveElements = document.querySelectorAll('button, a, input, .hover-target, .series-node, .cart-trigger, .auth-btn, .search-engine');
+            interactiveElements.forEach(element => {
+                element.addEventListener('mouseenter', () => {
+                    cursor.classList.add('hover');
+                });
+                element.addEventListener('mouseleave', () => {
+                    cursor.classList.remove('hover');
+                });
+            });
+        });
     </script>
 </body>
 </html>
