@@ -106,8 +106,8 @@
         @keyframes inkFade { 0% { width: 0; height: 0; opacity: 0.8; } 100% { width: 150px; height: 150px; opacity: 0; } }
 
         /* [筑梦分层视差水印] */
-        .watermark-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 500; font-family: var(--f-art); }
-        .watermark-word { position: absolute; font-size: 32vw; line-height: 1; opacity: 0.04; transition: transform 0.2s var(--trans-smooth); }
+        .watermark-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 500; font-family: var(--f-art); transform-style: preserve-3d; perspective: 1000px; }
+        .watermark-word { position: absolute; font-size: 32vw; line-height: 1; opacity: 0.04; transition: transform 0.2s var(--trans-smooth); transform-style: preserve-3d; }
         #wm-zhu { top: -5%; left: 2%; color: var(--c-primary); }
         #wm-meng { bottom: -2%; right: -2%; color: var(--c-accent); }
 
@@ -139,19 +139,21 @@
         #cartBadge { background: var(--c-danger); color: #fff; width: 18px; height: 18px; border-radius: 50%; font-size: 10px; font-weight: bold; position: absolute; top: -5px; right: 5px; }
 
         /* 4. Hero 视觉区 */
-        .hero-section { height: 92vh; padding: 40px 100px; display: flex; align-items: center; overflow: hidden; position: relative; }
+        .hero-section { height: 92vh; padding: 40px 100px; display: flex; align-items: center; overflow: hidden; position: relative; transform-style: preserve-3d; perspective: 2000px; }
         .hero-tower-portal { 
             width: 56%; height: 85%; position: relative; overflow: hidden; 
             border: 1.5px solid var(--c-primary); box-shadow: 40px 40px 0 rgba(193, 162, 104, 0.12); 
             transition: 0.8s var(--trans-smooth); background: #000; 
+            transform-style: preserve-3d; transition: transform 0.8s var(--trans-smooth);
         }
-        .hero-tower-portal:hover { transform: scale(1.02); box-shadow: 55px 55px 0 rgba(193, 162, 104, 0.2); }
+        .hero-tower-portal:hover { transform: scale(1.02) translateZ(20px); box-shadow: 55px 55px 0 rgba(193, 162, 104, 0.2); }
         
         .hero-tower-img { 
             width: 100%; height: 100%; object-fit: cover; 
-            transform: scale(1.1); transition: 2.5s var(--trans-smooth); 
+            transform: scale(1.1) translateZ(10px); transition: 2.5s var(--trans-smooth); 
             opacity: 0.85; filter: contrast(1.1); 
             background: url('https://img.zcool.cn/community/016ca55d57b4c6a801214814d94b7e.jpg@1280w_1l_2o_100sh.jpg') center/cover no-repeat;
+            transform-style: preserve-3d;
         }
         .hero-tower-portal:hover .hero-tower-img { transform: scale(1.2) rotate(0.5deg); opacity: 1; }
         
@@ -164,8 +166,8 @@
         .btn-reveal-all:hover { background: var(--c-accent); transform: translateY(-5px); box-shadow: 0 15px 30px rgba(193, 162, 104, 0.25); }
 
         /* 5. 商城核心区 (3x2 布局) */
-        .shop-section { padding: 100px; position: relative; z-index: 10; border-top: 1.5px solid var(--c-grid); background: linear-gradient(to bottom, transparent, #fff 10%, #fff 90%, transparent); }
-        .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 60px; perspective: 2000px; min-height: 900px; }
+        .shop-section { padding: 100px; position: relative; z-index: 10; border-top: 1.5px solid var(--c-grid); background: linear-gradient(to bottom, transparent, #fff 10%, #fff 90%, transparent); transform-style: preserve-3d; perspective: 3000px; }
+        .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 60px; perspective: 2000px; min-height: 900px; transform-style: preserve-3d; }
 
         /* 骨架屏 */
         .skeleton-card { aspect-ratio: 3/4; background: #fff; padding: 20px; border: 1px solid #eee; display: flex; flex-direction: column; gap: 20px; }
@@ -174,22 +176,23 @@
         @keyframes skLoad { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
         /* 6. 盲盒卡片 */
-        .blind-card { position: relative; background: transparent; aspect-ratio: 3/4; transform-style: preserve-3d; transition: transform 0.6s var(--trans-spring); }
-        .card-front { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(145deg, var(--c-primary), var(--c-dark)); border: 2px solid var(--c-accent); z-index: 2; backface-visibility: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.8s var(--trans-smooth); box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
+        .blind-card { position: relative; background: transparent; aspect-ratio: 3/4; transform-style: preserve-3d; transition: transform 0.6s var(--trans-spring); cursor: pointer; }
+        .card-front { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(145deg, var(--c-primary), var(--c-dark)); border: 2px solid var(--c-accent); z-index: 2; backface-visibility: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.8s var(--trans-smooth); box-shadow: 0 20px 40px rgba(0,0,0,0.15); transform-style: preserve-3d; }
+        .card-front::before { content: ''; position: absolute; top: 10px; left: 10px; right: 10px; bottom: 10px; border: 1px solid rgba(255, 255, 255, 0.1); transform: translateZ(1px); }
         .seal-character { font-family: var(--f-art); font-size: 64px; color: var(--c-accent); margin-bottom: 25px; text-shadow: 0 0 15px rgba(193, 162, 104, 0.4); }
-        .card-back { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 1; backface-visibility: hidden; transform: rotateY(180deg); opacity: 0; transition: 0.8s var(--trans-smooth); display: flex; flex-direction: column; border: 1px solid #eee; }
-        .blind-card.is-revealed .card-front { opacity: 0; transform: rotateY(180deg) scale(0.8); }
-        .blind-card.is-revealed .card-back { opacity: 1; transform: rotateY(360deg); z-index: 3; }
+        .card-back { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 1; backface-visibility: hidden; transform: rotateY(180deg); opacity: 0; transition: 0.8s var(--trans-smooth); display: flex; flex-direction: column; border: 1px solid #eee; box-shadow: 0 20px 40px rgba(0,0,0,0.15); transform-style: preserve-3d; }
+        .blind-card.is-revealed .card-front { opacity: 0; transform: rotateY(180deg) scale(0.8) translateZ(-50px); }
+        .blind-card.is-revealed .card-back { opacity: 1; transform: rotateY(360deg) translateZ(0px); z-index: 3; }
         
-        .reveal-vfx { position: absolute; top: 50%; left: 50%; width: 0; height: 0; transform: translate(-50%, -50%); border-radius: 50%; pointer-events: none; z-index: 10; opacity: 0; }
-        @keyframes burstReveal { 0% { width: 0; height: 0; opacity: 0.9; } 100% { width: 650px; height: 650px; opacity: 0; filter: blur(20px); } }
+        .reveal-vfx { position: absolute; top: 50%; left: 50%; width: 0; height: 0; transform: translate(-50%, -50%); border-radius: 50%; pointer-events: none; z-index: 10; opacity: 0; transform-style: preserve-3d; }
+        @keyframes burstReveal { 0% { width: 0; height: 0; opacity: 0.9; transform: translate(-50%, -50%) translateZ(0px); } 100% { width: 650px; height: 650px; opacity: 0; filter: blur(20px); transform: translate(-50%, -50%) translateZ(100px); } }
 
-        .artifact-visual { width: 100%; height: 65%; overflow: hidden; background: #fafafa; }
-        .artifact-img { width: 100%; height: 100%; object-fit: cover; transition: 1s var(--trans-smooth); }
-        .artifact-info { padding: 25px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .artifact-visual { width: 100%; height: 65%; overflow: hidden; background: #fafafa; transform-style: preserve-3d; }
+        .artifact-img { width: 100%; height: 100%; object-fit: cover; transition: 1s var(--trans-smooth); transform: translateZ(10px); }
+        .artifact-info { padding: 25px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; transform-style: preserve-3d; }
         .artifact-rarity { font-family: var(--f-mono); font-size: 10px; font-weight: 900; background: #f0f0f0; padding: 2px 8px; width: fit-content; }
-        .artifact-name { font-size: 17px; font-weight: 900; color: var(--c-primary); line-height: 1.4; height: 48px; overflow: hidden; }
-        .artifact-price { font-family: var(--f-mono); color: var(--c-danger); font-size: 24px; font-weight: 900; }
+        .artifact-name { font-size: 17px; font-weight: 900; color: var(--c-primary); line-height: 1.4; height: 48px; overflow: hidden; transform: translateZ(5px); }
+        .artifact-price { font-family: var(--f-mono); color: var(--c-danger); font-size: 24px; font-weight: 900; transform: translateZ(10px); }
 
         /* 7. 惊喜袋 */
         .drawer-mask { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 5000; opacity: 0; visibility: hidden; transition: 0.4s; }
@@ -479,14 +482,24 @@
 
                     card.onclick = (e) => { if(!e.target.closest('button') && !item.isOpened) this.openBox(item, card); };
                     
-                    // 优化3D变换实现：简化为2D变换，降低强度，添加变换原点
-                    card.onmouseenter = () => {
+                    // 增强3D效果：鼠标跟随的3D旋转和深度感
+                    card.addEventListener('mousemove', (e) => {
+                        const rect = card.getBoundingClientRect();
+                        const x = e.clientX - rect.left;
+                        const y = e.clientY - rect.top;
+                        
+                        // 计算鼠标位置与卡片中心的偏移
+                        const centerX = rect.width / 2;
+                        const centerY = rect.height / 2;
+                        const rotateX = (y - centerY) / 15;
+                        const rotateY = (centerX - x) / 15;
+                        
+                        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.05)`;
                         card.style.transformOrigin = 'center';
-                        card.style.transform = 'scale(1.05) rotate(2deg)';
-                    };
+                    });
                     
                     card.onmouseleave = () => {
-                        card.style.transform = 'scale(1) rotate(0deg)';
+                        card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)';
                     };
 
                     this.dom.grid.appendChild(card);
@@ -553,4 +566,3 @@
     </script>
 </body>
 </html>
-
