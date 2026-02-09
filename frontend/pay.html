@@ -35,7 +35,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     <!-- 引入公共CSS和JS -->
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="custom-cursor.css">
     <script src="common.js"></script>
 
     <style>
@@ -507,7 +506,90 @@ document.addEventListener('DOMContentLoaded', function() {
         </main>
     </div>
 
-    <!-- 加载自定义光标脚本 -->
-    <script src="custom-cursor.js"></script>
+    <script>
+        // 设置API基础URL，以便在部署时调整
+        const isDeployed = window.location.hostname.includes('onrender.com');
+        const API_BASE = isDeployed ? 'https://jiyi-zhumeng.onrender.com' : 'http://localhost:3000';
+
+        window.onload = function() {
+            syncSession();
+            loadPaymentInfo();
+            setupScrollHandler();
+        };
+
+        // 同步用户会话状态
+        function syncSession() {
+            const currentUser = localStorage.getItem('jiyi_user');
+            const authSection = document.getElementById('authSection');
+            if(currentUser) {
+                authSection.innerHTML = `${currentUser} / SIGN OUT`;
+                authSection.onclick = () => {
+                    localStorage.clear(); 
+                    location.reload();
+                };
+            } else {
+                alert('请先登录！');
+                window.location.href = 'login.html';
+                return;
+            }
+        }
+
+        // 滚动处理
+        function setupScrollHandler() {
+            const topBar = document.getElementById('topBar');
+            window.addEventListener('scroll', () => {
+                if (window.pageYOffset > 50) {
+                    topBar.classList.add('scrolled');
+                } else {
+                    topBar.classList.remove('scrolled');
+                }
+            });
+        }
+
+        // 加载支付信息
+        function loadPaymentInfo() {
+            const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
+            
+            if (cart.length === 0) {
+                alert('购物车为空');
+                window.location.href = 'cart.html';
+                return;
+            }
+
+            let totalPrice = 0;
+            let itemsHTML = '';
+
+            cart.forEach((item, index) => {
+                const itemTotal = item.price || 0;
+                totalPrice += itemTotal;
+                
+                itemsHTML += `
+                    <div class="order-item">
+                        <span class="item-name">${item.name}</span>
+                        <span class="item-price">¥${item.price}</span>
+                    </div>
+                `;
+            });
+
+            document.getElementById('order-items').innerHTML = itemsHTML;
+            document.getElementById('total-amount').textContent = totalPrice.toFixed(2);
+        }
+
+        // 处理支付
+        function processPayment() {
+            const paymentMethod = document.querySelector('input[name="payment"]:checked');
+            if (!paymentMethod) {
+                alert('请选择支付方式');
+                return;
+            }
+
+            // 清空购物车
+            localStorage.removeItem('jiyi_cart');
+            
+            // 显示支付成功信息
+            alert('支付成功！感谢您的购买。');
+            window.location.href = 'index.html';
+        }
+    </script>
 </body>
 </html>

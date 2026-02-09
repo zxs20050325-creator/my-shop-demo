@@ -46,10 +46,52 @@ function updateCartCount() {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>用户注册 - 冀遗筑梦</title>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <style>
+        /* 自定义光标 */
+        body {
+            cursor: none; /* 隐藏默认光标 */
+        }
+        
+        .custom-cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border: 1px solid var(--c-primary);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: transform 0.1s ease, width 0.3s ease, height 0.3s ease;
+            mix-blend-mode: difference;
+        }
+        
+        .custom-cursor-dot {
+            position: fixed;
+            width: 6px;
+            height: 6px;
+            background-color: var(--c-primary);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: transform 0.1s ease, width 0.3s ease, height 0.3s ease;
+        }
+        
+        a:hover ~ .custom-cursor,
+        button:hover ~ .custom-cursor {
+            width: 40px;
+            height: 40px;
+        }
+        
+        a:hover ~ .custom-cursor-dot,
+        button:hover ~ .custom-cursor-dot {
+            width: 12px;
+            height: 12px;
+        }
+    </style>
     
     <!-- 引入公共CSS和JS -->
-    <link rel="stylesheet" href="../styles.css">
-    <link rel="stylesheet" href="custom-cursor.css">
+    <link rel="stylesheet" href="./styles.css">
     <script src="./common.js"></script>
 
     <style>
@@ -251,7 +293,69 @@ function updateCartCount() {
         </main>
     </div>
 
-    <!-- 加载自定义光标脚本 -->
-    <script src="custom-cursor.js"></script>
+    <!-- 自定义光标元素 -->
+    <div class="custom-cursor"></div>
+    <div class="custom-cursor-dot"></div>
+
+    <script>
+        window.onload = function() {
+            syncSession();
+            setupScrollHandler();
+            updateCartCount();
+            
+            // 初始化自定义光标
+            const cursor = document.querySelector('.custom-cursor');
+            const cursorDot = document.querySelector('.custom-cursor-dot');
+            
+            document.addEventListener('mousemove', function(e) {
+                cursor.style.left = e.clientX + 'px';
+                cursor.style.top = e.clientY + 'px';
+                
+                cursorDot.style.left = e.clientX + 'px';
+                cursorDot.style.top = e.clientY + 'px';
+            });
+            
+            // 为链接和按钮添加悬停效果
+            const hoverElements = document.querySelectorAll('a, button, .nav-link, .form-button');
+            
+            hoverElements.forEach(element => {
+                element.addEventListener('mouseenter', () => {
+                    cursor.style.width = '40px';
+                    cursor.style.height = '40px';
+                    
+                    cursorDot.style.width = '12px';
+                    cursorDot.style.height = '12px';
+                });
+                
+                element.addEventListener('mouseleave', () => {
+                    cursor.style.width = '20px';
+                    cursor.style.height = '20px';
+                    
+                    cursorDot.style.width = '6px';
+                    cursorDot.style.height = '6px';
+                });
+            });
+        };
+
+        // 注册
+        async function register(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('reg-username').value;
+            const password = document.getElementById('reg-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+
+            // 简单验证
+            if (password !== confirmPassword) {
+                alert('两次输入的密码不一致！');
+                return;
+            }
+
+            // 简单的本地存储注册
+            localStorage.setItem('jiyi_user', username);
+            alert('注册成功！');
+            window.location.href = 'index.html';
+        }
+    </script>
 </body>
 </html>

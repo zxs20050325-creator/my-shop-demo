@@ -8,7 +8,6 @@
     
     <!-- 引入公共CSS和JS -->
     <link rel="stylesheet" href="../styles.css">
-    <link rel="stylesheet" href="custom-cursor.css">
     <script src="./common.js"></script>
 
     <style>
@@ -43,9 +42,29 @@
         .login-btn:hover {
             background: var(--c-accent);
         }
+        
+        /* 轻量级自定义光标 */
+        #custom-cursor {
+            position: fixed;
+            width: 12px;
+            height: 12px;
+            border: 2px solid var(--c-primary, #2F4842);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+        
+        #custom-cursor.hover {
+            transform: translate(-50%, -50%) scale(1.2);
+            border-color: var(--c-accent, #C1A268);
+        }
     </style>
-</head>
 <body>
+    <!-- 轻量级自定义光标 -->
+    <div id="custom-cursor"></div>
+    
     <div class="floating-cart" onclick="window.location.href='cart.html'">
         <i class="fa fa-shopping-cart"></i>
         <div class="cart-count" id="floatingCartCount">0</div>
@@ -182,8 +201,5 @@
             window.location.href = 'index.html';
         }
     </script>
-
-    <!-- 加载自定义光标脚本 -->
-    <script src="custom-cursor.js"></script>
 </body>
 </html>
