@@ -1,0 +1,157 @@
+we-- ... existing code ... -->
+<style>
+    /* 自定义光标样式 */
+    .cursor-dot {
+        position: fixed;
+        width: 6px;
+        height: 6px;
+        background: #3498db;
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 9999;
+        transition: 
+            transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55),
+            width 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55),
+            height 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55),
+            background-color 0.3s ease;
+    }
+    
+    /* 静止状态 - 增加三个分离的圆点间距 */
+    .cursor-dot-1 {
+        transform: translate(var(--mouse-x, 0px), var(--mouse-y, 0px)) translate(-20px, -20px);
+    }
+    
+    .cursor-dot-2 {
+        transform: translate(var(--mouse-x, 0px), var(--mouse-y, 0px)) translate(20px, -20px);
+    }
+    
+    .cursor-dot-3 {
+        transform: translate(var(--mouse-x, 0px), var(--mouse-y, 0px)) translate(0px, 20px);
+    }
+    
+    /* Hover状态 - 向中心收紧 */
+    .cursor-hover .cursor-dot-1 {
+        transform: translate(var(--mouse-x, 0px), var(--mouse-y, 0px)) translate(-10px, -10px);
+    }
+    
+    .cursor-hover .cursor-dot-2 {
+        transform: translate(var(--mouse-x, 0px), var(--mouse-y, 0px)) translate(10px, -10px);
+    }
+    
+    .cursor-hover .cursor-dot-3 {
+        transform: translate(var(--mouse-x, 0px), var(--mouse-y, 0px)) translate(0px, 10px);
+    }
+    
+    /* Click状态 - 合体成大点 */
+    .cursor-click .cursor-dot {
+        width: 24px;
+        height: 24px;
+        background: #e74c3c;
+        transform: translate(var(--mouse-x, 0px), var(--mouse-y, 0px)) !important;
+    }
+</style>
+<!-- ... existing code ... -->
+
+<script>
+    // 自定义光标类
+    class CustomCursor {
+        constructor() {
+            this.cursorDots = document.querySelectorAll('.cursor-dot');
+            this.cursorDot1 = document.querySelector('.cursor-dot-1');
+            this.cursorDot2 = document.querySelector('.cursor-dot-2');
+            this.cursorDot3 = document.querySelector('.cursor-dot-3');
+            this.isHovering = false;
+            this.isClicking = false;
+            this.currentElement = null;
+            
+            this.init();
+        }
+        
+        init() {
+            // 监听鼠标移动
+            document.addEventListener('mousemove', this.handleMouseMove.bind(this));
+            
+            // 监听鼠标进入可交互元素
+            document.querySelectorAll('[data-cursor="grab"], button, a, input, textarea, select').forEach(element => {
+                element.addEventListener('mouseenter', this.handleMouseEnter.bind(this));
+                element.addEventListener('mouseleave', this.handleMouseLeave.bind(this));
+                element.addEventListener('mousedown', this.handleMouseDown.bind(this));
+                element.addEventListener('mouseup', this.handleMouseUp.bind(this));
+            });
+            
+            // 监听触摸设备（作为后备）
+            document.addEventListener('touchstart', this.handleTouchStart.bind(this));
+            document.addEventListener('touchend', this.handleTouchEnd.bind(this));
+        }
+        
+        handleMouseMove(e) {
+            const x = e.clientX;
+            const y = e.clientY;
+            
+            // 更新CSS变量
+            document.documentElement.style.setProperty('--mouse-x', `${x}px`);
+            document.documentElement.style.setProperty('--mouse-y', `${y}px`);
+            
+            // 如果正在点击，保持合体状态
+            if (this.isClicking) {
+                this.setCursorClick();
+            } else if (this.isHovering) {
+                this.setCursorHover();
+            } else {
+                this.resetCursor();
+            }
+        }
+
+        setCursorHover() {
+            this.cursorDot1.classList.add('cursor-hover');
+            this.cursorDot2.classList.add('cursor-hover');
+            this.cursorDot3.classList.add('cursor-hover');
+        }
+
+        resetCursor() {
+            this.cursorDot1.classList.remove('cursor-hover');
+            this.cursorDot2.classList.remove('cursor-hover');
+            this.cursorDot3.classList.remove('cursor-hover');
+        }
+
+        setCursorClick() {
+            this.cursorDot1.classList.add('cursor-click');
+            this.cursorDot2.classList.add('cursor-click');
+            this.cursorDot3.classList.add('cursor-click');
+        }
+
+        handleMouseEnter() {
+            this.isHovering = true;
+            this.setCursorHover();
+        }
+
+        handleMouseLeave() {
+            this.isHovering = false;
+            this.resetCursor();
+        }
+
+        handleMouseDown() {
+            this.isClicking = true;
+            this.setCursorClick();
+        }
+
+        handleMouseUp() {
+            this.isClicking = false;
+            this.resetCursor();
+        }
+
+        handleTouchStart() {
+            this.isClicking = true;
+            this.setCursorClick();
+        }
+
+        handleTouchEnd() {
+            this.isClicking = false;
+            this.resetCursor();
+        }
+    }
+
+    // 初始化自定义光标
+    new CustomCursor();
+</script>
+<!-- ... existing code ... -->
