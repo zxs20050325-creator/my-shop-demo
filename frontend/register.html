@@ -48,7 +48,8 @@ function updateCartCount() {
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     
     <!-- 引入公共CSS和JS -->
-    <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="custom-cursor.css">
     <script src="./common.js"></script>
 
     <style>
@@ -250,32 +251,7 @@ function updateCartCount() {
         </main>
     </div>
 
-    <script>
-        window.onload = function() {
-            syncSession();
-            setupScrollHandler();
-            updateCartCount();
-        };
-
-        // 注册
-        async function register(event) {
-            event.preventDefault();
-            
-            const username = document.getElementById('reg-username').value;
-            const password = document.getElementById('reg-password').value;
-            const confirmPassword = document.getElementById('confirm-password').value;
-
-            // 简单验证
-            if (password !== confirmPassword) {
-                alert('两次输入的密码不一致！');
-                return;
-            }
-
-            // 简单的本地存储注册
-            localStorage.setItem('jiyi_user', username);
-            alert('注册成功！');
-            window.location.href = 'index.html';
-        }
-    </script>
+    <!-- 加载自定义光标脚本 -->
+    <script src="custom-cursor.js"></script>
 </body>
 </html>
