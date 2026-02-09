@@ -479,51 +479,14 @@
 
                     card.onclick = (e) => { if(!e.target.closest('button') && !item.isOpened) this.openBox(item, card); };
                     
-                    // 方案二优化：事件处理优化
-                    let isAnimating = false;
-                    let lastX = 0, lastY = 0;
-                    const bufferZone = 10; // 边界缓冲区
-                    
-                    const applyTransform = () => {
-                        if (!isAnimating) return;
-                        
-                        const r = card.getBoundingClientRect();
-                        // 添加边界缓冲区检查
-                        if (lastX < bufferZone || lastX > r.width - bufferZone || 
-                            lastY < bufferZone || lastY > r.height - bufferZone) {
-                            // 在边界缓冲区内，保持最后的有效变换
-                            requestAnimationFrame(applyTransform);
-                            return;
-                        }
-                        
-                        const x = (lastX / r.width - 0.5);
-                        const y = (lastY / r.height - 0.5);
-                        // 降低变换强度，减少抽搐
-                        card.style.transform = `perspective(1200px) rotateY(${x*8}deg) rotateX(${-y*8}deg) scale(1.05)`;
-                        requestAnimationFrame(applyTransform);
-                    };
-
-                    card.onmousemove = (e) => {
-                        const r = card.getBoundingClientRect();
-                        const mouseX = e.clientX - r.left;
-                        const mouseY = e.clientY - r.top;
-                        
-                        // 更新最后的鼠标位置
-                        lastX = mouseX;
-                        lastY = mouseY;
-                        isAnimating = true;
-                        
-                        // 防抖：只在没有动画进行时启动
-                        if (!isAnimating) {
-                            isAnimating = true;
-                            requestAnimationFrame(applyTransform);
-                        }
+                    // 优化3D变换实现：简化为2D变换，降低强度，添加变换原点
+                    card.onmouseenter = () => {
+                        card.style.transformOrigin = 'center';
+                        card.style.transform = 'scale(1.05) rotate(2deg)';
                     };
                     
                     card.onmouseleave = () => {
-                        isAnimating = false;
-                        // 平滑过渡回原始状态
-                        card.style.transform = `perspective(1200px) rotateY(0) rotateX(0) scale(1)`;
+                        card.style.transform = 'scale(1) rotate(0deg)';
                     };
 
                     this.dom.grid.appendChild(card);
