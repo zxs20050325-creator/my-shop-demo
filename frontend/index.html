@@ -1,50 +1,12 @@
-    ============================================================================= 
-    项目名称：冀遗筑梦 - 数字化非遗盲盒平台 (SUPREME V8.3 - MICRO MAGNETIC)
-    
-    【V8.3 修改说明】
-    1. [Magnetic Field] 磁吸效果已调至“极简/微动”级别 (力度 0.15 / 半径 80px)。
-    2. [Unchanged] 其他视觉、布局、逻辑代码完全保持 V8.2 原样。
->>>>>>> my-changes
-    =============================================================================
--->
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>冀遗筑梦 | 全球首个非遗盲盒平台</title>
-    
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;700;900&family=Ma+Shan+Zheng&family=Cinzel:wght@700&display=swap" rel="stylesheet">
-<<<<<<< HEAD
-    <link rel="stylesheet" href="custom-cursor.css">
->>>>>>> my-changes
 <!DOCTYPE html>
 <html lang="zh-CN">
 <!--
-    ============================================================================= 
-    项目名称：冀遗筑梦 - 数字化非遗盲盒平台 (SUPREME V8.3 - MICRO MAGNETIC + CUSTOM CURSOR)
-    
-    【V8.3+ 修改说明】
-    1. [Magnetic Field] 磁吸效果已调至“极简/微动”级别 (力度 0.15 / 半径 80px)。
-    2. [Custom Cursor] 集成自定义机械爪光标效果，支持所有页面。
-    3. [Unchanged] 其他视觉、布局、逻辑代码完全保持 V8.2 原样。
-    =============================================================================
--->
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>冀遗筑梦 | 全球首个非遗盲盒平台</title>
-    
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;700;900&family=Ma+Shan+Zheng&family=Cinzel:wght@700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="custom-cursor.css">
-=======
     =============================================================================
     项目名称：冀遗筑梦 - 数字化非遗盲盒平台 (SUPREME V8.3 - MICRO MAGNETIC)
     
     【V8.3 修改说明】
     1. [Magnetic Field] 磁吸效果已调至“极简/微动”级别 (力度 0.15 / 半径 80px)。
     2. [Unchanged] 其他视觉、布局、逻辑代码完全保持 V8.2 原样。
->>>>>>> my-changes
     =============================================================================
 -->
 <head>
@@ -54,10 +16,7 @@
     
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;700;900&family=Ma+Shan+Zheng&family=Cinzel:wght@700&display=swap" rel="stylesheet">
-<<<<<<< HEAD
-=======
     <link rel="stylesheet" href="custom-cursor.css">
->>>>>>> my-changes
 
     <style>
         :root {
@@ -88,7 +47,6 @@
             --trans-smooth: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);
         }
 
-<<<<<<< HEAD
         /* [Cursor CSS moved to custom-cursor.css] */
 
         /* [筑梦分层视差水印] */
@@ -97,17 +55,6 @@
         #wm-zhu { top: -5%; left: 2%; color: var(--c-primary); }
         #wm-meng { bottom: -2%; right: -2%; color: var(--c-accent); }
 
->>>>>>> my-changes
-=======
-        /* [Cursor CSS moved to custom-cursor.css] */
-
-        /* [筑梦分层视差水印] */
-        .watermark-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 500; font-family: var(--f-art); }
-        .watermark-word { position: absolute; font-size: 32vw; line-height: 1; opacity: 0.04; transition: transform 0.2s var(--trans-smooth); }
-        #wm-zhu { top: -5%; left: 2%; color: var(--c-primary); }
-        #wm-meng { bottom: -2%; right: -2%; color: var(--c-accent); }
-
->>>>>>> my-changes
         /* 2. 侧边导航系统 */
         .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: var(--sidebar-width); background: #fff; border-right: 1.5px solid var(--c-primary); display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 40px 0; z-index: 4500; transition: 0.4s var(--trans-smooth); }
         .sidebar:hover { width: 140px; }
@@ -135,15 +82,7 @@
         .cart-trigger { display: flex; align-items: center; gap: 12px; padding: 10px 25px; background: var(--c-primary); color: #fff; border-radius: 40px; transition: var(--trans-spring); font-family: var(--f-eng); font-size: 12px; position: relative; }
         #cartBadge { background: var(--c-danger); color: #fff; width: 18px; height: 18px; border-radius: 50%; font-size: 10px; font-weight: bold; position: absolute; top: -5px; right: 5px; }
 
-<<<<<<< HEAD
-        /* 
-           ========================================
-           4. Hero 视觉区：核心图片显示修正
-           ======================================== 
-        */
-=======
         /* 4. Hero 视觉区 */
->>>>>>> my-changes
         .hero-section { height: 92vh; padding: 40px 100px; display: flex; align-items: center; overflow: hidden; position: relative; }
         .hero-tower-portal { 
             width: 56%; height: 85%; position: relative; overflow: hidden; 
@@ -152,10 +91,6 @@
         }
         .hero-tower-portal:hover { transform: scale(1.02); box-shadow: 55px 55px 0 rgba(193, 162, 104, 0.2); }
         
-<<<<<<< HEAD
-        /* [核心修正] 直接在 CSS 里设置高清背景图，防止路径错误 */
-=======
->>>>>>> my-changes
         .hero-tower-img { 
             width: 100%; height: 100%; object-fit: cover; 
             transform: scale(1.1); transition: 2.5s var(--trans-smooth); 
@@ -176,11 +111,7 @@
         .shop-section { padding: 100px; position: relative; z-index: 10; border-top: 1.5px solid var(--c-grid); background: linear-gradient(to bottom, transparent, #fff 10%, #fff 90%, transparent); }
         .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 60px; perspective: 2000px; min-height: 900px; }
 
-<<<<<<< HEAD
-        /* [骨架屏] */
-=======
         /* 骨架屏 */
->>>>>>> my-changes
         .skeleton-card { aspect-ratio: 3/4; background: #fff; padding: 20px; border: 1px solid #eee; display: flex; flex-direction: column; gap: 20px; }
         .sk-img { width: 100%; height: 70%; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: skLoad 1.5s infinite; }
         .sk-text { width: 80%; height: 20px; background: #f0f0f0; border-radius: 2px; }
@@ -204,11 +135,7 @@
         .artifact-name { font-size: 17px; font-weight: 900; color: var(--c-primary); line-height: 1.4; height: 48px; overflow: hidden; }
         .artifact-price { font-family: var(--f-mono); color: var(--c-danger); font-size: 24px; font-weight: 900; }
 
-<<<<<<< HEAD
-        /* 7. 惊喜袋 - 420px 宽度优化 */
-=======
         /* 7. 惊喜袋 */
->>>>>>> my-changes
         .drawer-mask { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 5000; opacity: 0; visibility: hidden; transition: 0.4s; }
         .drawer-mask.active { opacity: 1; visibility: visible; }
         .surprise-drawer { position: fixed; top: 0; right: -450px; width: 420px; height: 100%; background: var(--c-bg); z-index: 5500; padding: 50px; border-left: 2px solid var(--c-primary); transition: 0.6s var(--trans-smooth); display: flex; flex-direction: column; }
@@ -254,13 +181,8 @@
     </div>
 
     <!-- 侧边栏 -->
->>>>>>> my-changes
-    <!-- 侧边栏 -->
-=======
-    <!-- 侧边栏 -->
->>>>>>> my-changes
     <aside class="sidebar">
-        <div class="brand-seal hover-target">
+        <div class="brand-seal hover-target magnetic-target">
             <div class="brand-vertical">冀遗筑梦</div>
         </div>
         
@@ -274,18 +196,14 @@
             <div class="series-node hover-target magnetic-target" data-series="03">
                 <span class="node-num">03</span><span class="node-text">赵州古桥</span>
             </div>
-<<<<<<< HEAD
-            <div class="series-node hover-target" data-series="04">
-=======
             <div class="series-node hover-target magnetic-target" data-series="04">
->>>>>>> my-changes
                 <span class="node-num">04</span><span class="node-text">史诗典藏</span>
             </div>
         </nav>
 
         <div class="social-footer social-links">
-            <i class="fa fa-weixin hover-target"></i>
-            <i class="fa fa-weibo hover-target"></i>
+            <i class="fa fa-weixin hover-target magnetic-target"></i>
+            <i class="fa fa-weibo hover-target magnetic-target"></i>
         </div>
     </aside>
 
@@ -297,13 +215,13 @@
                 <input type="text" placeholder="SEARCH ARCHIVE..." id="searchInput">
             </div>
 
-            <div class="cart-trigger hover-target" onclick="app.toggleCart()">
+            <div class="cart-trigger hover-target magnetic-target" onclick="app.toggleCart()">
                 <i class="fa fa-shopping-bag"></i>
                 <span>BAG</span>
                 <div id="cartBadge">0</div>
             </div>
 
-            <div class="auth-btn hover-target" onclick="app.toggleLogin()">
+            <div class="auth-btn hover-target magnetic-target" onclick="app.toggleLogin()">
                 <span id="userText">SIGN IN / JOIN</span>
             </div>
         </header>
@@ -311,10 +229,6 @@
         <!-- Hero: 华塔巨幕 -->
         <section class="hero-section">
             <div class="hero-tower-portal hover-target">
-<<<<<<< HEAD
-                <!-- 核心修正：图片已经在CSS中固定 -->
-=======
->>>>>>> my-changes
                 <div class="hero-tower-img" id="heroImg"></div>
                 <div class="scan-beam"></div>
             </div>
@@ -368,13 +282,6 @@
     </div>
 
     <script>
-<<<<<<< HEAD
-        /**
-         * 冀遗筑梦旗舰版引擎 V8.2
-         * 修正了 Hero 图片显示问题，补全了磁性力场与品类转场。
-         */
-=======
->>>>>>> my-changes
         class UltimateEngine {
             constructor() {
                 this.API_BASE = window.location.hostname.includes('onrender.com') 
@@ -409,11 +316,6 @@
             }
 
             // [交互系统]
->>>>>>> my-changes
-            // [交互系统]
-=======
-            // [交互系统]
->>>>>>> my-changes
             setupCoreInteractions() {
                 window.addEventListener('mousemove', (e) => {
                     const { clientX: x, clientY: y } = e;
@@ -426,11 +328,6 @@
                     document.body.classList.toggle('hover-active', !!isHover);
 
                     // 磁性力场 - 极简微动
->>>>>>> my-changes
-                    // 磁性力场 - 极简微动
-=======
-                    // 磁性力场 - 极简微动
->>>>>>> my-changes
                     const magnets = document.querySelectorAll('.magnetic-target');
                     magnets.forEach(m => {
                         const r = m.getBoundingClientRect();
@@ -438,37 +335,21 @@
                         const centerY = r.top + r.height / 2;
                         const distance = Math.hypot(x - centerX, y - centerY);
 
-<<<<<<< HEAD
-                        if (distance < 120) {
-                            const moveX = (x - centerX) * 0.45;
-                            const moveY = (y - centerY) * 0.45;
-                            m.style.transform = `translate(${moveX}px, ${moveY}px) scale(1.08)`;
-=======
                         if (distance < 80) { // 触发半径缩小
                             const moveX = (x - centerX) * 0.15; // 力度减弱
                             const moveY = (y - centerY) * 0.15;
                             m.style.transform = `translate(${moveX}px, ${moveY}px) scale(1.02)`; // 极微缩放
->>>>>>> my-changes
                         } else {
                             m.style.transform = `translate(0, 0) scale(1)`;
                         }
                     });
 
                     // 分层视差
->>>>>>> my-changes
-                    // 分层视差
-=======
-                    // 分层视差
->>>>>>> my-changes
                     const mx = (x - window.innerWidth/2);
                     const my = (y - window.innerHeight/2);
                     this.dom.zhu.style.transform = `translate(${mx / 8}px, ${my / 6}px)`;
                     this.dom.meng.style.transform = `translate(${mx / 18}px, ${my / 14}px)`;
-<<<<<<< HEAD
-                    this.dom.hero.style.transform = `scale(1.2) translate(${mx / 80}px, ${my / 80}px)`;
-=======
                     this.dom.hero.style.transform = `scale(1.1) translate(${mx / 80}px, ${my / 80}px)`;
->>>>>>> my-changes
                 });
 
                 // 洇染特效
@@ -485,16 +366,10 @@
                 window.addEventListener('scroll', () => {
                     const s = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
                     this.dom.progress.style.width = s + '%';
-                    document.getElementById('topBar').classList.toggle('scrolled', window.scrollY > 50);
                 });
             }
 
             // [数据逻辑]
->>>>>>> my-changes
-            // [数据逻辑]
-=======
-            // [数据逻辑]
->>>>>>> my-changes
             async loadData() {
                 this.dom.grid.innerHTML = Array.from({length: 6}, () => `<div class="skeleton-card"><div class="sk-img"></div></div>`).join('');
                 try {
@@ -598,11 +473,6 @@
                         <div class="shelf-item">
                             <img src="${p.img && !p.img.startsWith('http') ? this.API_BASE+'/images/'+p.img : (p.img || 'https://placehold.co/200')}" />
                             <div class="item-name" style="margin-top:10px; font-weight:bold; font-size:12px;">${p.name}</div>
->>>>>>> my-changes
-                            <div class="item-name" style="margin-top:10px; font-weight:bold; font-size:12px;">${p.name}</div>
-=======
-                            <div class="item-name" style="margin-top:10px; font-weight:bold; font-size:12px;">${p.name}</div>
->>>>>>> my-changes
                         </div>`).join('');
             }
 
