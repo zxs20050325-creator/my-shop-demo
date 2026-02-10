@@ -1,14 +1,760 @@
-/* 商品内容细节 */
-.artifact-visual { width: 100%; height: 65%; overflow: hidden; background: #fafafa; position: relative; }
-.artifact-img { 
-    width: 100%; 
-    height: 100%; 
-    object-fit: contain; /* 修改为contain以确保图片完全显示 */
-    transition: 1s var(--trans-smooth); 
-}
-.artifact-info { padding: 25px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
-.artifact-rarity { font-family: var(--f-mono); font-size: 10px; font-weight: 900; background: #f0f0f0; padding: 2px 8px; border-radius: 2px; width: fit-content; margin-bottom: 10px; }
-.artifact-name { font-size: 17px; font-weight: 900; color: var(--c-primary); line-height: 1.4; height: 48px; overflow: hidden; }
-.artifact-price { font-family: var(--f-mono); color: var(--c-danger); font-size: 24px; font-weight: 900; }
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!--
+    ============================================================================= 
+    项目名称：冀遗筑梦 - 数字化非遗盲盒平台 (SUPREME V8.2 - VISION FIXED)
+    
+    【核心修正说明】
+    1. [Hero Image] 修正主页大图显示逻辑，采用高保真华塔视觉图作为基底。
+    2. [Scheme 2 - 磁性力场] TopBar 与侧边栏组件具备物理吸附交互感。
+    3. [Scheme 5 - 全场景洇染] 点击品类轴触发背景颜色转场。
+    4. [Integrated] 仪式感拆盒、分层视差、博古架长卷、骨架屏、API连接全保留。
+    =============================================================================
+-->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>冀遗筑梦 | 全球首个非遗盲盒平台</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;700;900&family=Ma+Shan+Zheng&family=Cinzel:wght@700&family=ZCOOL+QingKe+HuangYou&display=swap" rel="stylesheet">
 
+    <style>
+        :root {
+            /* 品牌核心色 */
+            --c-primary: #2F4842;    /* 青黛 */
+            --c-dark: #1a2b27;       /* 深墨 */
+            --c-accent: #C1A268;     /* 鎏金 */
+            --c-bg: #F5F3EF;         /* 宣纸白 */
+            --c-grid: #E6E2DC;       /* 默认网格线颜色 */
+            --c-danger: #B22222;     /* 朱砂红 */
+            
+            /* 稀有度色彩 */
+            --c-ssr: #FFD700; --c-sr: #C0C0C0; --c-r: #8B5A2B;
+            
+            /* 品类轴色差系 */
+            --node-01: rgba(47, 72, 66, 0.08);
+            --node-02: rgba(193, 162, 104, 0.12);
+            --node-03: rgba(70, 130, 180, 0.1);
+            --node-04: rgba(178, 34, 34, 0.08);
 
+            --f-serif: 'Noto Serif SC', serif;
+            --f-art: 'Ma Shan Zheng', serif; 
+            --f-eng: 'Cinzel', serif;
+            --f-mono: 'Courier New', monospace;
+            
+            --sidebar-width: 90px;
+            --trans-spring: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            --trans-smooth: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+            --fast-trans: all 0.2s ease; /* 快速过渡变量 */
+        }
+
+        /* 1. 全局环境与水墨光标 */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background-color: var(--c-bg); color: var(--c-primary); 
+            font-family: var(--f-serif); overflow-x: hidden; 
+            cursor: none; user-select: none;
+        }
+        
+        /* 轻量级自定义光标 - 调整位置确保与 cursor-dot 重合 */
+        #custom-cursor {
+            position: fixed;
+            width: 12px;
+            height: 12px;
+            border: 2px solid var(--c-primary);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10000; /* 降低z-index，确保在 cursor-dot 下方 */
+            transform: translate(-50%, -50%);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+        
+        #custom-cursor.hover {
+            transform: translate(-50%, -50%) scale(1.2);
+            border-color: var(--c-accent);
+        }
+        
+        body::before { 
+            content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background-image: 
+                linear-gradient(var(--c-grid) 1.5px, transparent 1.5px), 
+                linear-gradient(90deg, var(--c-grid) 1.5px, transparent 1.5px); 
+            background-size: 60px 60px; z-index: -2; opacity: 0.5; pointer-events: none; 
+            transition: background 1s ease;
+        }
+
+        #cursor-dot { 
+            width: 8px; 
+            height: 8px; 
+            background: var(--c-primary); 
+            position: fixed; 
+            pointer-events: none; 
+            border-radius: 50%; 
+            z-index: 10001; /* 提高z-index，确保在 custom-cursor 上方 */
+            transform: translate(-50%, -50%); /* 确保与 custom-cursor 完全重合 */
+            transition: transform 0.1s, background-color 0.2s ease; 
+            box-shadow: 0 0 10px rgba(47, 72, 66, 0.4); 
+        }
+        
+        /* 悬停时两个光圈同时变化 */
+        .hover-active #cursor-dot {
+            background: var(--c-accent);
+            transform: translate(-50%, -50%) scale(1.2);
+        }
+        
+        .ink-click-node { position: fixed; pointer-events: none; border-radius: 50%; background: radial-gradient(circle, var(--c-primary) 0%, transparent 70%); z-index: 9999; transform: translate(-50%, -50%); animation: inkFade 0.8s ease-out forwards; }
+        @keyframes inkFade { 0% { width: 0; height: 0; opacity: 0.8; } 100% { width: 150px; height: 150px; opacity: 0; } }
+
+        /* [筑梦分层视差水印] */
+        .watermark-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 500; font-family: var(--f-art); }
+        .watermark-word { position: absolute; font-size: 32vw; line-height: 1; opacity: 0.24; transition: transform 0.2s var(--trans-smooth); }
+        #wm-zhu { top: -5%; left: 2%; color: var(--c-primary); }
+        #wm-meng { bottom: -2%; right: -2%; color: #A68C55; } /* 调整为稍深的金色 */
+
+        /* 2. 侧边导航系统 */
+        .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: var(--sidebar-width); background: #fff; border-right: 1.5px solid var(--c-primary); display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 40px 0; z-index: 4500; transition: 0.4s var(--trans-smooth); }
+        .sidebar:hover { width: 140px; }
+        .brand-seal { background: var(--c-primary); color: #fff; padding: 25px 12px; border-radius: 2px; box-shadow: 4px 4px 0 var(--c-accent); transition: var(--trans-spring); }
+        .brand-vertical { writing-mode: vertical-rl; font-size: 20px; font-weight: 900; letter-spacing: 5px; }
+
+        .series-axis { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 35px; width: 100%; }
+        .series-node { display: flex; align-items: center; justify-content: center; gap: 12px; opacity: 0.5; transition: 0.4s; cursor: pointer; padding: 15px 10px; border-left: 3px solid transparent; }
+        .series-node[data-series="01"]:hover, .series-node[data-series="01"].active { background: var(--node-01); color: var(--c-primary); border-left-color: var(--c-primary); opacity: 1; }
+        .series-node[data-series="02"]:hover, .series-node[data-series="02"].active { background: var(--node-02); color: var(--c-accent); border-left-color: var(--c-accent); opacity: 1; }
+        .series-node[data-series="03"]:hover, .series-node[data-series="03"].active { background: var(--node-03); color: steelblue; border-left-color: steelblue; opacity: 1; }
+        .series-node[data-series="04"]:hover, .series-node[data-series="04"].active { background: var(--node-04); color: var(--c-danger); border-left-color: var(--c-danger); opacity: 1; }
+
+        .node-num { font-family: var(--f-mono); font-weight: 900; font-size: 14px; }
+        .node-text { font-size: 11px; font-weight: bold; display: none; white-space: nowrap; }
+        .sidebar:hover .node-text { display: block; animation: slideIn 0.4s; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+
+        /* 3. 顶部导航与搜索 */
+        .main-content { margin-left: var(--sidebar-width); position: relative; z-index: 100; }
+        .top-bar { position: sticky; top: 0; height: 85px; padding: 0 60px; display: flex; justify-content: flex-end; align-items: center; gap: 40px; z-index: 4200; background: rgba(245, 243, 239, 0.7); backdrop-filter: blur(15px); border-bottom: 1px solid rgba(47, 72, 66, 0.05); transition: 0.3s; }
+        
+        /* 统一顶部功能栏样式 */
+        .search-engine { display: flex; align-items: center; border-bottom: 2px solid var(--c-primary); padding: 2px 10px; transition: all 0.2s ease; }
+        .search-engine input { background: none; border: none; outline: none; width: 180px; font-family: var(--f-serif); font-size: 15px; color: var(--c-primary); }
+        .search-engine input::placeholder { color: rgba(47, 72, 66, 0.6); }
+
+        .cart-trigger { display: flex; align-items: center; gap: 12px; padding: 10px 25px; background: var(--c-primary); color: #fff; border-radius: 40px; transition: all 0.2s ease; font-family: var(--f-eng); font-size: 12px; position: relative; }
+        
+        .auth-btn { font-family: var(--f-eng); font-size: 12px; font-weight: 900; color: var(--c-primary); letter-spacing: 2px; transition: all 0.2s ease; padding: 10px 25px; cursor: pointer;border-radius: 40px; border: 2px solid var(--c-primary); background: transparent; }
+
+        #cartBadge { background: var(--c-danger); color: #fff; width: 18px; height: 18px; border-radius: 50%; font-size: 10px; font-weight: bold; position: absolute; top: -5px; right: 5px; }
+        
+        /* 统一悬停效果 */
+        .cart-trigger:hover { background: var(--c-accent); transform: translateY(-2px); box-shadow: 0 8px 15px rgba(193, 162, 104, 0.2); }
+        .auth-btn:hover { color: var(--c-accent); }
+
+        /* 4. Hero 视觉区 */
+        .hero-section { height: 92vh; padding: 40px 100px; display: flex; align-items: center; overflow: hidden; position: relative; }
+        .hero-tower-portal { 
+            width: 56%; height: 85%; position: relative; overflow: hidden; 
+            border: 1.5px solid var(--c-primary); box-shadow: 40px 40px 0 rgba(193, 162, 104, 0.12); 
+            transition: 0.8s var(--trans-smooth); background: #000; 
+        }
+        .hero-tower-portal:hover { transform: scale(1.02); box-shadow: 55px 55px 0 rgba(193, 162, 104, 0.2); }
+        
+        .hero-tower-img { 
+            width: 100%; height: 100%; object-fit: cover; 
+            transform: scale(1.1); transition: 2.5s var(--trans-smooth); 
+            opacity: 0.85; filter: contrast(1.1); 
+            background: url('https://img.zcool.cn/community/016ca55d57b4c6a801214814d94b7e.jpg@1280w_1l_2o_100sh.jpg') center/cover no-repeat;
+        }
+        .hero-tower-portal:hover .hero-tower-img { transform: scale(1.2) rotate(0.5deg); opacity: 1; }
+        
+        .scan-beam { position: absolute; top: -100%; left: 0; width: 100%; height: 20%; background: linear-gradient(to bottom, transparent, rgba(193, 162, 104, 0.4), transparent); animation: scanLoop 4.5s linear infinite; pointer-events: none; z-index: 5; }
+        @keyframes scanLoop { 0% { top: -100%; } 100% { top: 250%; } }
+
+        .hero-text-box { width: 44%; padding-left: 90px; z-index: 10; }
+        .hero-text-box h1 { font-size: 72px; line-height: 1.1; font-weight: 900; }
+        .btn-reveal-all { padding: 18px 50px; background: var(--c-primary); color: #fff; border: none; font-family: var(--f-eng); letter-spacing: 4px; transition: all 0.2s ease; position: relative; overflow: hidden; }
+        .btn-reveal-all::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%); z-index: 1; }
+        .btn-reveal-all:hover { background: var(--c-accent); transform: translateY(-5px); box-shadow: 0 15px 30px rgba(193, 162, 104, 0.25), 0 2px 10px rgba(0, 0, 0, 0.2); }
+        .btn-reveal-all:active { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(193, 162, 104, 0.25); }
+
+        /* 5. 商城核心区 (3x2 布局) */
+        .shop-section { padding: 100px; position: relative; z-index: 10; border-top: 1.5px solid var(--c-grid); background: linear-gradient(to bottom, transparent, #fff 10%, #fff 90%, transparent); }
+        .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 60px; perspective: 1500px; min-height: 900px; }
+
+        /* 骨架屏 */
+        .skeleton-card { aspect-ratio: 3/4; background: #fff; padding: 20px; border: 1px solid #eee; display: flex; flex-direction: column; gap: 20px; }
+        .sk-img { width: 100%; height: 70%; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: skLoad 1.5s infinite; }
+        .sk-text { width: 80%; height: 20px; background: #f0f0f0; border-radius: 2px; }
+        @keyframes skLoad { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        /* 6. 盲盒卡片 */
+        .blind-card { position: relative; background: transparent; aspect-ratio: 3/4; transform-style: preserve-3d; transition: transform 0.6s var(--trans-spring); cursor: pointer; }
+        .card-front { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(145deg, var(--c-primary), var(--c-dark)); border: 2px solid var(--c-accent); z-index: 2; backface-visibility: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.8s var(--trans-smooth); box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
+        .card-back { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 1; backface-visibility: hidden; transform: rotateY(180deg); opacity: 0; transition: 0.8s var(--trans-smooth); display: flex; flex-direction: column; border: 1px solid #eee; box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
+        .blind-card.is-revealed .card-front { opacity: 0; transform: rotateY(180deg) scale(0.8); }
+        .blind-card.is-revealed .card-back { opacity: 1; transform: rotateY(360deg); z-index: 3; }
+        
+        .reveal-vfx { position: absolute; top: 50%; left: 50%; width: 0; height: 0; transform: translate(-50%, -50%); border-radius: 50%; pointer-events: none; z-index: 10; opacity: 0; }
+        @keyframes burstReveal { 0% { width: 0; height: 0; opacity: 0.9; } 100% { width: 650px; height: 650px; opacity: 0; filter: blur(20px); } }
+        
+        /* 商品卡"冀"字样式 */
+        .seal-character { font-family: 'Ma Shan Zheng', serif; font-size: 70px; font-weight: 300; color: var(--c-accent); margin-bottom: 20px; letter-spacing: -4px; text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.3), 0 0 15px rgba(193, 162, 104, 0.6); transition: all 0.2s ease; }
+
+        .artifact-visual { width: 100%; height: 65%; overflow: hidden; background: #fafafa; }
+        .artifact-img { width: 100%; height: 100%; object-fit: cover; transition: 1s var(--trans-smooth); }
+        .artifact-info { padding: 25px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .artifact-rarity { font-family: var(--f-mono); font-size: 10px; font-weight: 900; background: #f0f0f0; padding: 2px 8px; width: fit-content; }
+        .artifact-name { font-size: 17px; font-weight: 900; color: var(--c-primary); line-height: 1.4; height: 48px; overflow: hidden; }
+        .artifact-price { font-family: var(--f-mono); color: var(--c-danger); font-size: 24px; font-weight: 900; }
+
+        /* 7. 惊喜袋 */
+        .drawer-mask { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 5000; opacity: 0; visibility: hidden; transition: 0.4s; }
+        .drawer-mask.active { opacity: 1; visibility: visible; }
+        .surprise-drawer { position: fixed; top: 0; right: -450px; width: 420px; height: 100%; background: var(--c-bg); z-index: 5500; padding: 50px; border-left: 2px solid var(--c-primary); transition: 0.6s var(--trans-smooth); display: flex; flex-direction: column; }
+        .surprise-drawer.open { right: 0; }
+        .shelf-container { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; overflow-y: auto; padding: 15px 5px; scrollbar-width: none; }
+        .shelf-item { background: #fff; padding: 15px; border: 1.2px solid #ddd; box-shadow: 0 10px 30px rgba(0,0,0,0.05); display: flex; flex-direction: column; transition: 0.3s; }
+        .shelf-item img { width: 100%; height: 120px; object-fit: cover; }
+
+        .paginator { margin-top: 80px; display: flex; justify-content: center; gap: 20px; }
+        .page-node { width: 50px; height: 50px; border: 1.5px solid var(--c-primary); background: none; font-family: var(--f-mono); font-weight: 900; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
+        .page-node.active, .page-node:hover { background: var(--c-primary); color: #fff; box-shadow: 6px 6px 0 var(--c-accent); transform: scale(1.1); }
+
+        .progress-line { position: fixed; top: 0; left: 0; width: 0%; height: 6px; background: var(--c-accent); z-index: 6000; }
+        .toast-notification { position: fixed; top: 20px; right: 20px; background: var(--c-primary); color: white; padding: 12px 24px; border-radius: 4px; font-family: var(--f-mono); opacity: 0; transform: translateX(100%); transition: 0.3s; z-index: 9998; }
+        .toast-notification.show { opacity: 1; transform: translateX(0); }
+
+        /* 登录弹窗 */
+        .ink-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(47,72,66,0.6); backdrop-filter: blur(10px); z-index: 8000; display: none; justify-content: center; align-items: center; }
+        .modal-box { background: var(--c-bg); padding: 60px; width: 450px; border: 3px solid var(--c-primary); box-shadow: 30px 30px 0 var(--c-accent); animation: modalPop 0.5s var(--trans-spring); position: relative; }
+        @keyframes modalPop { from { transform: scale(0.8) translateY(40px); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .ink-field { width: 100%; padding: 15px; border: none; border-bottom: 2px solid var(--c-primary); background: transparent; font-size: 18px; margin-bottom: 30px; outline: none; }
+        .ink-field:focus { border-bottom-color: var(--c-accent); }
+        .ink-field::placeholder { color: rgba(47, 72, 66, 0.6); }
+        
+        /* 登录错误提示 */
+        #loginError { 
+            color: var(--c-danger); 
+            font-family: var(--f-mono); 
+            font-size: 12px; 
+            text-align: center; 
+            min-height: 20px; 
+            margin-bottom: 15px;
+            transition: opacity 0.2s ease;
+        }
+        
+        /* 按钮禁用状态 */
+        .btn-reveal-all:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        
+        /* 社交媒体图标垂直排列 */
+        .social-footer {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: 20px 0;
+        }
+
+        .social-footer i {
+            font-size: 20px;
+        }
+
+        @media (max-width: 1024px) {
+            .hero-section { flex-direction: column; height: auto; padding: 120px 40px; }
+            .hero-tower-portal { width: 100%; height: 400px; margin-bottom: 50px; }
+            .hero-text-box { width: 100%; padding-left: 0; }
+            .product-grid { grid-template-columns: repeat(2, 1fr); }
+            .surprise-drawer { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 轻量级自定义光标 -->
+    <div id="custom-cursor"></div>
+    
+    <!-- 交互 UI -->
+    <div id="cursor-dot"></div>
+    <div class="progress-line" id="progressBar"></div>
+    <div class="toast-notification" id="toastNotification"></div>
+
+    <div class="watermark-layer">
+        <div class="watermark-word" id="wm-zhu">筑</div>
+        <div class="watermark-word" id="wm-meng">梦</div>
+    </div>
+
+    <!-- 侧边栏 -->
+    <aside class="sidebar">
+        <div class="brand-seal hover-target magnetic-target">
+            <div class="brand-vertical">冀遗筑梦</div>
+        </div>
+        
+        <nav class="series-axis">
+            <div class="series-node active hover-target magnetic-target" data-series="01">
+                <span class="node-num">01</span><span class="node-text">正定华塔</span>
+            </div>
+            <div class="series-node hover-target magnetic-target" data-series="02">
+                <span class="node-num">02</span><span class="node-text">避暑山庄</span>
+            </div>
+            <div class="series-node hover-target magnetic-target" data-series="03">
+                <span class="node-num">03</span><span class="node-text">赵州古桥</span>
+            </div>
+            <div class="series-node hover-target magnetic-target" data-series="04">
+                <span class="node-num">04</span><span class="node-text">史诗典藏</span>
+            </div>
+        </nav>
+
+        <div class="social-footer social-links">
+            <i class="fa fa-weixin hover-target magnetic-target"></i>
+            <i class="fa fa-weibo hover-target magnetic-target"></i>
+        </div>
+    </aside>
+
+    <div class="main-content">
+        <!-- 顶部导航 -->
+        <header class="top-bar" id="topBar">
+            <div class="search-engine hover-target">
+                <i class="fa fa-search"></i>
+                <input type="text" placeholder="SEARCH ARCHIVE..." id="searchInput">
+            </div>
+
+            <!-- 修改后的购物车图标 -->
+            <div class="cart-trigger hover-target magnetic-target" onclick="app.toggleCart()">
+                <i class="fa fa-shopping-bag"></i>
+                <span>BAG</span>
+                <div id="cartBadge" style="background-color: var(--c-danger); color: #fff; width: 18px; height: 18px; border-radius: 50%; font-size: 10px; font-weight: bold; position: absolute; top: -5px; right: 5px;">10</div>
+            </div>
+
+            <!-- 修改后的登录按钮 -->
+            <div class="auth-btn hover-target magnetic-target" id="authBtn">
+                <span id="userText" style="font-family: var(--f-eng); font-size: 12px; font-weight: 900; color: var(--c-primary); letter-spacing: 2px;">SIGN IN / JOIN</span>
+            </div>
+        </header>
+
+        <!-- Hero: 华塔巨幕 -->
+        <section class="hero-section">
+            <div class="hero-tower-portal hover-target">
+                <div class="hero-tower-img" id="heroImg"></div>
+                <div class="scan-beam"></div>
+            </div>
+
+            <div class="hero-text-box">
+                <span style="font-family: var(--f-mono); color: var(--c-accent); font-weight: 900; letter-spacing: 6px; display: block; margin-bottom: 25px;">DIGITAL HERITAGE COLLECTION</span>
+                <h1>广惠寺华塔<br>数字化复刻系列</h1>
+                <p>我们将正定古城“举世之孤例”进行毫米级数字化重构。通过数字解构，让沉睡千年的石刻艺术在指尖重现温热。开启盲盒，寻找属于你的历史遗珍。</p>
+                <button class="btn-reveal-all hover-target" onclick="document.getElementById('shop').scrollIntoView({behavior:'smooth'})">揭开全系列惊喜</button>
+            </div>
+        </section>
+
+        <!-- 商城主体 -->
+        <section class="shop-section" id="shop">
+            <div class="shop-header">
+                <h2 style="font-size: 38px; font-weight: 900;" id="shelfTitle">华塔遗珍 · 藏品全集</h2>
+                <span style="font-family: var(--f-mono); opacity: 0.3; font-size: 13px;">SERIES COLLECTION // S01</span>
+            </div>
+
+            <div class="product-grid" id="productGrid">
+                <!-- 骨架屏占位 -->
+            </div>
+
+            <div class="paginator" id="pageBox"></div>
+        </section>
+
+        <footer style="text-align:center; padding:100px; opacity:0.3; font-size:11px; font-family:var(--f-mono); border-top:1px solid var(--c-grid);">
+            © 2026 JIYI ZHUMENG DIGITAL TECHNOLOGY. ALL RIGHTS RESERVED.
+        </footer>
+    </div>
+
+    <!-- 惊喜袋 -->
+    <div class="drawer-mask" id="drawerMask" onclick="app.toggleCart()"></div>
+    <div class="surprise-drawer" id="cartDrawer">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid var(--c-primary); padding-bottom: 20px; margin-bottom: 35px;">
+            <h2 style="font-size: 24px; font-weight: 900; font-family: var(--f-eng);">BAG / COLLECTION</h2>
+            <span class="hover-target" style="font-size: 32px;" onclick="app.toggleCart()">&times;</span>
+        </div>
+        <div class="shelf-grid" id="cartShelf"></div>
+        <button class="btn-reveal-all hover-target" style="width:100%; margin-top:30px;">结缘遗珍 (CHECKOUT)</button>
+    </div>
+
+    <!-- 登录 -->
+    <div class="ink-modal" id="loginModal">
+        <div class="modal-box">
+            <span class="hover-target" style="position:absolute; top:20px; right:25px; font-size:30px;" onclick="app.toggleLogin()">&times;</span>
+            <h2 style="text-align:center; font-size:28px; margin-bottom:40px;">数字化结缘</h2>
+            <input type="text" class="ink-field" id="uName" placeholder="Identity / 名号" maxlength="20">
+            <div id="loginError" style="color: var(--c-danger); font-family: var(--f-mono); font-size: 12px; text-align: center; min-height: 20px; margin-bottom: 15px;"></div>
+            <button class="btn-reveal-all hover-target" style="width:100%;" onclick="app.login()">同步数据</button>
+        </div>
+    </div>
+
+    <script>
+        class UltimateEngine {
+            constructor() {
+                this.API_BASE = window.location.hostname.includes('onrender.com') 
+                    ? 'https://jiyi-zhumeng.onrender.com' : 'http://localhost:3000';
+                
+                this.state = {
+                    products: [], cart: JSON.parse(localStorage.getItem('jiyi_cart') || '[]'),
+                    currentUser: localStorage.getItem('jiyi_user'),
+                    series: '01', page: 1, pageSize: 6
+                };
+
+                this.dom = {
+                    dot: document.getElementById('cursor-dot'),
+                    grid: document.getElementById('productGrid'),
+                    zhu: document.getElementById('wm-zhu'),
+                    meng: document.getElementById('wm-meng'),
+                    hero: document.getElementById('heroImg'),
+                    cartBadge: document.getElementById('cartBadge'),
+                    shelf: document.getElementById('cartShelf'),
+                    progress: document.getElementById('progressBar')
+                };
+
+                this.init();
+            }
+
+            // [交互系统]
+            setupCoreInteractions() {
+                window.addEventListener('mousemove', (e) => {
+                    const { clientX: x, clientY: y } = e;
+                    
+                    // 同时更新两个光标的位置，确保完全重合
+                    this.dom.dot.style.transform = `translate(${x}px, ${y}px)`;
+                    document.getElementById('custom-cursor').style.transform = `translate(${x}px, ${y}px)`;
+                    
+                    const isHover = e.target.closest('a, button, .hover-target, .blind-card');
+                    document.body.classList.toggle('hover-active', !!isHover);
+
+                    // 磁性力场 - 优化交互速度
+                    const magnets = document.querySelectorAll('.magnetic-target');
+                    magnets.forEach(m => {
+                        const r = m.getBoundingClientRect();
+                        const centerX = r.left + r.width / 2;
+                        const centerY = r.top + r.height / 2;
+                        const distance = Math.hypot(x - centerX, y - centerY);
+
+                        if (distance < 20) { // 减小触发半径
+                            const moveX = (x - centerX) * 0.07;
+                            const moveY = (y - centerY) * 0.07;
+                            m.style.transform = `translate(${moveX}px, ${moveY}px) scale(1.1)`;
+                            m.style.transition = 'transform 0.1s ease';
+                        } else {
+                            m.style.transform = `translate(0, 0) scale(1)`;
+                        }
+                    });
+
+                    // 分层视差
+                    const mx = (x - window.innerWidth/2);
+                    const my = (y - window.innerHeight/2);
+                    this.dom.zhu.style.transform = `translate(${mx / 8}px, ${my / 6}px)`;
+                    this.dom.meng.style.transform = `translate(${mx / 18}px, ${my / 14}px)`;
+                    this.dom.hero.style.transform = `scale(1.1) translate(${mx / 80}px, ${my / 80}px)`;
+                });
+
+                // 洇染特效
+                window.addEventListener('mousedown', (e) => {
+                    const node = document.createElement('div');
+                    node.className = 'ink-click-node';
+                    node.style.left = e.clientX + 'px';
+                    node.style.top = e.clientY + 'px';
+                    document.body.appendChild(node);
+                    setTimeout(() => node.remove(), 800);
+                });
+
+                // 滚动反馈
+                window.addEventListener('scroll', () => {
+                    const s = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+                    this.dom.progress.style.width = s + '%';
+                });
+            }
+
+            // [数据逻辑]
+            async loadData(page = 1) {
+                this.dom.grid.innerHTML = Array.from({length: 6}, () => `<div class="skeleton-card"><div class="sk-img"></div></div>`).join('');
+                try {
+                    const res = await fetch(`${this.API_BASE}/api/products?page=${page}`);
+                    const data = await res.json();
+                    if(data.items) {
+                        // 如果是第一页，重置整个products数组，否则追加到现有数组
+                        if(page === 1) {
+                            this.state.products = data.items.map(p => ({
+                                ...p, 
+                                isOpened: false, 
+                                rarity: p.price > 200 ? 'SSR' : 'R',
+                                // 确保图片路径正确处理
+                                img: p.img.replace('/images/', '')
+                            }));
+                        } else {
+                            // 对于其他页面，确保products数组包含所有已加载的商品
+                            const newProducts = data.items.map(p => ({
+                                ...p, 
+                                isOpened: false, 
+                                rarity: p.price > 200 ? 'SSR' : 'R',
+                                img: p.img.replace('/images/', '')
+                            }));
+                            // 找到应该插入的位置并更新
+                            const startIndex = (page - 1) * 6;
+                            for(let i = 0; i < newProducts.length; i++) {
+                                if(startIndex + i < this.state.products.length) {
+                                    this.state.products[startIndex + i] = newProducts[i];
+                                } else {
+                                    this.state.products.push(newProducts[i]);
+                                }
+                            }
+                        }
+                    }
+                } catch(e) {
+                    // 模拟数据保持不变
+                    this.state.products = Array.from({length: 12}, (_, i) => ({
+                        id: i + 1, name: `数字馆藏 · 序列 ${i+1}号`, price: 150 + i*10, rarity: i%5===0?'SSR':'R', isOpened: false,
+                        img: `${String(i + 1).padStart(3, '0')}.jpg`
+                    }));
+                }
+                this.renderGrid();
+                this.renderCart(); // 重新渲染购物车以同步状态
+            }
+
+            renderGrid() {
+                const list = this.state.products.slice((this.state.page-1)*6, this.state.page*6);
+                this.dom.grid.innerHTML = "";
+                list.forEach((item, index) => {
+                    const card = document.createElement('div');
+                    card.className = `blind-card ${item.isOpened ? 'is-revealed' : ''} hover-target`;
+                    
+                    // 正确处理图片路径
+                    let imgSrc = item.img;
+                    if(imgSrc && !imgSrc.startsWith('http')) {
+                        // 如果图片路径以/images/开头，直接使用完整路径
+                        if(imgSrc.startsWith('/images/')) {
+                            imgSrc = `${this.API_BASE}${imgSrc}`;
+                        } else {
+                            // 否则使用相对路径
+                            imgSrc = `${this.API_BASE}/images/${imgSrc}`;
+                        }
+                    }
+                    if(!imgSrc) imgSrc = `https://placehold.co/400x500/2F4842/C1A268?text=JIYI+BOX`;
+
+                    card.innerHTML = `
+                        <div class="reveal-vfx vfx-${item.rarity}"></div>
+                        <div class="card-front">
+                            <div class="seal-character">冀</div>
+                            <div class="seal-hint" style="font-family:var(--f-mono); font-size:10px; opacity:0.6; margin-top:10px;">TAP TO REVEAL</div>
+                            <div style="font-family:var(--f-mono); font-size:10px; color:var(--c-accent); margin-top:30px;">NO. ${String(item.id).padStart(4,'0')}</div>
+                        </div>
+                        <div class="card-back">
+                            <div class="artifact-visual"><img src="${imgSrc}" class="artifact-img" onerror="this.src='https://placehold.co/400x500/2F4842/C1A268?text=IMAGE+LOST'"></div>
+                            <div class="artifact-info">
+                                <div class="artifact-rarity">${item.rarity}</div>
+                                <h3 class="artifact-name">${item.name}</h3>
+                                <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+                                    <span class="artifact-price">¥${item.price}</span>
+                                    <button class="cart-trigger hover-target magnetic-target" onclick="app.addToCart(event, ${item.id})" style="padding:10px 15px;"><i class="fa fa-plus"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    card.onclick = (e) => { if(!e.target.closest('button') && !item.isOpened) this.openBox(item, card); };
+                    
+                    // 组合交互效果：平面平移 + 边框高亮
+                    // 鼠标进入时应用边框高亮和基础缩放
+                    card.onmouseenter = () => {
+                        card.style.outline = '3px solid var(--c-accent)';
+                        card.style.outlineOffset = '5px';
+                        card.style.transition = 'outline 0.1s ease, transform 0.05s ease';
+                    };
+                    
+                    // 鼠标移动时应用平面平移效果
+                    card.addEventListener('mousemove', (e) => {
+                        const rect = card.getBoundingClientRect();
+                        const x = e.clientX - rect.left;
+                        const y = e.clientY - rect.top;
+                        
+                        // 计算平移偏移
+                        const centerX = rect.width / 2;
+                        const centerY = rect.height / 2;
+                        const offsetX = (x - centerX) * 0.05;
+                        const offsetY = (y - centerY) * 0.05;
+                        
+                        // 组合缩放和平移效果
+                        card.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(1.03)`;
+                    });
+                    
+                    // 鼠标离开时恢复原状
+                    card.onmouseleave = () => {
+                        card.style.transform = 'translate(0, 0) scale(1)';
+                        card.style.outline = 'none';
+                    };
+
+                    this.dom.grid.appendChild(card);
+                    setTimeout(() => card.classList.add('revealed'), index * 120);
+                });
+                this.renderPaginator();
+            }
+
+            openBox(item, card) {
+                item.isOpened = true;
+                card.querySelector('.reveal-vfx').style.animation = "burstReveal 0.8s ease-out forwards";
+                card.classList.add('is-revealed');
+            }
+
+            changeSeries(node) {
+                const sId = node.dataset.series;
+                document.querySelectorAll('.series-node').forEach(n => n.classList.remove('active'));
+                node.classList.add('active');
+                this.state.series = sId;
+                this.state.page = 1;
+                const colors = { '01': '#E6E2DC', '02': '#F0EAD6', '03': '#DDE6ED', '04': '#F2E8E8' };
+                document.documentElement.style.setProperty('--c-grid', colors[sId]);
+                this.loadData();
+                document.getElementById('shop').scrollIntoView({behavior:'smooth'});
+            }
+
+            addToCart(e, id) {
+                e.stopPropagation();
+                if(!this.state.currentUser) { this.toggleLogin(); return; }
+                const p = this.state.products.find(x => x.id === id);
+                if (!p) return;
+                
+                // 检查商品是否已存在
+                const existingItem = this.state.cart.find(item => item.id === id);
+                if (existingItem) {
+                    existingItem.quantity = (existingItem.quantity || 1) + 1;
+                } else {
+                    this.state.cart.push({
+                        ...p,
+                        quantity: 1
+                    });
+                }
+                
+                localStorage.setItem('jiyi_cart', JSON.stringify(this.state.cart));
+                this.renderCart();
+                this.showToast(`${p.name} 已入博古架`);
+            }
+
+            renderCart() {
+                this.dom.cartBadge.innerText = this.state.cart.reduce((total, item) => total + (item.quantity || 1), 0);
+                
+                // 计算总价
+                const total = this.state.cart.reduce((sum, item) => {
+                    return sum + (item.price * (item.quantity || 1));
+                }, 0);
+                document.getElementById('cartTotal').innerText = `¥${total}`;
+                
+                this.dom.shelf.innerHTML = this.state.cart.length === 0 
+                    ? `<p style="opacity:0.2; margin:auto;">博古架尚无遗珍...</p>` 
+                    : this.state.cart.map(p => {
+                        // 正确处理购物车中的图片路径
+                        let imgSrc = p.img;
+                        if(imgSrc && !imgSrc.startsWith('http')) {
+                            if(imgSrc.startsWith('/images/')) {
+                                imgSrc = `${this.API_BASE}${imgSrc}`;
+                            } else {
+                                imgSrc = `${this.API_BASE}/images/${imgSrc}`;
+                            }
+                        }
+                        return `<div class="shelf-item">
+                            <div class="remove-item" onclick="event.stopPropagation(); app.removeFromCart(${p.id})">×</div>
+                            <img src="${imgSrc}" />
+                            <div class="item-name" style="margin-top:10px; font-weight:bold; font-size:12px;">${p.name}</div>
+                            <div class="cart-quantity-control">
+                                <div class="quantity-btn" onclick="event.stopPropagation(); app.decreaseQuantity(${p.id})">-</div>
+                                <div class="quantity-value">${p.quantity || 1}</div>
+                                <div class="quantity-btn" onclick="event.stopPropagation(); app.increaseQuantity(${p.id})">+</div>
+                            </div>
+                            <div style="margin-top: 5px; font-family: var(--f-mono); font-size: 12px; color: var(--c-danger);">¥${p.price}</div>
+                        </div>`;
+                    }).join('');
+            }
+
+            removeFromCart(id) {
+                this.state.cart = this.state.cart.filter(item => item.id !== id);
+                localStorage.setItem('jiyi_cart', JSON.stringify(this.state.cart));
+                this.renderCart();
+                this.showToast('商品已移除');
+            }
+
+            increaseQuantity(id) {
+                const item = this.state.cart.find(item => item.id === id);
+                if (item) {
+                    item.quantity = (item.quantity || 1) + 1;
+                    localStorage.setItem('jiyi_cart', JSON.stringify(this.state.cart));
+                    this.renderCart();
+                }
+            }
+
+            decreaseQuantity(id) {
+                const item = this.state.cart.find(item => item.id === id);
+                if (item) {
+                    if ((item.quantity || 1) > 1) {
+                        item.quantity = (item.quantity || 1) - 1;
+                    } else {
+                        this.state.cart = this.state.cart.filter(i => i.id !== id);
+                    }
+                    localStorage.setItem('jiyi_cart', JSON.stringify(this.state.cart));
+                    this.renderCart();
+                }
+            }
+
+            clearCart() {
+                if (this.state.cart.length === 0) return;
+                if (confirm('确定要清空博古架吗？')) {
+                    this.state.cart = [];
+                    localStorage.setItem('jiyi_cart', JSON.stringify(this.state.cart));
+                    this.renderCart();
+                    this.showToast('博古架已清空');
+                }
+            }
+
+            checkout() {
+                // 添加页面跳转功能
+                this.showNotification("即将跳转至结缘页面...");
+                
+                // 使用自定义导航方法，带加载动画
+                setTimeout(() => {
+                    window.location.href = 'pay.html';
+                }, 1000);
+            }
+
+            showNotification(msg) {
+                const t = document.getElementById('toastNotification');
+                t.innerText = msg; t.classList.add('show');
+                setTimeout(() => t.classList.remove('show'), 2000);
+            }
+
+            toggleLogin() { document.getElementById('loginModal').style.display = (document.getElementById('loginModal').style.display==='flex'?'none':'flex'); }
+            toggleCart() { document.getElementById('cartDrawer').classList.toggle('open'); document.getElementById('drawerMask').classList.toggle('active'); }
+            login() { const n = document.getElementById('uName').value; if(n){ this.state.currentUser=n; localStorage.setItem('jiyi_user', n); this.syncSession(); this.toggleLogin(); } }
+            syncSession() { 
+                const userText = document.getElementById('userText');
+                const authBtn = document.getElementById('authBtn');
+                if(userText && authBtn) {
+                    if(this.state.currentUser) {
+                        userText.innerText = `${this.state.currentUser} / SIGN OUT`;
+                        // 移除之前的事件监听器并添加登出事件
+                        authBtn.onclick = () => this.logout();
+                        authBtn.style.cursor = 'pointer';
+                    } else {
+                        userText.innerText = 'SIGN IN / JOIN';
+                        authBtn.onclick = () => this.toggleLogin();
+                        authBtn.style.cursor = 'pointer';
+                    }
+                }
+            }
+            
+            logout() {
+                this.state.currentUser = null;
+                localStorage.removeItem('jiyi_user');
+                this.syncSession();
+                this.showToast('已退出登录');
+            }
+        }
+
+        // 初始化应用
+        const app = new UltimateEngine();
+    </script>
+</body>
+</html>
