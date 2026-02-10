@@ -228,6 +228,27 @@
         .modal-box { background: var(--c-bg); padding: 60px; width: 450px; border: 3px solid var(--c-primary); box-shadow: 30px 30px 0 var(--c-accent); animation: modalPop 0.5s var(--trans-spring); position: relative; }
         @keyframes modalPop { from { transform: scale(0.8) translateY(40px); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         .ink-field { width: 100%; padding: 15px; border: none; border-bottom: 2px solid var(--c-primary); background: transparent; font-size: 18px; margin-bottom: 30px; outline: none; }
+        .ink-field:focus { border-bottom-color: var(--c-accent); }
+        .ink-field::placeholder { color: rgba(47, 72, 66, 0.6); }
+        
+        /* 登录错误提示 */
+        #loginError { 
+            color: var(--c-danger); 
+            font-family: var(--f-mono); 
+            font-size: 12px; 
+            text-align: center; 
+            min-height: 20px; 
+            margin-bottom: 15px;
+            transition: opacity 0.2s ease;
+        }
+        
+        /* 按钮禁用状态 */
+        .btn-reveal-all:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
         
         /* 社交媒体图标垂直排列 */
         .social-footer {
@@ -361,7 +382,8 @@
         <div class="modal-box">
             <span class="hover-target" style="position:absolute; top:20px; right:25px; font-size:30px;" onclick="app.toggleLogin()">&times;</span>
             <h2 style="text-align:center; font-size:28px; margin-bottom:40px;">数字化结缘</h2>
-            <input type="text" class="ink-field" id="uName" placeholder="Identity / 名号">
+            <input type="text" class="ink-field" id="uName" placeholder="Identity / 名号" maxlength="20">
+            <div id="loginError" style="color: var(--c-danger); font-family: var(--f-mono); font-size: 12px; text-align: center; min-height: 20px; margin-bottom: 15px;"></div>
             <button class="btn-reveal-all hover-target" style="width:100%;" onclick="app.login()">同步数据</button>
         </div>
     </div>
@@ -595,7 +617,7 @@
                 document.getElementById('shop').scrollIntoView({behavior:'smooth'});
             }
 
-            addToCart(e, id) {
+*            addToCart(e, id) {
                 e.stopPropagation();
                 if(!this.state.currentUser) { this.toggleLogin(); return; }
                 const p = this.state.products.find(x => x.id === id);
