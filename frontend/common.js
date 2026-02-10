@@ -213,11 +213,12 @@ function buildImageUrl(imagePath) {
 // ========================================
 
 /**
- * 添加商品到购物车
+ * 添加商品到购物车（支持数量）
  * @param {Object} product - 商品对象
+ * @param {number} quantity - 商品数量，默认为1
  * @param {Function} onSuccess - 成功回调
  */
-function addToCart(product, onSuccess = null) {
+function addToCart(product, quantity = 1, onSuccess = null) {
     const currentUser = getCurrentUser();
     if (!currentUser) {
         showToast('请先登录');
@@ -228,11 +229,23 @@ function addToCart(product, onSuccess = null) {
     }
     
     const cart = getCartData();
-    cart.push({...product}); // 创建副本避免引用问题
+    
+    // 检查商品是否已存在
+    const existingIndex = cart.findIndex(item => item.id === product.id);
+    if (existingIndex >= 0) {
+        // 商品已存在，增加数量
+        cart[existingIndex].quantity = (cart[existingIndex].quantity || 1) + quantity;
+    } else {
+        // 新商品，设置数量
+        const newProduct = {...product};
+        newProduct.quantity = quantity;
+        cart.push(newProduct);
+    }
+    
     setCartData(cart);
     
     if (onSuccess) {
-        onSuccess(product);
+        onSuccess(product, quantity);
     }
     
     updateCartCount();
@@ -252,6 +265,39 @@ function removeFromCart(index) {
         return true;
     }
     return false;
+}
+
+/**
+ * 更新商品数量
+ * @param {number} index - 商品索引
+ * @param {number} newQuantity - 新数量
+ */
+function updateCartItemQuantity(index, newQuantity) {
+    if (newQuantity <= 0) {
+        return removeFromCart(index);
+    }
+    
+    const cart = getCartData();
+    if (index >= 0 && index < cart.length) {
+        cart[index].quantity = newQuantity;
+        setCartData(cart);
+        updateCartCount();
+        return true;
+    }
+    return false;
+}
+
+/**
+ * 获取购物车总价
+ * @returns {number} 总价
+ */
+function getCartTotal() {
+    const cart = getCartData();
+    return cart.reduce((total, item) => {
+        const price = parseFloat(item.price) || 0;
+        const quantity = parseInt(item.quantity) || 1;
+        return total + (price * quantity);
+    }, 0);
 }
 
 /**

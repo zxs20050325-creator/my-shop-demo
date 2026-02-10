@@ -39,6 +39,99 @@
             transform: translateY(-2px);
         }
         
+        /* 购物车商品项样式 */
+        .cart-item {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            gap: 20px;
+        }
+        
+        .cart-item img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        
+        .item-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .item-info h3 {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--c-primary);
+            margin: 0;
+        }
+        
+        .item-price {
+            color: var(--c-danger);
+            font-family: var(--f-mono);
+            font-size: 14px;
+            margin: 0;
+        }
+        
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .qty-btn {
+            width: 30px;
+            height: 30px;
+            background: var(--c-primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-family: var(--f-mono);
+            font-size: 16px;
+            transition: 0.2s;
+        }
+        
+        .qty-btn:hover {
+            background: var(--c-accent);
+            transform: scale(1.1);
+        }
+        
+        .qty-value {
+            min-width: 30px;
+            text-align: center;
+            font-family: var(--f-mono);
+            font-weight: bold;
+        }
+        
+        .item-total {
+            font-family: var(--f-mono);
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--c-danger);
+            min-width: 80px;
+            text-align: right;
+        }
+        
+        .btn-remove {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: var(--f-mono);
+            transition: 0.2s;
+        }
+        
+        .btn-remove:hover {
+            background: #cc0000;
+            transform: translateY(-1px);
+        }
+        
         /* 轻量级自定义光标 */
         #custom-cursor {
             position: fixed;
@@ -219,35 +312,36 @@
             }
 
             let totalPrice = 0;
-            let cartHTML = '';
-
-            cart.forEach((item, index) => {
-                const itemTotal = item.price || 0;
-                totalPrice += itemTotal;
-                
-                // 处理图片路径 - 修复路径处理
-                let imgSrc = item.img || '';
-                if (imgSrc) {
-                    // 如果图片路径以 / 开头，直接拼接 API_BASE
-                    if (imgSrc.startsWith('/')) {
+            const cartHTML = cart.map((item, index) => {
+                // 处理图片路径
+                let imgSrc = item.img;
+                if (imgSrc && !imgSrc.startsWith('http')) {
+                    if (imgSrc.startsWith('/images/')) {
                         imgSrc = `${API_BASE}${imgSrc}`;
-                    } 
-                    // 如果是相对路径且不以 http 开头
-                    else if (!imgSrc.startsWith('http')) {
+                    } else {
                         imgSrc = `${API_BASE}/images/${imgSrc}`;
                     }
                 }
                 if (!imgSrc) {
-                    imgSrc = `https://placehold.co/400x600/2F4842/C1A268?text=NO+IMAGE`;
+                    imgSrc = 'https://placehold.co/200x200/2F4842/C1A268?text=NO+IMAGE';
                 }
 
-                cartHTML += `
+                const quantity = item.quantity || 1;
+                const itemTotal = (item.price * quantity).toFixed(2);
+
+                return `
                     <div class="cart-item">
-                        <img src="${imgSrc}" class="cart-img" alt="${item.name}" onerror="this.onerror=null;this.src='https://placehold.co/400x600/2F4842/C1A268?text=IMAGE+LOST';">
-                        <div class="cart-info">
-                            <div class="cart-title-name">${item.name}</div>
-                            <div class="cart-price">¥${item.price}</div>
+                        <img src="${imgSrc}" alt="${item.name}" onerror="this.src='https://placehold.co/200x200/2F4842/C1A268?text=IMAGE+LOST'">
+                        <div class="item-info">
+                            <h3>${item.name}</h3>
+                            <p class="item-price">¥${item.price}</p>
+                            <div class="quantity-control">
+                                <button class="qty-btn" onclick="decreaseQuantity(${index})">-</button>
+                                <span class="qty-value">${quantity}</span>
+                                <button class="qty-btn" onclick="increaseQuantity(${index})">+</button>
+                            </div>
                         </div>
+                        <div class="item-total">¥${itemTotal}</div>
                         <button class="btn-remove" onclick="removeFromCart(${index})">删除</button>
                     </div>
                 `;
@@ -265,10 +359,50 @@
                 cart.splice(index, 1);
                 localStorage.setItem('jiyi_cart', JSON.stringify(cart));
                 loadCart();
-                document.getElementById('cartBadge').textContent = cart.length;
-                document.getElementById('floatingCartCount').textContent = cart.length;
+                updateCartCount();
                 showToast('商品已删除');
             }
+        }
+
+        // 增加商品数量
+        function increaseQuantity(index) {
+            const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
+            if (cart[index]) {
+                cart[index].quantity = (cart[index].quantity || 1) + 1;
+                localStorage.setItem('jiyi_cart', JSON.stringify(cart));
+                loadCart();
+                showToast('数量已增加');
+            }
+        }
+
+        // 减少商品数量
+        function decreaseQuantity(index) {
+            const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
+            if (cart[index]) {
+                const currentQty = cart[index].quantity || 1;
+                if (currentQty > 1) {
+                    cart[index].quantity = currentQty - 1;
+                    localStorage.setItem('jiyi_cart', JSON.stringify(cart));
+                    loadCart();
+                    showToast('数量已减少');
+                } else {
+                    // 如果数量为1，询问是否删除
+                    if (confirm('商品数量为1，继续减少将删除该商品，确定吗？')) {
+                        removeFromCart(index);
+                    }
+                }
+            }
+        }
+
+        // 更新购物车数量显示（统一函数）
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
+            const count = cart.length;
+            document.querySelectorAll('#cartBadge, #floatingCartCount').forEach(el => {
+                if (el) {
+                    el.textContent = count;
+                }
+            });
         }
 
         // 结算
