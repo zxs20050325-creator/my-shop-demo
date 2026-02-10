@@ -462,7 +462,11 @@
                     const data = await res.json();
                     if(data.items) {
                         this.state.products = data.items.map(p => ({
-                            ...p, isOpened: false, rarity: p.price > 200 ? 'SSR' : 'R'
+                            ...p, 
+                            isOpened: false, 
+                            rarity: p.price > 200 ? 'SSR' : 'R',
+                            // 确保图片路径正确处理
+                            img: p.img.replace('/images/', '')
                         }));
                     }
                 } catch(e) {
@@ -481,8 +485,17 @@
                     const card = document.createElement('div');
                     card.className = `blind-card ${item.isOpened ? 'is-revealed' : ''} hover-target`;
                     
+                    // 正确处理图片路径
                     let imgSrc = item.img;
-                    if(imgSrc && !imgSrc.startsWith('http')) imgSrc = `${this.API_BASE}/images/${imgSrc}`;
+                    if(imgSrc && !imgSrc.startsWith('http')) {
+                        // 如果图片路径以/images/开头，直接使用完整路径
+                        if(imgSrc.startsWith('/images/')) {
+                            imgSrc = `${this.API_BASE}${imgSrc}`;
+                        } else {
+                            // 否则使用相对路径
+                            imgSrc = `${this.API_BASE}/images/${imgSrc}`;
+                        }
+                    }
                     if(!imgSrc) imgSrc = `https://placehold.co/400x500/2F4842/C1A268?text=JIYI+BOX`;
 
                     card.innerHTML = `
@@ -575,11 +588,21 @@
                 this.dom.cartBadge.innerText = this.state.cart.length;
                 this.dom.shelf.innerHTML = this.state.cart.length === 0 
                     ? `<p style="opacity:0.2; margin:auto;">博古架尚无遗珍...</p>` 
-                    : this.state.cart.map(p => `
-                        <div class="shelf-item">
-                            <img src="${p.img && !p.img.startsWith('http') ? this.API_BASE+'/images/'+p.img : (p.img || 'https://placehold.co/200')}" />
+                    : this.state.cart.map(p => {
+                        // 正确处理购物车中的图片路径
+                        let imgSrc = p.img;
+                        if(imgSrc && !imgSrc.startsWith('http')) {
+                            if(imgSrc.startsWith('/images/')) {
+                                imgSrc = `${this.API_BASE}${imgSrc}`;
+                            } else {
+                                imgSrc = `${this.API_BASE}/images/${imgSrc}`;
+                            }
+                        }
+                        return `<div class="shelf-item">
+                            <img src="${imgSrc}" />
                             <div class="item-name" style="margin-top:10px; font-weight:bold; font-size:12px;">${p.name}</div>
-                        </div>`).join('');
+                        </div>`;
+                    }).join('');
             }
 
             showToast(msg) {
