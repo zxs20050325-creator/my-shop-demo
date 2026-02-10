@@ -54,6 +54,13 @@ function setCartData(cart) {
 }
 
 /**
+ * 清空购物车
+ */
+function clearCart() {
+    localStorage.removeItem('jiyi_cart');
+}
+
+/**
  * 获取收藏夹数据
  * @returns {Array} 收藏夹商品ID数组
  */
@@ -127,6 +134,22 @@ function showToast(message, duration = 2000) {
 }
 
 /**
+ * 统一页面跳转函数
+ * @param {string} url - 目标URL
+ * @param {boolean} showToast - 是否显示跳转提示
+ */
+function navigateTo(url, showToast = false) {
+    if (showToast) {
+        showToast('页面跳转中...');
+        setTimeout(() => {
+            window.location.href = url;
+        }, 500);
+    } else {
+        window.location.href = url;
+    }
+}
+
+/**
  * 切换模态框显示状态
  * @param {string} modalId - 模态框ID
  */
@@ -186,7 +209,68 @@ function buildImageUrl(imagePath) {
 }
 
 // ========================================
-// 4. 事件监听器工具
+// 4. 购物车相关工具函数
+// ========================================
+
+/**
+ * 添加商品到购物车
+ * @param {Object} product - 商品对象
+ * @param {Function} onSuccess - 成功回调
+ */
+function addToCart(product, onSuccess = null) {
+    const currentUser = getCurrentUser();
+    if (!currentUser) {
+        showToast('请先登录');
+        setTimeout(() => {
+            navigateTo('login.html');
+        }, 1500);
+        return false;
+    }
+    
+    const cart = getCartData();
+    cart.push({...product}); // 创建副本避免引用问题
+    setCartData(cart);
+    
+    if (onSuccess) {
+        onSuccess(product);
+    }
+    
+    updateCartCount();
+    return true;
+}
+
+/**
+ * 从购物车移除商品
+ * @param {number} index - 商品索引
+ */
+function removeFromCart(index) {
+    const cart = getCartData();
+    if (index >= 0 && index < cart.length) {
+        cart.splice(index, 1);
+        setCartData(cart);
+        updateCartCount();
+        return true;
+    }
+    return false;
+}
+
+/**
+ * 更新购物车数量显示
+ */
+function updateCartCount() {
+    const cart = getCartData();
+    const count = cart.length;
+    
+    // 更新所有显示购物车数量的元素
+    document.querySelectorAll('#cartBadge, #floatingCartCount').forEach(el => {
+        if (el) {
+            el.textContent = count;
+        }
+    });
+}
+
+// ========================================
+// 5. 事件监听器工具
 // ========================================
 
 /**
@@ -214,7 +298,7 @@ function removeClickOutsideHandler(handler) {
 }
 
 // ========================================
-// 5. 初始化函数
+// 6. 初始化函数
 // ========================================
 
 /**
@@ -238,6 +322,9 @@ function initCommonFeatures() {
             closeAllModals();
         }
     });
+    
+    // 页面加载时更新购物车数量
+    updateCartCount();
 }
 
 // 页面加载完成后初始化

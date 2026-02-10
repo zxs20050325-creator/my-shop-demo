@@ -689,6 +689,7 @@
                         }
                     }
                 } catch(e) {
+                    console.error('API加载失败:', e);
                     // 模拟数据保持不变
                     this.state.products = Array.from({length: 12}, (_, i) => ({
                         id: i + 1, name: `数字馆藏 · 序列 ${i+1}号`, price: 150 + i*10, rarity: i%5===0?'SSR':'R', isOpened: false,
@@ -696,7 +697,6 @@
                     }));
                 }
                 this.renderGrid();
-                this.renderCart(); // 重新渲染购物车以同步状态
             }
 
             renderGrid() {
@@ -739,39 +739,13 @@
                         </div>
                     `;
 
+                    card.onclick = (e) => { if(!e.target.closest('button') && !item.isOpened) this.openBox(item, card); };
+                    
                     // 组合交互效果：平面平移 + 边框高亮
->>>>>>> 50e5cc9 (优化购物车功能：添加商品数量管理、删除功能、总价计算和页面跳转支持)
                     // 鼠标进入时应用边框高亮和基础缩放
                     card.onmouseenter = () => {
                         card.style.outline = '3px solid var(--c-accent)';
                         card.style.outlineOffset = '5px';
-<<<<<<< HEAD
-                        card.style.transformOrigin = 'center';
-                        card.style.transform = 'scale(1.05) rotate(2deg)';
-                        card.style.transition = 'outline 0.1s ease, transform 0.2s ease';
-                    };
-                    
-                    // 鼠标移动时应用平面平移效果（仅在桌面端）
-                    if (window.innerWidth > 1024) {
-                        card.addEventListener('mousemove', (e) => {
-                            const rect = card.getBoundingClientRect();
-                            const x = e.clientX - rect.left;
-                            const y = e.clientY - rect.top;
-                            
-                            // 计算平移偏移
-                            const centerX = rect.width / 2;
-                            const centerY = rect.height / 2;
-                            const offsetX = (x - centerX) * 0.03;
-                            const offsetY = (y - centerY) * 0.03;
-                            
-                            // 组合缩放、旋转和平移效果
-                            card.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(1.05) rotate(2deg)`;
-                        });
-                    }
-                    
-                    // 鼠标离开时恢复原状
-                    card.onmouseleave = () => {
-                        card.style.transform = 'scale(1) rotate(0deg)';
                         card.style.transition = 'outline 0.1s ease, transform 0.05s ease';
                     };
                     
@@ -794,7 +768,6 @@
                     // 鼠标离开时恢复原状
                     card.onmouseleave = () => {
                         card.style.transform = 'translate(0, 0) scale(1)';
->>>>>>> 50e5cc9 (优化购物车功能：添加商品数量管理、删除功能、总价计算和页面跳转支持)
                         card.style.outline = 'none';
                     };
 
@@ -810,49 +783,28 @@
                 card.classList.add('is-revealed');
             }
 
-            changeSeries(node) {
-                const sId = node.dataset.series;
-                document.querySelectorAll('.series-node').forEach(n => n.classList.remove('active'));
-                node.classList.add('active');
-                this.state.series = sId;
-                this.state.page = 1;
-                const colors = { '01': '#E6E2DC', '02': '#F0EAD6', '03': '#DDE6ED', '04': '#F2E8E8' };
-                document.documentElement.style.setProperty('--c-grid', colors[sId]);
-                this.loadData();
-                document.getElementById('shop').scrollIntoView({behavior:'smooth'});
-            }
-
             addToCart(e, id) {
                 e.stopPropagation();
-                if(!this.state.currentUser) { this.toggleLogin(); return; }
-                const p = this.state.products.find(x => x.id === id);
-                if (!p) return;
-                
-                // 检查商品是否已存在
-                const existingItem = this.state.cart.find(item => item.id === id);
-                if (existingItem) {
-                    existingItem.quantity = (existingItem.quantity || 1) + 1;
-                } else {
-                    this.state.cart.push({
-                        ...p,
-                        quantity: 1
-                    });
+                if(!this.state.currentUser) { 
+                    this.showToast('请先登录');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 1500);
+                    return; 
                 }
-                
+                const p = this.state.products.find(x => x.id === id);
+                if (!p) {
+                    this.showToast('商品未找到');
+                    return;
+                }
+                this.state.cart.push({...p}); // 创建副本避免引用问题
                 localStorage.setItem('jiyi_cart', JSON.stringify(this.state.cart));
                 this.renderCart();
                 this.showToast(`${p.name} 已入博古架`);
             }
 
             renderCart() {
-                this.dom.cartBadge.innerText = this.state.cart.reduce((total, item) => total + (item.quantity || 1), 0);
-                
-                // 计算总价
-                const total = this.state.cart.reduce((sum, item) => {
-                    return sum + (item.price * (item.quantity || 1));
-                }, 0);
-                document.getElementById('cartTotal').innerText = `¥${total}`;
-                
+                this.dom.cartBadge.innerText = this.state.cart.length;
                 this.dom.shelf.innerHTML = this.state.cart.length === 0 
                     ? `<p style="opacity:0.2; margin:auto;">博古架尚无遗珍...</p>` 
                     : this.state.cart.map(p => {
@@ -865,78 +817,54 @@
                                 imgSrc = `${this.API_BASE}/images/${imgSrc}`;
                             }
                         }
+                        if (!imgSrc) {
+                            imgSrc = `https://placehold.co/400x500/2F4842/C1A268?text=NO+IMAGE`;
+                        }
                         return `<div class="shelf-item">
-                            <div class="remove-item" onclick="event.stopPropagation(); app.removeFromCart(${p.id})">×</div>
-                            <img src="${imgSrc}" />
+                            <img src="${imgSrc}" onerror="this.src='https://placehold.co/400x500/2F4842/C1A268?text=IMAGE+LOST'" />
                             <div class="item-name" style="margin-top:10px; font-weight:bold; font-size:12px;">${p.name}</div>
-                            <div class="cart-quantity-control">
-                                <div class="quantity-btn" onclick="event.stopPropagation(); app.decreaseQuantity(${p.id})">-</div>
-                                <div class="quantity-value">${p.quantity || 1}</div>
-                                <div class="quantity-btn" onclick="event.stopPropagation(); app.increaseQuantity(${p.id})">+</div>
-                            </div>
-                            <div style="margin-top: 5px; font-family: var(--f-mono); font-size: 12px; color: var(--c-danger);">¥${p.price}</div>
                         </div>`;
                     }).join('');
             }
 
-            removeFromCart(id) {
-                this.state.cart = this.state.cart.filter(item => item.id !== id);
-                localStorage.setItem('jiyi_cart', JSON.stringify(this.state.cart));
-                this.renderCart();
-                this.showToast('商品已移除');
             }
 
-            increaseQuantity(id) {
-                const item = this.state.cart.find(item => item.id === id);
-                if (item) {
-                    item.quantity = (item.quantity || 1) + 1;
-                    localStorage.setItem('jiyi_cart', JSON.stringify(this.state.cart));
-                    this.renderCart();
-                }
             }
 
-            decreaseQuantity(id) {
-                const item = this.state.cart.find(item => item.id === id);
-                if (item) {
-                    if ((item.quantity || 1) > 1) {
-                        item.quantity = (item.quantity || 1) - 1;
-                    } else {
-                        this.state.cart = this.state.cart.filter(i => i.id !== id);
-                    }
-                    localStorage.setItem('jiyi_cart', JSON.stringify(this.state.cart));
-                    this.renderCart();
-                }
+            showToast(msg) {
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                toast.textContent = msg;
+                document.body.appendChild(toast);
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
             }
-
-            clearCart() {
-                if (this.state.cart.length === 0) return;
-                if (confirm('确定要清空博古架吗？')) {
-                    this.state.cart = [];
-                    localStorage.setItem('jiyi_cart', JSON.stringify(this.state.cart));
-                    this.renderCart();
-                    this.showToast('博古架已清空');
-                }
-            }
-
-            checkout() {
-                if (this.state.cart.length === 0) {
-                    this.showToast('博古架为空，请先添加商品');
-                    return;
-                }
-                // 这里可以跳转到支付页面或执行其他结账逻辑
-                this.showToast('即将跳转至结缘页面...');
-                // window.location.href = 'pay.html';
-            }
-
             showToast(msg) {
                 const t = document.getElementById('toastNotification');
                 t.innerText = msg; t.classList.add('show');
                 setTimeout(() => t.classList.remove('show'), 2000);
             }
 
-            toggleLogin() { document.getElementById('loginModal').style.display = (document.getElementById('loginModal').style.display==='flex'?'none':'flex'); }
-            toggleCart() { document.getElementById('cartDrawer').classList.toggle('open'); document.getElementById('drawerMask').classList.toggle('active'); }
-            login() { const n = document.getElementById('uName').value; if(n){ this.state.currentUser=n; localStorage.setItem('jiyi_user', n); this.syncSession(); this.toggleLogin(); } }
+            toggleLogin() { 
+                document.getElementById('loginModal').style.display = (document.getElementById('loginModal').style.display==='flex'?'none':'flex'); 
+            }
+            toggleCart() { 
+                document.getElementById('cartDrawer').classList.toggle('open'); 
+                document.getElementById('drawerMask').classList.toggle('active'); 
+            }
+            login() { 
+                const n = document.getElementById('uName').value; 
+                if(n){ 
+                    this.state.currentUser=n; 
+                    localStorage.setItem('jiyi_user', n); 
+                    this.syncSession(); 
+                    this.toggleLogin(); 
+                    this.showToast(`${n} 已登录`);
+                } else {
+                    this.showToast('请输入用户名');
+                }
+            }
             syncSession() { 
                 const userText = document.getElementById('userText');
                 const authBtn = document.getElementById('authBtn');
@@ -948,12 +876,34 @@
                         authBtn.style.cursor = 'pointer';
                     } else {
                         userText.innerText = 'SIGN IN / JOIN';
-                        authBtn.onclick = () => this.toggleLogin();
+                        authBtn.onclick = () => {
+                            this.showToast('请先登录');
+                            setTimeout(() => {
+                                window.location.href = 'login.html';
+                            }, 1500);
+                        };
                         authBtn.style.cursor = 'pointer';
                     }
                 }
             }
-            renderPaginator() { document.getElementById('pageBox').innerHTML = [1,2].map(i => `<div class="page-node hover-target ${this.state.page===i?'active':''}" onclick="app.changePage(${i})">0${i}</div>`).join(''); }
+            logout() {
+                this.state.currentUser = null;
+                localStorage.removeItem('jiyi_user');
+                localStorage.removeItem('jiyi_cart'); // 登出时清空购物车
+                this.state.cart = [];
+                this.renderCart();
+                this.showToast('已登出');
+                this.syncSession();
+                // 跳转到首页
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1000);
+            }
+            renderPaginator() { 
+                document.getElementById('pageBox').innerHTML = [1,2].map(i => 
+                    `<div class="page-node hover-target ${this.state.page===i?'active':''}" onclick="app.changePage(${i})">0${i}</div>`
+                ).join('');
+            }
             changePage(p) { 
                 this.state.page = p; 
                 this.loadData(p); // 传递页面参数重新加载数据
@@ -978,6 +928,7 @@
                 this.syncSession();
             } else {
                 this.showToast('请输入用户名');
+            }
             }
         };
 
@@ -1110,56 +1061,14 @@
                     }).join('');
             }
 
-            removeFromCart(id) {
-                this.state.cart = this.state.cart.filter(item => item.id !== id);
-                localStorage.setItem('jiyi_cart', JSON.stringify(this.state.cart));
-                this.renderCart();
-                this.showToast('商品已移除');
-            }
-
-            increaseQuantity(id) {
-                const item = this.state.cart.find(item => item.id === id);
-                if (item) {
-                    item.quantity = (item.quantity || 1) + 1;
-                    localStorage.setItem('jiyi_cart', JSON.stringify(this.state.cart));
-                    this.renderCart();
-                }
-            }
-
-            decreaseQuantity(id) {
-                const item = this.state.cart.find(item => item.id === id);
-                if (item) {
-                    if ((item.quantity || 1) > 1) {
-                        item.quantity = (item.quantity || 1) - 1;
-                    } else {
-                        this.state.cart = this.state.cart.filter(i => i.id !== id);
-                    }
-                    localStorage.setItem('jiyi_cart', JSON.stringify(this.state.cart));
-                    this.renderCart();
-                }
-            }
-
-            clearCart() {
-                if (this.state.cart.length === 0) return;
-                if (confirm('确定要清空博古架吗？')) {
-                    this.state.cart = [];
-                    localStorage.setItem('jiyi_cart', JSON.stringify(this.state.cart));
-                    this.renderCart();
-                    this.showToast('博古架已清空');
-                }
-            }
-
             checkout() {
                 if (this.state.cart.length === 0) {
                     this.showToast('博古架为空，请先添加商品');
                     return;
                 }
-                // 显示加载提示
+                // 这里可以跳转到支付页面或执行其他结账逻辑
                 this.showToast('即将跳转至结缘页面...');
-                // 延迟1秒后跳转到支付页面
-                setTimeout(() => {
-                    window.location.href = 'pay.html';
-                }, 1000);
+                // window.location.href = 'pay.html';
             }
 
             showToast(msg) {
@@ -1168,9 +1077,25 @@
                 setTimeout(() => t.classList.remove('show'), 2000);
             }
 
-            toggleLogin() { document.getElementById('loginModal').style.display = (document.getElementById('loginModal').style.display==='flex'?'none':'flex'); }
-            toggleCart() { document.getElementById('cartDrawer').classList.toggle('open'); document.getElementById('drawerMask').classList.toggle('active'); }
-            login() { const n = document.getElementById('uName').value; if(n){ this.state.currentUser=n; localStorage.setItem('jiyi_user', n); this.syncSession(); this.toggleLogin(); } }
+            toggleLogin() { 
+                document.getElementById('loginModal').style.display = (document.getElementById('loginModal').style.display==='flex'?'none':'flex'); 
+            }
+            toggleCart() { 
+                document.getElementById('cartDrawer').classList.toggle('open'); 
+                document.getElementById('drawerMask').classList.toggle('active'); 
+            }
+            login() { 
+                const n = document.getElementById('uName').value; 
+                if(n){ 
+                    this.state.currentUser=n; 
+                    localStorage.setItem('jiyi_user', n); 
+                    this.syncSession(); 
+                    this.toggleLogin(); 
+                    this.showToast(`${n} 已登录`);
+                } else {
+                    this.showToast('请输入用户名');
+                }
+            }
             syncSession() { 
                 const userText = document.getElementById('userText');
                 const authBtn = document.getElementById('authBtn');
@@ -1182,12 +1107,40 @@
                         authBtn.style.cursor = 'pointer';
                     } else {
                         userText.innerText = 'SIGN IN / JOIN';
-                        authBtn.onclick = () => this.toggleLogin();
+                        authBtn.onclick = () => {
+                            this.showToast('请先登录');
+                            setTimeout(() => {
+                                window.location.href = 'login.html';
+                            }, 1500);
+                        };
                         authBtn.style.cursor = 'pointer';
                     }
                 }
             }
-            renderPaginator() { document.getElementById('pageBox').innerHTML = [1,2].map(i => `<div class="page-node hover-target ${this.state.page===i?'active':''}" onclick="app.changePage(${i})">0${i}</div>`).join(''); }
+            logout() {
+                this.state.currentUser = null;
+                localStorage.removeItem('jiyi_user');
+                localStorage.removeItem('jiyi_cart'); // 登出时清空购物车
+                this.state.cart = [];
+                this.renderCart();
+                this.showToast('已登出');
+                this.syncSession();
+                // 跳转到首页
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1000);
+            }
+            renderPaginator() { 
+                const pageBox = document.getElementById('pageBox');
+                if (pageBox) {
+                    let html = '';
+                    for (let i = 1; i <= 2; i++) {
+                        const isActive = this.state.page === i ? 'active' : '';
+                        html += '<div class="page-node hover-target ' + isActive + '" onclick="app.changePage(' + i + ')">0' + i + '</div>';
+                    }
+                    pageBox.innerHTML = html;
+                }
+            }
             changePage(p) { 
                 this.state.page = p; 
                 this.loadData(p); // 传递页面参数重新加载数据
@@ -1200,6 +1153,9 @@
         document.querySelectorAll('.series-node').forEach(n => n.onclick = () => app.changeSeries(n));
 
         app.syncSession(); // 确保初始化时同步用户状态
+    </script>
+</body>
+</html>
 
         // 更新 login 和 logout 方法以增强交互体验
         app.login = function() {
@@ -1476,7 +1432,6 @@
         };
     </script>
 </body>
-<<<<<<< HEAD
 </html>
 =======
 </html>

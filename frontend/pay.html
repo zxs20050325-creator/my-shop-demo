@@ -524,12 +524,20 @@ document.addEventListener('DOMContentLoaded', function() {
             if(currentUser) {
                 authSection.innerHTML = `${currentUser} / SIGN OUT`;
                 authSection.onclick = () => {
-                    localStorage.clear(); 
-                    location.reload();
+                    if (confirm('确定要登出吗？')) {
+                        localStorage.removeItem('jiyi_user');
+                        localStorage.removeItem('jiyi_cart');
+                        showToast('已登出');
+                        setTimeout(() => {
+                            window.location.href = 'index.html';
+                        }, 1000);
+                    }
                 };
             } else {
-                alert('请先登录！');
-                window.location.href = 'login.html';
+                showToast('请先登录！');
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
                 return;
             }
         }
@@ -548,11 +556,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // 加载支付信息
         function loadPaymentInfo() {
+            const currentUser = localStorage.getItem('jiyi_user');
+            if (!currentUser) {
+                showToast('请先登录！');
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
+                return;
+            }
+
             const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
             
             if (cart.length === 0) {
-                alert('购物车为空');
-                window.location.href = 'cart.html';
+                showToast('购物车为空');
+                setTimeout(() => {
+                    window.location.href = 'cart.html';
+                }, 2000);
                 return;
             }
 
@@ -563,6 +582,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 const itemTotal = item.price || 0;
                 totalPrice += itemTotal;
                 
+                // 处理图片路径
+                let imgSrc = item.img || '';
+                if (imgSrc) {
+                    if (imgSrc.startsWith('/')) {
+                        imgSrc = `${API_BASE}${imgSrc}`;
+                    } else if (!imgSrc.startsWith('http')) {
+                        imgSrc = `${API_BASE}/images/${imgSrc}`;
+                    }
+                }
+                if (!imgSrc) {
+                    imgSrc = `https://placehold.co/400x600/2F4842/C1A268?text=NO+IMAGE`;
+                }
+
                 itemsHTML += `
                     <div class="order-item">
                         <span class="item-name">${item.name}</span>
@@ -572,23 +604,67 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             document.getElementById('order-items').innerHTML = itemsHTML;
-            document.getElementById('total-amount').textContent = totalPrice.toFixed(2);
+            document.getElementById('order-total-price').textContent = `¥${totalPrice.toFixed(2)}`;
+            document.getElementById('cartBadge').textContent = cart.length;
+            document.getElementById('floatingCartCount').textContent = cart.length;
         }
 
         // 处理支付
         function processPayment() {
             const paymentMethod = document.querySelector('input[name="payment"]:checked');
             if (!paymentMethod) {
-                alert('请选择支付方式');
+                showToast('请选择支付方式');
                 return;
             }
 
-            // 清空购物车
-            localStorage.removeItem('jiyi_cart');
+            if (confirm('确认支付订单吗？')) {
+                // 清空购物车
+                localStorage.removeItem('jiyi_cart');
+                
+                // 显示支付成功信息
+                showToast('支付成功！感谢您的购买。');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 2000);
+            }
+        }
+        
+        // 非阻塞通知框函数
+        function showToast(message) {
+            // 创建或获取现有的toast元素
+            let toast = document.getElementById('toastNotification');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'toastNotification';
+                toast.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: rgba(47, 72, 66, 0.9);
+                    color: white;
+                    padding: 12px 20px;
+                    border-radius: 4px;
+                    font-family: var(--f-serif);
+                    font-size: 14px;
+                    z-index: 10000;
+                    opacity: 0;
+                    transform: translateX(100%);
+                    transition: all 0.3s ease;
+                    pointer-events: none;
+                `;
+                document.body.appendChild(toast);
+            }
             
-            // 显示支付成功信息
-            alert('支付成功！感谢您的购买。');
-            window.location.href = 'index.html';
+            // 设置消息并显示
+            toast.textContent = message;
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateX(0)';
+            
+            // 2秒后自动隐藏
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+            }, 2000);
         }
     </script>
 </body>

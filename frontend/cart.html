@@ -160,13 +160,22 @@
             if(currentUser) {
                 authSection.innerHTML = `${currentUser} / SIGN OUT`;
                 authSection.onclick = () => {
-                    localStorage.clear(); 
-                    location.reload();
+                    if (confirm('确定要登出吗？')) {
+                        localStorage.removeItem('jiyi_user');
+                        localStorage.removeItem('jiyi_cart');
+                        showToast('已登出');
+                        setTimeout(() => {
+                            window.location.href = 'index.html';
+                        }, 1000);
+                    }
                 };
             } else {
-                authSection.innerHTML = "ACCOUNT / SIGN IN";
+                authSection.innerHTML = "SIGN IN / JOIN";
                 authSection.onclick = () => {
-                    window.location.href = 'login.html';
+                    showToast('请先登录');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 1500);
                 };
             }
         }
@@ -187,13 +196,16 @@
         function loadCart() {
             const currentUser = localStorage.getItem('jiyi_user');
             if (!currentUser) {
-                alert('请先登录！');
-                window.location.href = 'login.html';
+                showToast('请先登录！');
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
                 return;
             }
 
             const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
             document.getElementById('cartBadge').textContent = cart.length;
+            document.getElementById('floatingCartCount').textContent = cart.length;
 
             const cartItemsContainer = document.getElementById('cart-items');
             const itemCountElement = document.getElementById('item-count');
@@ -231,7 +243,7 @@
 
                 cartHTML += `
                     <div class="cart-item">
-                        <img src="${imgSrc}" class="cart-img" alt="${item.name}" onerror="this.onerror=null;this.src='https://placehold.co/120x120?text=No+Image';">
+                        <img src="${imgSrc}" class="cart-img" alt="${item.name}" onerror="this.onerror=null;this.src='https://placehold.co/400x600/2F4842/C1A268?text=IMAGE+LOST';">
                         <div class="cart-info">
                             <div class="cart-title-name">${item.name}</div>
                             <div class="cart-price">¥${item.price}</div>
@@ -248,11 +260,15 @@
 
         // 从购物车移除商品
         function removeFromCart(index) {
-            const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
-            cart.splice(index, 1);
-            localStorage.setItem('jiyi_cart', JSON.stringify(cart));
-            loadCart();
-            document.getElementById('cartBadge').textContent = cart.length;
+            if (confirm('确定要删除此商品吗？')) {
+                const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
+                cart.splice(index, 1);
+                localStorage.setItem('jiyi_cart', JSON.stringify(cart));
+                loadCart();
+                document.getElementById('cartBadge').textContent = cart.length;
+                document.getElementById('floatingCartCount').textContent = cart.length;
+                showToast('商品已删除');
+            }
         }
 
         // 结算
@@ -284,16 +300,34 @@
                 toast = document.createElement('div');
                 toast.id = 'toastNotification';
                 toast.className = 'toast-notification';
+                toast.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: rgba(47, 72, 66, 0.9);
+                    color: white;
+                    padding: 12px 20px;
+                    border-radius: 4px;
+                    font-family: var(--f-serif);
+                    font-size: 14px;
+                    z-index: 10000;
+                    opacity: 0;
+                    transform: translateX(100%);
+                    transition: all 0.3s ease;
+                    pointer-events: none;
+                `;
                 document.body.appendChild(toast);
             }
             
             // 设置消息并显示
             toast.textContent = message;
-            toast.classList.add('show');
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateX(0)';
             
             // 2秒后自动隐藏
             setTimeout(() => {
-                toast.classList.remove('show');
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
             }, 2000);
         }
     </script>
