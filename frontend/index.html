@@ -455,21 +455,42 @@
             }
 
             // [数据逻辑]
-            async loadData() {
+            async loadData(page = 1) {
                 this.dom.grid.innerHTML = Array.from({length: 6}, () => `<div class="skeleton-card"><div class="sk-img"></div></div>`).join('');
                 try {
-                    const res = await fetch(`${this.API_BASE}/api/products?page=1`);
+                    const res = await fetch(`${this.API_BASE}/api/products?page=${page}`);
                     const data = await res.json();
                     if(data.items) {
-                        this.state.products = data.items.map(p => ({
-                            ...p, 
-                            isOpened: false, 
-                            rarity: p.price > 200 ? 'SSR' : 'R',
-                            // 确保图片路径正确处理
-                            img: p.img.replace('/images/', '')
-                        }));
+                        // 如果是第一页，重置整个products数组，否则追加到现有数组
+                        if(page === 1) {
+                            this.state.products = data.items.map(p => ({
+                                ...p, 
+                                isOpened: false, 
+                                rarity: p.price > 200 ? 'SSR' : 'R',
+                                // 确保图片路径正确处理
+                                img: p.img.replace('/images/', '')
+                            }));
+                        } else {
+                            // 对于其他页面，确保products数组包含所有已加载的商品
+                            const newProducts = data.items.map(p => ({
+                                ...p, 
+                                isOpened: false, 
+                                rarity: p.price > 200 ? 'SSR' : 'R',
+                                img: p.img.replace('/images/', '')
+                            }));
+                            // 找到应该插入的位置并更新
+                            const startIndex = (page - 1) * 6;
+                            for(let i = 0; i < newProducts.length; i++) {
+                                if(startIndex + i < this.state.products.length) {
+                                    this.state.products[startIndex + i] = newProducts[i];
+                                } else {
+                                    this.state.products.push(newProducts[i]);
+                                }
+                            }
+                        }
                     }
                 } catch(e) {
+                    // 模拟数据保持不变
                     this.state.products = Array.from({length: 12}, (_, i) => ({
                         id: i + 1, name: `数字馆藏 · 序列 ${i+1}号`, price: 150 + i*10, rarity: i%5===0?'SSR':'R', isOpened: false,
                         img: `${String(i + 1).padStart(3, '0')}.jpg`
@@ -616,7 +637,11 @@
             login() { const n = document.getElementById('uName').value; if(n){ this.state.currentUser=n; localStorage.setItem('jiyi_user', n); this.syncSession(); this.toggleLogin(); } }
             syncSession() { if(this.state.currentUser) document.getElementById('userText').innerText = `${this.state.currentUser} / SIGN OUT`; }
             renderPaginator() { document.getElementById('pageBox').innerHTML = [1,2].map(i => `<div class="page-node hover-target ${this.state.page===i?'active':''}" onclick="app.changePage(${i})">0${i}</div>`).join(''); }
-            changePage(p) { this.state.page = p; this.renderGrid(); document.getElementById('shop').scrollIntoView({behavior:'smooth'}); }
+            changePage(p) { 
+                this.state.page = p; 
+                this.loadData(p); // 传递页面参数重新加载数据
+                document.getElementById('shop').scrollIntoView({behavior:'smooth'}); 
+            }
         }
 
         const app = new UltimateEngine();
