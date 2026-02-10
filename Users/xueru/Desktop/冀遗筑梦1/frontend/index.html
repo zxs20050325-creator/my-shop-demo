@@ -315,24 +315,24 @@
 
     <div class="main-content">
         <!-- 顶部导航 -->
-        <header class="top-bar" id="topBar">
-            <div class="search-engine hover-target">
+        <div class="top-bar" id="topBar">
+            <div class="search-engine">
                 <i class="fa fa-search"></i>
                 <input type="text" placeholder="SEARCH ARCHIVE..." id="searchInput">
             </div>
 
-            <!-- 修改后的购物车图标 -->
-            <div class="cart-trigger hover-target magnetic-target" onclick="app.toggleCart()">
+            <!-- 更新购物车按钮 -->
+            <div class="cart-trigger" onclick="window.location.href='cart.html'">
                 <i class="fa fa-shopping-bag"></i>
                 <span>BAG</span>
-                <div id="cartBadge" style="background-color: var(--c-danger); color: #fff; width: 18px; height: 18px; border-radius: 50%; font-size: 10px; font-weight: bold; position: absolute; top: -5px; right: 5px;">10</div>
+                <div id="cartBadge">0</div>
             </div>
 
-            <!-- 修改后的登录按钮 -->
-            <div class="auth-btn hover-target magnetic-target" id="authBtn">
-                <span id="userText" style="font-family: var(--f-eng); font-size: 12px; font-weight: 900; color: var(--c-primary); letter-spacing: 2px;">SIGN IN / JOIN</span>
+            <!-- 更新登录/注册按钮 -->
+            <div class="auth-btn" id="authSection">
+                <!-- JS填充 -->
             </div>
-        </header>
+        </div>
 
         <!-- Hero: 华塔巨幕 -->
         <section class="hero-section">
