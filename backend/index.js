@@ -11,6 +11,9 @@ app.use(cors());
 // 添加静态资源服务，使客户端可以访问图片
 app.use('/images', express.static(path.join(__dirname, 'public', 'images')));
 
+// 添加frontend目录的静态文件服务
+app.use('/frontend', express.static(path.join(__dirname, '..', 'frontend')));
+
 // ====================== 1. 数据存储 - 修改为内存存储以适配云平台 ======================
 const MOCK_PRODUCTS = [
     // 第一页
