@@ -682,7 +682,31 @@
         }
 
         const app = new UltimateEngine();
+
         document.querySelectorAll('.series-node').forEach(n => n.onclick = () => app.changeSeries(n));
+
+        app.syncSession(); // 确保初始化时同步用户状态
+
+        // 更新 login 和 logout 方法以增强交互体验
+        app.login = function() {
+            const name = document.getElementById('uName').value;
+            if (name) {
+                this.state.currentUser = name;
+                localStorage.setItem('jiyi_user', name);
+                this.showToast(`${name} 已登录`);
+                this.toggleLogin();
+                this.syncSession();
+            } else {
+                this.showToast('请输入用户名');
+            }
+        };
+
+        app.logout = function() {
+            this.state.currentUser = null;
+            localStorage.removeItem('jiyi_user');
+            this.showToast('已登出');
+            this.syncSession();
+        };
     </script>
 </body>
 </html>
