@@ -18,6 +18,7 @@
     
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;700;900&family=Ma+Shan+Zheng&family=Cinzel:wght@700&family=ZCOOL+QingKe+HuangYou&display=swap" rel="stylesheet">
+    <script src="common.js"></script>
 
     <style>
         :root {
@@ -375,14 +376,16 @@
                 <input type="text" placeholder="SEARCH ARCHIVE..." id="searchInput">
             </div>
 
-            <div class="cart-trigger hover-target magnetic-target" onclick="app.toggleCart()">
+            <!-- 更新购物车按钮 -->
+            <div class="cart-trigger" id="cartTrigger">
                 <i class="fa fa-shopping-bag"></i>
                 <span>BAG</span>
                 <div id="cartBadge">0</div>
             </div>
 
-            <div class="auth-btn hover-target magnetic-target" id="authBtn">
-                <span id="userText">SIGN IN / JOIN</span>
+            <!-- 更新登录/注册按钮 -->
+            <div class="auth-btn" id="authSection">
+                <!-- JS填充 -->
             </div>
         </header>
 
@@ -776,4 +779,3 @@
         };
     </script>
 </body>
-```

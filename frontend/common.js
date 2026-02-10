@@ -373,9 +373,100 @@ function initCommonFeatures() {
     updateCartCount();
 }
 
-// 页面加载完成后初始化
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initCommonFeatures);
-} else {
-    initCommonFeatures();
+// 同步用户会话状态
+function syncSession() {
+    const currentUser = localStorage.getItem('jiyi_user');
+    const authSection = document.getElementById('authSection');
+    if (currentUser) {
+        authSection.innerHTML = `${currentUser} / SIGN OUT`;
+        authSection.onclick = () => {
+            if (confirm('确定要登出吗？')) {
+                localStorage.removeItem('jiyi_user');
+                localStorage.removeItem('jiyi_cart');
+                showToast('已登出');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1000);
+            }
+        };
+    } else {
+        authSection.innerHTML = "SIGN IN / JOIN";
+        authSection.onclick = () => {
+            showToast('请先登录');
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 1500);
+        };
+    }
 }
+
+// 显示提示信息
+function showToast(message) {
+    // 创建或获取现有的toast元素
+    let toast = document.getElementById('toastNotification');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toastNotification';
+        toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(47, 72, 66, 0.9);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 4px;
+            font-family: var(--f-serif);
+            font-size: 14px;
+            z-index: 10000;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            pointer-events: none;
+        `;
+        document.body.appendChild(toast);
+    }
+    
+    // 设置消息并显示
+    toast.textContent = message;
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateX(0)';
+    
+    // 2秒后自动隐藏
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
+    }, 2000);
+}
+
+// 购物车跳转函数
+function goToCart() {
+    const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
+    if (cart.length === 0) {
+        showToast('购物车为空');
+        return;
+    }
+    window.location.href = 'cart.html';
+}
+
+// 全局购物车数量更新函数
+function updateCartCount() {
+    const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
+    const count = cart.length;
+
+    // 更新所有显示购物车数量的元素
+    document.querySelectorAll('#cartBadge, #floatingCartCount').forEach(el => {
+        el.textContent = count;
+    });
+}
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', function() {
+    syncSession();
+    updateCartCount();
+    
+    // 绑定购物车按钮事件
+    const cartTrigger = document.getElementById('cartTrigger');
+    if (cartTrigger) {
+        cartTrigger.onclick = goToCart;
+    }
+});
