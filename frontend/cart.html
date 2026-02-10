@@ -8,7 +8,7 @@
     
     <!-- 引入公共CSS和JS -->
     <link rel="stylesheet" href="../styles.css">
-    <script src="./common.js"></script>
+    <script src="../common.js"></script>
 
     <style>
         /* 购物车页面特定样式 */
@@ -155,7 +155,7 @@
     <!-- 轻量级自定义光标 -->
     <div id="custom-cursor"></div>
     
-    <div class="floating-cart" onclick="window.location.href='cart.html'">
+    <div class="floating-cart" onclick="window.location.href='../cart.html'">
         <i class="fa fa-shopping-cart"></i>
         <div class="cart-count" id="floatingCartCount">0</div>
     </div>
@@ -200,7 +200,7 @@
                 <input type="text" placeholder="SEARCH ARCHIVE..." id="searchInput">
             </div>
 
-            <div class="cart-trigger" onclick="window.location.href='cart.html'">
+            <div class="cart-trigger" id="cartTrigger">
                 <i class="fa fa-shopping-bag"></i>
                 <span>BAG</span>
                 <div id="cartBadge">0</div>
@@ -240,38 +240,11 @@
         const isDeployed = window.location.hostname.includes('onrender.com');
         const API_BASE = isDeployed ? 'https://jiyi-zhumeng.onrender.com' : 'http://localhost:3000';
 
-        window.onload = function() {
-            syncSession();
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
             loadCart();
             setupScrollHandler();
-        };
-
-        // 同步用户会话状态
-        function syncSession() {
-            const currentUser = localStorage.getItem('jiyi_user');
-            const authSection = document.getElementById('authSection');
-            if(currentUser) {
-                authSection.innerHTML = `${currentUser} / SIGN OUT`;
-                authSection.onclick = () => {
-                    if (confirm('确定要登出吗？')) {
-                        localStorage.removeItem('jiyi_user');
-                        localStorage.removeItem('jiyi_cart');
-                        showToast('已登出');
-                        setTimeout(() => {
-                            window.location.href = 'index.html';
-                        }, 1000);
-                    }
-                };
-            } else {
-                authSection.innerHTML = "SIGN IN / JOIN";
-                authSection.onclick = () => {
-                    showToast('请先登录');
-                    setTimeout(() => {
-                        window.location.href = 'login.html';
-                    }, 1500);
-                };
-            }
-        }
+        });
 
         // 滚动处理
         function setupScrollHandler() {
@@ -291,7 +264,7 @@
             if (!currentUser) {
                 showToast('请先登录！');
                 setTimeout(() => {
-                    window.location.href = 'login.html';
+                    window.location.href = '../login.html';
                 }, 2000);
                 return;
             }
@@ -328,6 +301,7 @@
 
                 const quantity = item.quantity || 1;
                 const itemTotal = (item.price * quantity).toFixed(2);
+                totalPrice += item.price * quantity;
 
                 return `
                     <div class="cart-item">
@@ -347,7 +321,7 @@
                 `;
             });
 
-            cartItemsContainer.innerHTML = cartHTML;
+            cartItemsContainer.innerHTML = cartHTML.join('');
             itemCountElement.textContent = cart.length;
             totalPriceElement.textContent = totalPrice.toFixed(2);
         }
@@ -394,24 +368,13 @@
             }
         }
 
-        // 更新购物车数量显示（统一函数）
-        function updateCartCount() {
-            const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
-            const count = cart.length;
-            document.querySelectorAll('#cartBadge, #floatingCartCount').forEach(el => {
-                if (el) {
-                    el.textContent = count;
-                }
-            });
-        }
-
         // 结算
         function checkout() {
             const currentUser = localStorage.getItem('jiyi_user');
             if (!currentUser) {
                 showToast('请先登录！');
                 setTimeout(() => {
-                    window.location.href = 'login.html';
+                    window.location.href = '../login.html';
                 }, 2000);
                 return;
             }
@@ -423,7 +386,7 @@
             }
             
             // 跳转到支付页面
-            window.location.href = 'pay.html';
+            window.location.href = '../pay.html';
         }
         
         // 非阻塞通知框函数
