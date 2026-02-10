@@ -265,125 +265,9 @@
         .drawer-mask.active { opacity: 1; visibility: visible; }
         .surprise-drawer { position: fixed; top: 0; right: -450px; width: 420px; height: 100%; background: var(--c-bg); z-index: 5500; padding: 50px; border-left: 2px solid var(--c-primary); transition: 0.6s var(--trans-smooth); display: flex; flex-direction: column; }
         .surprise-drawer.open { right: 0; }
-        .shelf-container { 
-            flex: 1; 
-            display: flex; 
-            overflow-x: auto; 
-            gap: 20px; 
-            padding: 15px 5px; 
-            scrollbar-width: thin;
-            scrollbar-color: var(--c-accent) var(--c-bg);
-        }
-        .shelf-container::-webkit-scrollbar {
-            height: 8px;
-        }
-        .shelf-container::-webkit-scrollbar-track {
-            background: var(--c-bg);
-        }
-        .shelf-container::-webkit-scrollbar-thumb {
-            background: var(--c-accent);
-            border-radius: 4px;
-        }
-        .shelf-item { 
-            background: #fff; 
-            padding: 15px; 
-            border: 1.2px solid #ddd; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05); 
-            display: flex; 
-            flex-direction: column; 
-            transition: 0.3s; 
-            min-width: 180px;
-            position: relative;
-        }
+        .shelf-container { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; overflow-y: auto; padding: 15px 5px; scrollbar-width: none; }
+        .shelf-item { background: #fff; padding: 15px; border: 1.2px solid #ddd; box-shadow: 0 10px 30px rgba(0,0,0,0.05); display: flex; flex-direction: column; transition: 0.3s; }
         .shelf-item img { width: 100%; height: 120px; object-fit: cover; }
-        .shelf-item:hover { transform: translateY(-2px); box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
-        
-        /* 购物车商品数量控制 */
-        .cart-quantity-control {
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            margin-top: 10px;
-            font-family: var(--f-mono);
-            font-size: 12px;
-        }
-        .quantity-btn {
-            width: 20px; 
-            height: 20px; 
-            border: 1px solid var(--c-primary); 
-            background: transparent; 
-            border-radius: 50%; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .quantity-btn:hover {
-            background: var(--c-primary);
-            color: white;
-            transform: scale(1.1);
-        }
-        .quantity-value {
-            min-width: 20px; 
-            text-align: center;
-        }
-        
-        /* 删除按钮 */
-        .remove-item {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            width: 20px;
-            height: 20px;
-            background: var(--c-danger);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 12px;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-        .shelf-item:hover .remove-item {
-            opacity: 1;
-        }
-        
-        /* 购物车底部操作栏 */
-        .cart-footer {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 2px solid var(--c-primary);
-        }
-        .cart-summary {
-            display: flex;
-            justify-content: space-between;
-            font-family: var(--f-mono);
-            font-size: 14px;
-            font-weight: bold;
-        }
-        .clear-cart {
-            background: transparent;
-            color: var(--c-danger);
-            border: 2px solid var(--c-danger);
-            padding: 8px 15px;
-            border-radius: 40px;
-            font-family: var(--f-eng);
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .clear-cart:hover {
-            background: var(--c-danger);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 15px rgba(178, 34, 34, 0.2);
-        }
 
         .paginator { margin-top: 80px; display: flex; justify-content: center; gap: 20px; }
         .page-node { width: 50px; height: 50px; border: 1.5px solid var(--c-primary); background: none; font-family: var(--f-mono); font-weight: 900; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
@@ -543,15 +427,8 @@
             <h2 style="font-size: 24px; font-weight: 900; font-family: var(--f-eng);">BAG / COLLECTION</h2>
             <span class="hover-target" style="font-size: 32px;" onclick="app.toggleCart()">&times;</span>
         </div>
-        <div class="shelf-container" id="cartShelf"></div>
-        <div class="cart-footer">
-            <div class="cart-summary">
-                <span>总计:</span>
-                <span id="cartTotal">¥0</span>
-            </div>
-            <button class="clear-cart hover-target" onclick="app.clearCart()">清空博古架</button>
-            <button class="btn-reveal-all hover-target" style="width:100%; margin-top:10px;" onclick="app.checkout()">结缘遗珍 (CHECKOUT)</button>
-        </div>
+        <div class="shelf-grid" id="cartShelf"></div>
+        <button class="btn-reveal-all hover-target" style="width:100%; margin-top:30px;">结缘遗珍 (CHECKOUT)</button>
     </div>
 
     <!-- 登录 -->
@@ -696,7 +573,6 @@
                     }));
                 }
                 this.renderGrid();
-                this.renderCart(); // 重新渲染购物车以同步状态
             }
 
             renderGrid() {
@@ -739,526 +615,13 @@
                         </div>
                     `;
 
-                    // 组合交互效果：平面平移 + 边框高亮
->>>>>>> 50e5cc9 (优化购物车功能：添加商品数量管理、删除功能、总价计算和页面跳转支持)
-                    // 鼠标进入时应用边框高亮和基础缩放
-                    card.onmouseenter = () => {
-                        card.style.outline = '3px solid var(--c-accent)';
-                        card.style.outlineOffset = '5px';
-<<<<<<< HEAD
-                        card.style.transformOrigin = 'center';
-                        card.style.transform = 'scale(1.05) rotate(2deg)';
-                        card.style.transition = 'outline 0.1s ease, transform 0.2s ease';
-                    };
-                    
-                    // 鼠标移动时应用平面平移效果（仅在桌面端）
-                    if (window.innerWidth > 1024) {
-                        card.addEventListener('mousemove', (e) => {
-                            const rect = card.getBoundingClientRect();
-                            const x = e.clientX - rect.left;
-                            const y = e.clientY - rect.top;
-                            
-                            // 计算平移偏移
-                            const centerX = rect.width / 2;
-                            const centerY = rect.height / 2;
-                            const offsetX = (x - centerX) * 0.03;
-                            const offsetY = (y - centerY) * 0.03;
-                            
-                            // 组合缩放、旋转和平移效果
-                            card.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(1.05) rotate(2deg)`;
-                        });
-                    }
-                    
-                    // 鼠标离开时恢复原状
-                    card.onmouseleave = () => {
-                        card.style.transform = 'scale(1) rotate(0deg)';
-                        card.style.transition = 'outline 0.1s ease, transform 0.05s ease';
-                    };
-                    
-                    // 鼠标移动时应用平面平移效果
-                    card.addEventListener('mousemove', (e) => {
-                        const rect = card.getBoundingClientRect();
-                        const x = e.clientX - rect.left;
-                        const y = e.clientY - rect.top;
-                        
-                        // 计算平移偏移
-                        const centerX = rect.width / 2;
-                        const centerY = rect.height / 2;
-                        const offsetX = (x - centerX) * 0.05;
-                        const offsetY = (y - centerY) * 0.05;
-                        
-                        // 组合缩放和平移效果
-                        card.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(1.03)`;
-                    });
-                    
-                    // 鼠标离开时恢复原状
-                    card.onmouseleave = () => {
-                        card.style.transform = 'translate(0, 0) scale(1)';
->>>>>>> 50e5cc9 (优化购物车功能：添加商品数量管理、删除功能、总价计算和页面跳转支持)
-                        card.style.outline = 'none';
-                    };
-
-                    this.dom.grid.appendChild(card);
-                    setTimeout(() => card.classList.add('revealed'), index * 120);
-                });
-                this.renderPaginator();
-            }
-
-            openBox(item, card) {
-                item.isOpened = true;
-                card.querySelector('.reveal-vfx').style.animation = "burstReveal 0.8s ease-out forwards";
-                card.classList.add('is-revealed');
-            }
-
-            changeSeries(node) {
-                const sId = node.dataset.series;
-                document.querySelectorAll('.series-node').forEach(n => n.classList.remove('active'));
-                node.classList.add('active');
-                this.state.series = sId;
-                this.state.page = 1;
-                const colors = { '01': '#E6E2DC', '02': '#F0EAD6', '03': '#DDE6ED', '04': '#F2E8E8' };
-                document.documentElement.style.setProperty('--c-grid', colors[sId]);
-                this.loadData();
-                document.getElementById('shop').scrollIntoView({behavior:'smooth'});
-            }
-
-            addToCart(e, id) {
-                e.stopPropagation();
-                if(!this.state.currentUser) { this.toggleLogin(); return; }
-                const p = this.state.products.find(x => x.id === id);
-                if (!p) return;
-                
-                // 检查商品是否已存在
-                const existingItem = this.state.cart.find(item => item.id === id);
-                if (existingItem) {
-                    existingItem.quantity = (existingItem.quantity || 1) + 1;
-                } else {
-                    this.state.cart.push({
-                        ...p,
-                        quantity: 1
-                    });
-                }
-                
-                localStorage.setItem('jiyi_cart', JSON.stringify(this.state.cart));
-                this.renderCart();
-                this.showToast(`${p.name} 已入博古架`);
-            }
-
-            renderCart() {
-                this.dom.cartBadge.innerText = this.state.cart.reduce((total, item) => total + (item.quantity || 1), 0);
-                
-                // 计算总价
-                const total = this.state.cart.reduce((sum, item) => {
-                    return sum + (item.price * (item.quantity || 1));
-                }, 0);
-                document.getElementById('cartTotal').innerText = `¥${total}`;
-                
-                this.dom.shelf.innerHTML = this.state.cart.length === 0 
-                    ? `<p style="opacity:0.2; margin:auto;">博古架尚无遗珍...</p>` 
-                    : this.state.cart.map(p => {
-                        // 正确处理购物车中的图片路径
-                        let imgSrc = p.img;
-                        if(imgSrc && !imgSrc.startsWith('http')) {
-                            if(imgSrc.startsWith('/images/')) {
-                                imgSrc = `${this.API_BASE}${imgSrc}`;
-                            } else {
-                                imgSrc = `${this.API_BASE}/images/${imgSrc}`;
-                            }
-                        }
-                        return `<div class="shelf-item">
-                            <div class="remove-item" onclick="event.stopPropagation(); app.removeFromCart(${p.id})">×</div>
-                            <img src="${imgSrc}" />
-                            <div class="item-name" style="margin-top:10px; font-weight:bold; font-size:12px;">${p.name}</div>
-                            <div class="cart-quantity-control">
-                                <div class="quantity-btn" onclick="event.stopPropagation(); app.decreaseQuantity(${p.id})">-</div>
-                                <div class="quantity-value">${p.quantity || 1}</div>
-                                <div class="quantity-btn" onclick="event.stopPropagation(); app.increaseQuantity(${p.id})">+</div>
-                            </div>
-                            <div style="margin-top: 5px; font-family: var(--f-mono); font-size: 12px; color: var(--c-danger);">¥${p.price}</div>
-                        </div>`;
-                    }).join('');
-            }
-
-            removeFromCart(id) {
-                this.state.cart = this.state.cart.filter(item => item.id !== id);
-                localStorage.setItem('jiyi_cart', JSON.stringify(this.state.cart));
-                this.renderCart();
-                this.showToast('商品已移除');
-            }
-
-            increaseQuantity(id) {
-                const item = this.state.cart.find(item => item.id === id);
-                if (item) {
-                    item.quantity = (item.quantity || 1) + 1;
-                    localStorage.setItem('jiyi_cart', JSON.stringify(this.state.cart));
-                    this.renderCart();
-                }
-            }
-
-            decreaseQuantity(id) {
-                const item = this.state.cart.find(item => item.id === id);
-                if (item) {
-                    if ((item.quantity || 1) > 1) {
-                        item.quantity = (item.quantity || 1) - 1;
-                    } else {
-                        this.state.cart = this.state.cart.filter(i => i.id !== id);
-                    }
-                    localStorage.setItem('jiyi_cart', JSON.stringify(this.state.cart));
-                    this.renderCart();
-                }
-            }
-
-            clearCart() {
-                if (this.state.cart.length === 0) return;
-                if (confirm('确定要清空博古架吗？')) {
-                    this.state.cart = [];
-                    localStorage.setItem('jiyi_cart', JSON.stringify(this.state.cart));
-                    this.renderCart();
-                    this.showToast('博古架已清空');
-                }
-            }
-
-            checkout() {
-                if (this.state.cart.length === 0) {
-                    this.showToast('博古架为空，请先添加商品');
-                    return;
-                }
-                // 这里可以跳转到支付页面或执行其他结账逻辑
-                this.showToast('即将跳转至结缘页面...');
-                // window.location.href = 'pay.html';
-            }
-
-            showToast(msg) {
-                const t = document.getElementById('toastNotification');
-                t.innerText = msg; t.classList.add('show');
-                setTimeout(() => t.classList.remove('show'), 2000);
-            }
-
-            toggleLogin() { document.getElementById('loginModal').style.display = (document.getElementById('loginModal').style.display==='flex'?'none':'flex'); }
-            toggleCart() { document.getElementById('cartDrawer').classList.toggle('open'); document.getElementById('drawerMask').classList.toggle('active'); }
-            login() { const n = document.getElementById('uName').value; if(n){ this.state.currentUser=n; localStorage.setItem('jiyi_user', n); this.syncSession(); this.toggleLogin(); } }
-            syncSession() { 
-                const userText = document.getElementById('userText');
-                const authBtn = document.getElementById('authBtn');
-                if(userText && authBtn) {
-                    if(this.state.currentUser) {
-                        userText.innerText = `${this.state.currentUser} / SIGN OUT`;
-                        // 移除之前的事件监听器并添加登出事件
-                        authBtn.onclick = () => this.logout();
-                        authBtn.style.cursor = 'pointer';
-                    } else {
-                        userText.innerText = 'SIGN IN / JOIN';
-                        authBtn.onclick = () => this.toggleLogin();
-                        authBtn.style.cursor = 'pointer';
-                    }
-                }
-            }
-            renderPaginator() { document.getElementById('pageBox').innerHTML = [1,2].map(i => `<div class="page-node hover-target ${this.state.page===i?'active':''}" onclick="app.changePage(${i})">0${i}</div>`).join(''); }
-            changePage(p) { 
-                this.state.page = p; 
-                this.loadData(p); // 传递页面参数重新加载数据
-                document.getElementById('shop').scrollIntoView({behavior:'smooth'}); 
-            }
-        }
-
-        const app = new UltimateEngine();
-
-        document.querySelectorAll('.series-node').forEach(n => n.onclick = () => app.changeSeries(n));
-
-        app.syncSession(); // 确保初始化时同步用户状态
-
-        // 更新 login 和 logout 方法以增强交互体验
-        app.login = function() {
-            const name = document.getElementById('uName').value;
-            if (name) {
-                this.state.currentUser = name;
-                localStorage.setItem('jiyi_user', name);
-                this.showToast(`${name} 已登录`);
-                this.toggleLogin();
-                this.syncSession();
-            } else {
-                this.showToast('请输入用户名');
-            }
-        };
-
-        app.logout = function() {
-            this.state.currentUser = null;
-            localStorage.removeItem('jiyi_user');
-            this.showToast('已登出');
-            this.syncSession();
-        };
-    </script>
-</body>
-<<<<<<< HEAD
-</html>
-</html>
->>>>>>> 50e5cc9 (优化购物车功能：添加商品数量管理、删除功能、总价计算和页面跳转支持)
                     card.onclick = (e) => { if(!e.target.closest('button') && !item.isOpened) this.openBox(item, card); };
                     
-                    // 优化商品卡交互效果：结合边框高亮、2D变换和平面平移
-                    // 鼠标进入时应用边框高亮和基础缩放
-                    card.onmouseenter = () => {
-                        card.style.outline = '3px solid var(--c-accent)';
-                        card.style.outlineOffset = '5px';
-                        card.style.transformOrigin = 'center';
-                        card.style.transform = 'scale(1.05) rotate(2deg)';
-                        card.style.transition = 'outline 0.1s ease, transform 0.2s ease';
-                    };
-                    
-                    // 鼠标移动时应用平面平移效果（仅在桌面端）
-                    if (window.innerWidth > 1024) {
-                        card.addEventListener('mousemove', (e) => {
-                            const rect = card.getBoundingClientRect();
-                            const x = e.clientX - rect.left;
-                            const y = e.clientY - rect.top;
-                            
-                            // 计算平移偏移
-                            const centerX = rect.width / 2;
-                            const centerY = rect.height / 2;
-                            const offsetX = (x - centerX) * 0.03;
-                            const offsetY = (y - centerY) * 0.03;
-                            
-                            // 组合缩放、旋转和平移效果
-                            card.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(1.05) rotate(2deg)`;
-                        });
-                    }
-                    
-                    // 鼠标离开时恢复原状
-                    card.onmouseleave = () => {
-                        card.style.transform = 'scale(1) rotate(0deg)';
-                        card.style.outline = 'none';
-                    };
-
-                    this.dom.grid.appendChild(card);
-                    setTimeout(() => card.classList.add('revealed'), index * 120);
-                });
-                this.renderPaginator();
-            }
-
-            openBox(item, card) {
-                item.isOpened = true;
-                card.querySelector('.reveal-vfx').style.animation = "burstReveal 0.8s ease-out forwards";
-                card.classList.add('is-revealed');
-            }
-
-            changeSeries(node) {
-                const sId = node.dataset.series;
-                document.querySelectorAll('.series-node').forEach(n => n.classList.remove('active'));
-                node.classList.add('active');
-                this.state.series = sId;
-                this.state.page = 1;
-                const colors = { '01': '#E6E2DC', '02': '#F0EAD6', '03': '#DDE6ED', '04': '#F2E8E8' };
-                document.documentElement.style.setProperty('--c-grid', colors[sId]);
-                this.loadData();
-                document.getElementById('shop').scrollIntoView({behavior:'smooth'});
-            }
-
-            addToCart(e, id) {
-                e.stopPropagation();
-                if(!this.state.currentUser) { this.toggleLogin(); return; }
-                const p = this.state.products.find(x => x.id === id);
-                if (!p) return;
-                
-                // 检查商品是否已存在
-                const existingItem = this.state.cart.find(item => item.id === id);
-                if (existingItem) {
-                    existingItem.quantity = (existingItem.quantity || 1) + 1;
-                } else {
-                    this.state.cart.push({
-                        ...p,
-                        quantity: 1
-                    });
-                }
-                
-                localStorage.setItem('jiyi_cart', JSON.stringify(this.state.cart));
-                this.renderCart();
-                this.showToast(`${p.name} 已入博古架`);
-            }
-
-            renderCart() {
-                this.dom.cartBadge.innerText = this.state.cart.reduce((total, item) => total + (item.quantity || 1), 0);
-                
-                // 计算总价
-                const total = this.state.cart.reduce((sum, item) => {
-                    return sum + (item.price * (item.quantity || 1));
-                }, 0);
-                document.getElementById('cartTotal').innerText = `¥${total}`;
-                
-                this.dom.shelf.innerHTML = this.state.cart.length === 0 
-                    ? `<p style="opacity:0.2; margin:auto;">博古架尚无遗珍...</p>` 
-                    : this.state.cart.map(p => {
-                        // 正确处理购物车中的图片路径
-                        let imgSrc = p.img;
-                        if(imgSrc && !imgSrc.startsWith('http')) {
-                            if(imgSrc.startsWith('/images/')) {
-                                imgSrc = `${this.API_BASE}${imgSrc}`;
-                            } else {
-                                imgSrc = `${this.API_BASE}/images/${imgSrc}`;
-                            }
-                        }
-                        return `<div class="shelf-item">
-                            <div class="remove-item" onclick="event.stopPropagation(); app.removeFromCart(${p.id})">×</div>
-                            <img src="${imgSrc}" />
-                            <div class="item-name" style="margin-top:10px; font-weight:bold; font-size:12px;">${p.name}</div>
-                            <div class="cart-quantity-control">
-                                <div class="quantity-btn" onclick="event.stopPropagation(); app.decreaseQuantity(${p.id})">-</div>
-                                <div class="quantity-value">${p.quantity || 1}</div>
-                                <div class="quantity-btn" onclick="event.stopPropagation(); app.increaseQuantity(${p.id})">+</div>
-                            </div>
-                            <div style="margin-top: 5px; font-family: var(--f-mono); font-size: 12px; color: var(--c-danger);">¥${p.price}</div>
-                        </div>`;
-                    }).join('');
-            }
-
-            removeFromCart(id) {
-                this.state.cart = this.state.cart.filter(item => item.id !== id);
-                localStorage.setItem('jiyi_cart', JSON.stringify(this.state.cart));
-                this.renderCart();
-                this.showToast('商品已移除');
-            }
-
-            increaseQuantity(id) {
-                const item = this.state.cart.find(item => item.id === id);
-                if (item) {
-                    item.quantity = (item.quantity || 1) + 1;
-                    localStorage.setItem('jiyi_cart', JSON.stringify(this.state.cart));
-                    this.renderCart();
-                }
-            }
-
-            decreaseQuantity(id) {
-                const item = this.state.cart.find(item => item.id === id);
-                if (item) {
-                    if ((item.quantity || 1) > 1) {
-                        item.quantity = (item.quantity || 1) - 1;
-                    } else {
-                        this.state.cart = this.state.cart.filter(i => i.id !== id);
-                    }
-                    localStorage.setItem('jiyi_cart', JSON.stringify(this.state.cart));
-                    this.renderCart();
-                }
-            }
-
-            clearCart() {
-                if (this.state.cart.length === 0) return;
-                if (confirm('确定要清空博古架吗？')) {
-                    this.state.cart = [];
-                    localStorage.setItem('jiyi_cart', JSON.stringify(this.state.cart));
-                    this.renderCart();
-                    this.showToast('博古架已清空');
-                }
-            }
-
-            checkout() {
-                if (this.state.cart.length === 0) {
-                    this.showToast('博古架为空，请先添加商品');
-                    return;
-                }
-                // 显示加载提示
-                this.showToast('即将跳转至结缘页面...');
-                // 延迟1秒后跳转到支付页面
-                setTimeout(() => {
-                    window.location.href = 'pay.html';
-                }, 1000);
-            }
-
-            showToast(msg) {
-                const t = document.getElementById('toastNotification');
-                t.innerText = msg; t.classList.add('show');
-                setTimeout(() => t.classList.remove('show'), 2000);
-            }
-
-            toggleLogin() { document.getElementById('loginModal').style.display = (document.getElementById('loginModal').style.display==='flex'?'none':'flex'); }
-            toggleCart() { document.getElementById('cartDrawer').classList.toggle('open'); document.getElementById('drawerMask').classList.toggle('active'); }
-            login() { const n = document.getElementById('uName').value; if(n){ this.state.currentUser=n; localStorage.setItem('jiyi_user', n); this.syncSession(); this.toggleLogin(); } }
-            syncSession() { 
-                const userText = document.getElementById('userText');
-                const authBtn = document.getElementById('authBtn');
-                if(userText && authBtn) {
-                    if(this.state.currentUser) {
-                        userText.innerText = `${this.state.currentUser} / SIGN OUT`;
-                        // 移除之前的事件监听器并添加登出事件
-                        authBtn.onclick = () => this.logout();
-                        authBtn.style.cursor = 'pointer';
-                    } else {
-                        userText.innerText = 'SIGN IN / JOIN';
-                        authBtn.onclick = () => this.toggleLogin();
-                        authBtn.style.cursor = 'pointer';
-                    }
-                }
-            }
-            renderPaginator() { document.getElementById('pageBox').innerHTML = [1,2].map(i => `<div class="page-node hover-target ${this.state.page===i?'active':''}" onclick="app.changePage(${i})">0${i}</div>`).join(''); }
-            changePage(p) { 
-                this.state.page = p; 
-                this.loadData(p); // 传递页面参数重新加载数据
-                document.getElementById('shop').scrollIntoView({behavior:'smooth'}); 
-            }
-        }
-
-        const app = new UltimateEngine();
-
-        document.querySelectorAll('.series-node').forEach(n => n.onclick = () => app.changeSeries(n));
-
-        app.syncSession(); // 确保初始化时同步用户状态
-
-        // 更新 login 和 logout 方法以增强交互体验
-        app.login = function() {
-            const name = document.getElementById('uName').value;
-            if (name) {
-                this.state.currentUser = name;
-                localStorage.setItem('jiyi_user', name);
-                this.showToast(`${name} 已登录`);
-                this.toggleLogin();
-                this.syncSession();
-            } else {
-                this.showToast('请输入用户名');
-            }
-        };
-
-        app.logout = function() {
-            this.state.currentUser = null;
-            localStorage.removeItem('jiyi_user');
-            this.showToast('已登出');
-            this.syncSession();
-        };
-    </script>
-</body>
-</html>
-=======
                     // 组合交互效果：平面平移 + 边框高亮
->>>>>>> 50e5cc9 (优化购物车功能：添加商品数量管理、删除功能、总价计算和页面跳转支持)
                     // 鼠标进入时应用边框高亮和基础缩放
                     card.onmouseenter = () => {
                         card.style.outline = '3px solid var(--c-accent)';
                         card.style.outlineOffset = '5px';
-<<<<<<< HEAD
-                        card.style.transformOrigin = 'center';
-                        card.style.transform = 'scale(1.05) rotate(2deg)';
-                        card.style.transition = 'outline 0.1s ease, transform 0.2s ease';
-                    };
-                    
-                    // 鼠标移动时应用平面平移效果（仅在桌面端）
-                    if (window.innerWidth > 1024) {
-                        card.addEventListener('mousemove', (e) => {
-                            const rect = card.getBoundingClientRect();
-                            const x = e.clientX - rect.left;
-                            const y = e.clientY - rect.top;
-                            
-                            // 计算平移偏移
-                            const centerX = rect.width / 2;
-                            const centerY = rect.height / 2;
-                            const offsetX = (x - centerX) * 0.03;
-                            const offsetY = (y - centerY) * 0.03;
-                            
-                            // 组合缩放、旋转和平移效果
-                            card.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(1.05) rotate(2deg)`;
-                        });
-                    }
-                    
-                    // 鼠标离开时恢复原状
-                    card.onmouseleave = () => {
-                        card.style.transform = 'scale(1) rotate(0deg)';
-=======
                         card.style.transition = 'outline 0.1s ease, transform 0.05s ease';
                     };
                     
@@ -1281,7 +644,6 @@
                     // 鼠标离开时恢复原状
                     card.onmouseleave = () => {
                         card.style.transform = 'translate(0, 0) scale(1)';
->>>>>>> 50e5cc9 (优化购物车功能：添加商品数量管理、删除功能、总价计算和页面跳转支持)
                         card.style.outline = 'none';
                     };
 
@@ -1309,37 +671,18 @@
                 document.getElementById('shop').scrollIntoView({behavior:'smooth'});
             }
 
-            addToCart(e, id) {
+*            addToCart(e, id) {
                 e.stopPropagation();
                 if(!this.state.currentUser) { this.toggleLogin(); return; }
                 const p = this.state.products.find(x => x.id === id);
-                if (!p) return;
-                
-                // 检查商品是否已存在
-                const existingItem = this.state.cart.find(item => item.id === id);
-                if (existingItem) {
-                    existingItem.quantity = (existingItem.quantity || 1) + 1;
-                } else {
-                    this.state.cart.push({
-                        ...p,
-                        quantity: 1
-                    });
-                }
-                
+                this.state.cart.push(p);
                 localStorage.setItem('jiyi_cart', JSON.stringify(this.state.cart));
                 this.renderCart();
                 this.showToast(`${p.name} 已入博古架`);
             }
 
             renderCart() {
-                this.dom.cartBadge.innerText = this.state.cart.reduce((total, item) => total + (item.quantity || 1), 0);
-                
-                // 计算总价
-                const total = this.state.cart.reduce((sum, item) => {
-                    return sum + (item.price * (item.quantity || 1));
-                }, 0);
-                document.getElementById('cartTotal').innerText = `¥${total}`;
-                
+                this.dom.cartBadge.innerText = this.state.cart.length;
                 this.dom.shelf.innerHTML = this.state.cart.length === 0 
                     ? `<p style="opacity:0.2; margin:auto;">博古架尚无遗珍...</p>` 
                     : this.state.cart.map(p => {
@@ -1353,66 +696,10 @@
                             }
                         }
                         return `<div class="shelf-item">
-                            <div class="remove-item" onclick="event.stopPropagation(); app.removeFromCart(${p.id})">×</div>
                             <img src="${imgSrc}" />
                             <div class="item-name" style="margin-top:10px; font-weight:bold; font-size:12px;">${p.name}</div>
-                            <div class="cart-quantity-control">
-                                <div class="quantity-btn" onclick="event.stopPropagation(); app.decreaseQuantity(${p.id})">-</div>
-                                <div class="quantity-value">${p.quantity || 1}</div>
-                                <div class="quantity-btn" onclick="event.stopPropagation(); app.increaseQuantity(${p.id})">+</div>
-                            </div>
-                            <div style="margin-top: 5px; font-family: var(--f-mono); font-size: 12px; color: var(--c-danger);">¥${p.price}</div>
                         </div>`;
                     }).join('');
-            }
-
-            removeFromCart(id) {
-                this.state.cart = this.state.cart.filter(item => item.id !== id);
-                localStorage.setItem('jiyi_cart', JSON.stringify(this.state.cart));
-                this.renderCart();
-                this.showToast('商品已移除');
-            }
-
-            increaseQuantity(id) {
-                const item = this.state.cart.find(item => item.id === id);
-                if (item) {
-                    item.quantity = (item.quantity || 1) + 1;
-                    localStorage.setItem('jiyi_cart', JSON.stringify(this.state.cart));
-                    this.renderCart();
-                }
-            }
-
-            decreaseQuantity(id) {
-                const item = this.state.cart.find(item => item.id === id);
-                if (item) {
-                    if ((item.quantity || 1) > 1) {
-                        item.quantity = (item.quantity || 1) - 1;
-                    } else {
-                        this.state.cart = this.state.cart.filter(i => i.id !== id);
-                    }
-                    localStorage.setItem('jiyi_cart', JSON.stringify(this.state.cart));
-                    this.renderCart();
-                }
-            }
-
-            clearCart() {
-                if (this.state.cart.length === 0) return;
-                if (confirm('确定要清空博古架吗？')) {
-                    this.state.cart = [];
-                    localStorage.setItem('jiyi_cart', JSON.stringify(this.state.cart));
-                    this.renderCart();
-                    this.showToast('博古架已清空');
-                }
-            }
-
-            checkout() {
-                if (this.state.cart.length === 0) {
-                    this.showToast('博古架为空，请先添加商品');
-                    return;
-                }
-                // 这里可以跳转到支付页面或执行其他结账逻辑
-                this.showToast('即将跳转至结缘页面...');
-                // window.location.href = 'pay.html';
             }
 
             showToast(msg) {
@@ -1476,7 +763,4 @@
         };
     </script>
 </body>
-<<<<<<< HEAD
-</html>
-=======
 </html>
