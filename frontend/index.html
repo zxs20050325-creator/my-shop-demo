@@ -327,7 +327,7 @@
                 <div id="cartBadge">0</div>
             </div>
 
-            <div class="auth-btn hover-target magnetic-target" onclick="app.toggleLogin()">
+            <div class="auth-btn hover-target magnetic-target" id="authBtn">
                 <span id="userText">SIGN IN / JOIN</span>
             </div>
         </header>
@@ -657,7 +657,22 @@
             toggleLogin() { document.getElementById('loginModal').style.display = (document.getElementById('loginModal').style.display==='flex'?'none':'flex'); }
             toggleCart() { document.getElementById('cartDrawer').classList.toggle('open'); document.getElementById('drawerMask').classList.toggle('active'); }
             login() { const n = document.getElementById('uName').value; if(n){ this.state.currentUser=n; localStorage.setItem('jiyi_user', n); this.syncSession(); this.toggleLogin(); } }
-            syncSession() { if(this.state.currentUser) document.getElementById('userText').innerText = `${this.state.currentUser} / SIGN OUT`; }
+            syncSession() { 
+                const userText = document.getElementById('userText');
+                const authBtn = document.getElementById('authBtn');
+                if(userText && authBtn) {
+                    if(this.state.currentUser) {
+                        userText.innerText = `${this.state.currentUser} / SIGN OUT`;
+                        // 移除之前的事件监听器并添加登出事件
+                        authBtn.onclick = () => this.logout();
+                        authBtn.style.cursor = 'pointer';
+                    } else {
+                        userText.innerText = 'SIGN IN / JOIN';
+                        authBtn.onclick = () => this.toggleLogin();
+                        authBtn.style.cursor = 'pointer';
+                    }
+                }
+            }
             renderPaginator() { document.getElementById('pageBox').innerHTML = [1,2].map(i => `<div class="page-node hover-target ${this.state.page===i?'active':''}" onclick="app.changePage(${i})">0${i}</div>`).join(''); }
             changePage(p) { 
                 this.state.page = p; 
