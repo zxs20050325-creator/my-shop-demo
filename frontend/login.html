@@ -3,103 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>用户登录 - 冀遗筑梦</title>
+    <title>数字化结缘 - 冀遗筑梦</title>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <!-- 核心修正：确保路径指向当前目录下的 styles.css -->
-    <link rel="stylesheet" href="styles.css"> 
+    <link rel="stylesheet" href="styles.css">
     <style>
         body {
-            background-color: #F5F3EF; /* 统一品牌色 */
+            background-color: var(--c-bg);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            font-family: 'Noto Serif SC', serif;
+            overflow: hidden;
         }
-        .login-card {
-            background: white;
-            padding: 40px;
+
+        /* 复用首页的水印层 */
+        .watermark-bg {
+            position: fixed;
+            font-family: 'Ma Shan Zheng', serif;
+            font-size: 30vw;
+            opacity: 0.05;
+            z-index: -1;
+            user-select: none;
+        }
+
+        .login-box {
+            background: #fff;
             width: 100%;
-            max-width: 400px;
-            border: 2px solid #2F4842;
-            box-shadow: 15px 15px 0 #C1A268; /* 品牌鎏金阴影 */
+            max-width: 420px;
+            padding: 60px 40px;
+            border: 2px solid var(--c-primary);
+            position: relative;
+            box-shadow: 25px 25px 0 var(--c-accent); /* 标志性鎏金投影 */
+            animation: modalPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        .login-header h1 {
-            font-size: 28px;
-            color: #2F4842;
-            margin-bottom: 5px;
-            text-align: center;
+
+        @keyframes modalPop {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
-        .login-header p {
-            font-size: 12px;
-            color: #C1A268;
-            text-align: center;
-            margin-bottom: 30px;
+
+        .login-box::before {
+            content: "JIYI ZHUMENG";
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-family: var(--f-mono);
+            font-size: 10px;
+            color: var(--c-accent);
             letter-spacing: 2px;
         }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; color: #2F4842; }
-        .form-group input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #E6E2DC;
-            box-sizing: border-box;
-            outline: none;
+
+        .login-header { text-align: center; margin-bottom: 40px; }
+        .login-header h2 { 
+            font-family: var(--f-serif); 
+            font-size: 32px; 
+            color: var(--c-primary); 
+            margin: 0;
         }
-        .form-group input:focus { border-color: #C1A268; }
-        .login-btn {
+        .login-header span { 
+            font-family: var(--f-eng); 
+            font-size: 12px; 
+            color: var(--c-accent);
+            letter-spacing: 4px;
+        }
+
+        .input-group { position: relative; margin-bottom: 30px; }
+        .input-group input {
             width: 100%;
-            padding: 15px;
-            background: #2F4842;
-            color: white;
+            padding: 15px 5px;
             border: none;
-            cursor: pointer;
-            font-weight: bold;
+            border-bottom: 2px solid var(--c-grid);
+            background: transparent;
+            font-family: var(--f-serif);
+            font-size: 16px;
+            outline: none;
             transition: 0.3s;
         }
-        .login-btn:hover { background: #C1A268; }
-        .back-home {
-            display: block;
+        .input-group input:focus { border-bottom-color: var(--c-primary); }
+        .input-group label {
+            position: absolute;
+            left: 5px;
+            top: 15px;
+            color: #999;
+            pointer-events: none;
+            transition: 0.3s;
+        }
+        .input-group input:focus ~ label,
+        .input-group input:valid ~ label {
+            top: -10px;
+            font-size: 12px;
+            color: var(--c-accent);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 18px;
+            background: var(--c-primary);
+            color: #fff;
+            border: none;
+            font-family: var(--f-eng);
+            letter-spacing: 5px;
+            cursor: pointer;
+            transition: 0.4s;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-login:hover {
+            background: var(--c-accent);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(193, 162, 104, 0.3);
+        }
+
+        .footer-links {
+            margin-top: 30px;
             text-align: center;
-            margin-top: 20px;
-            text-decoration: none;
-            color: #666;
             font-size: 13px;
         }
+        .footer-links a { 
+            color: var(--c-primary); 
+            text-decoration: none; 
+            margin: 0 10px; 
+            opacity: 0.6;
+        }
+        .footer-links a:hover { opacity: 1; color: var(--c-accent); }
     </style>
 </head>
 <body>
+    <div class="watermark-bg" style="top: -5%; left: 2%;">筑</div>
+    <div class="watermark-bg" style="bottom: -5%; right: 2%;">梦</div>
 
-    <div class="login-card">
+    <div class="login-box magnetic-target">
         <div class="login-header">
-            <h1>用户登录</h1>
-            <p>USER LOGIN</p>
+            <h2>数字化结缘</h2>
+            <span>USER LOGIN</span>
         </div>
-        
+
         <form onsubmit="handleLogin(event)">
-            <div class="form-group">
-                <label>名号 / Username</label>
-                <input type="text" id="username" placeholder="请输入您的名号" required>
+            <div class="input-group">
+                <input type="text" id="uName" required>
+                <label>名号 / Identity</label>
             </div>
-            <div class="form-group">
-                <label>秘钥 / Password</label>
-                <input type="password" id="password" placeholder="请输入密码" required>
+            <div class="input-group">
+                <input type="password" id="uPass" required>
+                <label>密令 / Password</label>
             </div>
-            <button type="submit" class="login-btn">开启结缘</button>
+            <button type="submit" class="btn-login">开启寻遗之旅</button>
         </form>
 
-        <a href="index.html" class="back-home">← 返回首页探索</a>
+        <div class="footer-links">
+            <a href="index.html">← 返回首页</a>
+            <a href="#">忘记密令？</a>
+            <a href="#">申请入册</a>
+        </div>
     </div>
 
     <script src="common.js"></script>
     <script>
-        function handleLogin(event) {
-            event.preventDefault();
-            const user = document.getElementById('username').value;
-            localStorage.setItem('jiyi_user', user);
-            alert('同步成功，欢迎归来：' + user);
-            window.location.href = 'index.html';
+        function handleLogin(e) {
+            e.preventDefault();
+            const name = document.getElementById('uName').value;
+            localStorage.setItem('jiyi_user', name);
+            showToast("结缘成功，正在同步数据...");
+            setTimeout(() => location.href = 'index.html', 1500);
         }
     </script>
 </body>
