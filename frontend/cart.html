@@ -129,25 +129,11 @@
         
         .btn-remove:hover {
             background: #cc0000;
-            transform: translateY(-1px);
         }
         
-        /* 轻量级自定义光标 */
-        #custom-cursor {
-            position: fixed;
-            width: 12px;
-            height: 12px;
-            border: 2px solid var(--c-primary, #2F4842);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 9999;
-            transform: translate(-50%, -50%);
-            transition: transform 0.2s ease, border-color 0.2s ease;
-        }
-        
-        #custom-cursor.hover {
-            transform: translate(-50%, -50%) scale(1.2);
-            border-color: var(--c-accent, #C1A268);
+        /* 隐藏侧边栏 - 符合特定页面非必要元素隐藏规范 */
+        .sidebar {
+            display: none;
         }
     </style>
 </head>
@@ -160,38 +146,7 @@
         <div class="cart-count" id="floatingCartCount">0</div>
     </div>
     
-    <aside class="sidebar">
-        <div class="brand-vertical"></div>
-        <nav class="time-ruler">
-            <div class="dynasty-mark active" data-series="01">
-                <span class="node-num"></span><span class="dynasty-text"></span>
-            </div>
-            <div class="dynasty-mark" data-series="02">
-                <span class="node-num"></span><span class="dynasty-text"></span>
-            </div>
-            <div class="dynasty-mark" data-series="03">
-                <span class="node-num"></span><span class="dynasty-text"></span>
-            </div>
-            <div class="dynasty-mark" data-series="04">
-                <span class="node-num"></span><span class="dynasty-text"></span>
-            </div>
-        </nav>
-        
-        <div class="nav-links">
-            <a href="favorites.html" class="nav-link">
-                <i class="fa fa-heart"></i>
-                <span class="nav-text"></span>
-            </a>
-            <a href="cart.html" class="nav-link">
-                <i class="fa fa-shopping-bag"></i>
-                <span class="nav-text"></span>
-            </a>
-        </div>
-        <div class="social-links">
-            <i class="fa fa-weixin" title="AR小程序"></i>
-            <i class="fa fa-weibo"></i>
-        </div>
-    </aside>
+    <!-- 侧边栏已隐藏，符合规范要求 -->
 
     <div class="main-wrapper">
         <header class="top-bar" id="topBar">
@@ -200,7 +155,7 @@
                 <input type="text" placeholder="SEARCH ARCHIVE..." id="searchInput">
             </div>
 
-            <div class="cart-trigger" id="cartTrigger">
+            <div class="cart-trigger" onclick="window.location.href='cart.html'">
                 <i class="fa fa-shopping-bag"></i>
                 <span>BAG</span>
                 <div id="cartBadge">0</div>
@@ -211,192 +166,130 @@
             </div>
         </header>
         
-        <section style="grid-area: hero; padding: 40px 60px;">
-            <h1 style="font-size: 42px; margin-bottom: 10px;">我的购物车</h1>
-            <div style="font-family: var(--f-mono); color: var(--c-accent); font-size: 14px; margin-bottom: 20px;">MY CART</div>
-        </section>
-
         <main class="cart-container">
-            <a href="index.html" class="back-link">← 返回首页</a>
+            <h1 style="font-size: 32px; margin-bottom: 20px;">我的购物车</h1>
             
-            <div class="cart-header">
-                <h2 class="cart-title">购物车</h2>
-                <div>共 <span id="item-count">0</span> 件商品</div>
+            <div id="cartItems">
+                <!-- 商品列表将通过JavaScript动态生成 -->
             </div>
             
-            <div id="cart-items">
-                <!-- 购物车项目将通过JS动态加载 -->
+            <div class="empty-cart" id="emptyCart" style="display: none;">
+                <h2>您的购物车是空的</h2>
+                <p>快去挑选心仪的商品吧！</p>
+                <button class="checkout-btn" onclick="window.location.href='index.html'" style="margin-top: 20px;">继续购物</button>
             </div>
             
-            <div class="checkout-bar">
-                总计: <span class="total-price">¥<span id="total-price">0.00</span></span>
-                <button class="btn-checkout" onclick="checkout()">去结算</button>
+            <div style="text-align: right; margin-top: 40px;">
+                <button class="checkout-btn" onclick="checkout()">结算</button>
             </div>
         </main>
     </div>
 
     <script>
-        // 设置API基础URL，以便在部署时调整
-        const isDeployed = window.location.hostname.includes('onrender.com');
-        const API_BASE = isDeployed ? 'https://jiyi-zhumeng.onrender.com' : 'http://localhost:3000';
-
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
-            loadCart();
-            setupScrollHandler();
+            syncSession();
+            updateCartCount();
+            loadCartItems();
         });
 
-        // 滚动处理
-        function setupScrollHandler() {
-            const topBar = document.getElementById('topBar');
-            window.addEventListener('scroll', () => {
-                if (window.pageYOffset > 50) {
-                    topBar.classList.add('scrolled');
-                } else {
-                    topBar.classList.remove('scrolled');
-                }
-            });
-        }
-
-        // 加载购物车
-        function loadCart() {
-            const currentUser = localStorage.getItem('jiyi_user');
-            if (!currentUser) {
-                showToast('请先登录！');
-                setTimeout(() => {
-                    window.location.href = '../login.html';
-                }, 2000);
-                return;
-            }
-
+        // 加载购物车商品
+        function loadCartItems() {
             const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
-            document.getElementById('cartBadge').textContent = cart.length;
-            document.getElementById('floatingCartCount').textContent = cart.length;
-
-            const cartItemsContainer = document.getElementById('cart-items');
-            const itemCountElement = document.getElementById('item-count');
-            const totalPriceElement = document.getElementById('total-price');
-
+            const cartItems = document.getElementById('cartItems');
+            const emptyCart = document.getElementById('emptyCart');
+            
             if (cart.length === 0) {
-                cartItemsContainer.innerHTML = '<div class="empty-cart">购物车为空<br><small>点击商品可加入购物车</small></div>';
-                itemCountElement.textContent = '0';
-                totalPriceElement.textContent = '0.00';
-                return;
-            }
-
-            let totalPrice = 0;
-            const cartHTML = cart.map((item, index) => {
-                // 处理图片路径
-                let imgSrc = item.img;
-                if (imgSrc && !imgSrc.startsWith('http')) {
-                    if (imgSrc.startsWith('/images/')) {
-                        imgSrc = `${API_BASE}${imgSrc}`;
-                    } else {
-                        imgSrc = `${API_BASE}/images/${imgSrc}`;
-                    }
-                }
-                if (!imgSrc) {
-                    imgSrc = 'https://placehold.co/200x200/2F4842/C1A268?text=NO+IMAGE';
-                }
-
-                const quantity = item.quantity || 1;
-                const itemTotal = (item.price * quantity).toFixed(2);
-                totalPrice += item.price * quantity;
-
-                return `
-                    <div class="cart-item">
-                        <img src="${imgSrc}" alt="${item.name}" onerror="this.src='https://placehold.co/200x200/2F4842/C1A268?text=IMAGE+LOST'">
-                        <div class="item-info">
-                            <h3>${item.name}</h3>
-                            <p class="item-price">¥${item.price}</p>
-                            <div class="quantity-control">
-                                <button class="qty-btn" onclick="decreaseQuantity(${index})">-</button>
-                                <span class="qty-value">${quantity}</span>
-                                <button class="qty-btn" onclick="increaseQuantity(${index})">+</button>
-                            </div>
-                        </div>
-                        <div class="item-total">¥${itemTotal}</div>
-                        <button class="btn-remove" onclick="removeFromCart(${index})">删除</button>
-                    </div>
-                `;
-            });
-
-            cartItemsContainer.innerHTML = cartHTML.join('');
-            itemCountElement.textContent = cart.length;
-            totalPriceElement.textContent = totalPrice.toFixed(2);
-        }
-
-        // 从购物车移除商品
-        function removeFromCart(index) {
-            if (confirm('确定要删除此商品吗？')) {
-                const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
-                cart.splice(index, 1);
-                localStorage.setItem('jiyi_cart', JSON.stringify(cart));
-                loadCart();
-                updateCartCount();
-                showToast('商品已删除');
-            }
-        }
-
-        // 增加商品数量
-        function increaseQuantity(index) {
-            const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
-            if (cart[index]) {
-                cart[index].quantity = (cart[index].quantity || 1) + 1;
-                localStorage.setItem('jiyi_cart', JSON.stringify(cart));
-                loadCart();
-                showToast('数量已增加');
-            }
-        }
-
-        // 减少商品数量
-        function decreaseQuantity(index) {
-            const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
-            if (cart[index]) {
-                const currentQty = cart[index].quantity || 1;
-                if (currentQty > 1) {
-                    cart[index].quantity = currentQty - 1;
-                    localStorage.setItem('jiyi_cart', JSON.stringify(cart));
-                    loadCart();
-                    showToast('数量已减少');
-                } else {
-                    // 如果数量为1，询问是否删除
-                    if (confirm('商品数量为1，继续减少将删除该商品，确定吗？')) {
-                        removeFromCart(index);
-                    }
-                }
-            }
-        }
-
-        // 结算
-        function checkout() {
-            const currentUser = localStorage.getItem('jiyi_user');
-            if (!currentUser) {
-                showToast('请先登录！');
-                setTimeout(() => {
-                    window.location.href = '../login.html';
-                }, 2000);
-                return;
-            }
-
-            const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
-            if (cart.length === 0) {
-                showToast('购物车为空');
+                cartItems.innerHTML = '';
+                emptyCart.style.display = 'block';
                 return;
             }
             
-            // 跳转到支付页面
-            window.location.href = '../pay.html';
+            emptyCart.style.display = 'none';
+            let html = '';
+            
+            cart.forEach((item, index) => {
+                html += `
+                    <div class="cart-item">
+                        <img src="${buildImageUrl(item.img)}" alt="${item.name}">
+                        <div class="item-info">
+                            <h3>${item.name}</h3>
+                            <div class="item-price">¥${item.price}</div>
+                        </div>
+                        <div class="quantity-control">
+                            <button class="qty-btn" onclick="updateQuantity(${index}, ${item.quantity} - 1)">-</button>
+                            <span class="qty-value">${item.quantity}</span>
+                            <button class="qty-btn" onclick="updateQuantity(${index}, ${item.quantity} + 1)">+</button>
+                        </div>
+                        <div class="item-total">¥${(item.price * item.quantity).toFixed(2)}</div>
+                        <button class="btn-remove" onclick="removeItem(${index})">删除</button>
+                    </div>
+                `;
+            });
+            
+            cartItems.innerHTML = html;
+        }
+
+        // 更新商品数量
+        function updateQuantity(index, newQuantity) {
+            if (newQuantity <= 0) {
+                removeItem(index);
+                return;
+            }
+            
+            const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
+            if (index >= 0 && index < cart.length) {
+                cart[index].quantity = newQuantity;
+                localStorage.setItem('jiyi_cart', JSON.stringify(cart));
+                loadCartItems();
+                updateCartCount();
+            }
+        }
+
+        // 删除商品
+        function removeItem(index) {
+            const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
+            if (index >= 0 && index < cart.length) {
+                cart.splice(index, 1);
+                localStorage.setItem('jiyi_cart', JSON.stringify(cart));
+                loadCartItems();
+                updateCartCount();
+                showToast('商品已从购物车移除');
+            }
+        }
+
+        // 结算功能
+        function checkout() {
+            const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
+            if (cart.length === 0) {
+                showToast('购物车为空，无法结算');
+                return;
+            }
+            
+            // 这里可以跳转到支付页面或实现其他结算逻辑
+            window.location.href = 'pay.html';
         }
         
-        // 非阻塞通知框函数
+        // 构建图片URL
+        function buildImageUrl(imgPath) {
+            if (!imgPath) {
+                return 'https://placehold.co/200x200/2F4842/C1A268?text=NO+IMAGE';
+            }
+            if (imgPath.startsWith('http')) {
+                return imgPath;
+            }
+            if (imgPath.startsWith('/images/')) {
+                return `https://jiyi-zhumeng.onrender.com${imgPath}`;
+            }
+            return `https://jiyi-zhumeng.onrender.com/images/${imgPath}`;
+        }
+        
+        // 显示提示信息
         function showToast(message) {
-            // 创建或获取现有的toast元素
             let toast = document.getElementById('toastNotification');
             if (!toast) {
                 toast = document.createElement('div');
                 toast.id = 'toastNotification';
-                toast.className = 'toast-notification';
                 toast.style.cssText = `
                     position: fixed;
                     top: 20px;
@@ -416,40 +309,15 @@
                 document.body.appendChild(toast);
             }
             
-            // 设置消息并显示
             toast.textContent = message;
             toast.style.opacity = '1';
             toast.style.transform = 'translateX(0)';
             
-            // 2秒后自动隐藏
             setTimeout(() => {
                 toast.style.opacity = '0';
                 toast.style.transform = 'translateX(100%)';
             }, 2000);
         }
-    </script>
-    <script>
-        // 轻量级自定义光标脚本
-        document.addEventListener('DOMContentLoaded', function() {
-            const cursor = document.getElementById('custom-cursor');
-            
-            // 鼠标移动
-            document.addEventListener('mousemove', function(e) {
-                cursor.style.left = e.clientX + 'px';
-                cursor.style.top = e.clientY + 'px';
-            });
-            
-            // 鼠标悬停效果
-            const interactiveElements = document.querySelectorAll('button, a, .checkout-btn, .sidebar .brand-vertical, .sidebar .time-ruler div');
-            interactiveElements.forEach(element => {
-                element.addEventListener('mouseenter', () => {
-                    cursor.classList.add('hover');
-                });
-                element.addEventListener('mouseleave', () => {
-                    cursor.classList.remove('hover');
-                });
-            });
-        });
     </script>
 </body>
 </html>

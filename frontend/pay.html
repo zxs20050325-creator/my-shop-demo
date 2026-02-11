@@ -85,6 +85,8 @@ document.addEventListener('DOMContentLoaded', function() {
             border-radius: 2px;
             box-shadow: 4px 4px 0 var(--c-accent);
             transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            /* 隐藏品牌名称 - 符合特定页面非必要元素隐藏规范 */
+            display: none !important;
         }
         .brand-vertical:hover {
             transform: translate(3px, 3px);
@@ -119,11 +121,12 @@ document.addEventListener('DOMContentLoaded', function() {
         .dynasty-text {
             font-size: 11px;
             font-weight: bold;
-            display: none;
+            /* 隐藏品类轴文字 - 符合特定页面非必要元素隐藏规范 */
+            display: none !important;
             white-space: nowrap;
         }
         .sidebar:hover .dynasty-text { 
-            display: block; 
+            display: none !important; 
             animation: fadeIn 0.4s; 
         }
         .nav-links {

@@ -60,7 +60,13 @@
             transform: translate(-50%, -50%) scale(1.2);
             border-color: var(--c-accent, #C1A268);
         }
+        
+        /* 隐藏侧边栏 - 符合特定页面非必要元素隐藏规范 */
+        .sidebar {
+            display: none;
+        }
     </style>
+</head>
 <body>
     <!-- 轻量级自定义光标 -->
     <div id="custom-cursor"></div>
@@ -70,7 +76,8 @@
         <div class="cart-count" id="floatingCartCount">0</div>
     </div>
     
-    <aside class="sidebar">
+    <!-- 侧边栏已隐藏，符合规范要求 -->
+    <!-- <aside class="sidebar">
         <div class="brand-vertical"></div>
         <nav class="time-ruler">
             <div class="dynasty-mark active" data-series="01">
@@ -101,7 +108,7 @@
             <i class="fa fa-weixin" title="AR小程序"></i>
             <i class="fa fa-weibo"></i>
         </div>
-    </aside>
+    </aside> -->
 
     <div class="main-wrapper">
         <header class="top-bar" id="topBar">

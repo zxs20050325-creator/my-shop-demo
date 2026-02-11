@@ -29,6 +29,13 @@
             grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
             gap: 40px;
         }
+        
+        /* 隐藏侧边栏中的文字内容 - 符合特定页面非必要元素隐藏规范 */
+        .brand-vertical,
+        .node-num,
+        .dynasty-text {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
@@ -111,11 +118,59 @@
         const isDeployed = window.location.hostname.includes('onrender.com');
         const API_BASE = isDeployed ? 'https://jiyi-zhumeng.onrender.com' : 'http://localhost:3000';
 
-        window.onload = function() {
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
             syncSession();
+            updateCartCount();
             loadFavorites();
             setupScrollHandler();
-        };
+        });
+
+        // 加载收藏商品
+        function loadFavorites() {
+            const favorites = JSON.parse(localStorage.getItem('jiyi_favorites') || '[]');
+            const favoritesGrid = document.getElementById('favorites-grid');
+            
+            if (favorites.length === 0) {
+                favoritesGrid.innerHTML = `
+                    <div class="empty-favorites">
+                        <h2>您的收藏夹是空的</h2>
+                        <p>快去首页发现心仪的商品并添加到收藏吧！</p>
+                        <button class="checkout-btn" onclick="window.location.href='index.html'" style="margin-top: 20px; background: var(--c-primary); color: white; border: none; padding: 15px 30px; font-family: var(--f-eng); letter-spacing: 2px; transition: 0.3s;">去逛逛</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            favorites.forEach((item, index) => {
+                html += `
+                    <div class="product-card">
+                        <div class="p-image-wrap">
+                            <img src="${buildImageUrl(item.img)}" alt="${item.name}" class="p-img">
+                        </div>
+                        <div class="p-info">
+                            <div class="p-name">${item.name}</div>
+                            <div class="p-price">¥${item.price}</div>
+                            <button class="btn-add-cart" onclick="removeFromFavorites(${index})">取消收藏</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            favoritesGrid.innerHTML = html;
+        }
+
+        // 从收藏夹移除商品
+        function removeFromFavorites(index) {
+            const favorites = JSON.parse(localStorage.getItem('jiyi_favorites') || '[]');
+            if (index >= 0 && index < favorites.length) {
+                favorites.splice(index, 1);
+                localStorage.setItem('jiyi_favorites', JSON.stringify(favorites));
+                loadFavorites();
+                showToast('商品已从收藏夹移除');
+            }
+        }
     </script>
 </body>
 </html>

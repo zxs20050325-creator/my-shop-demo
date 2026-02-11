@@ -97,107 +97,57 @@ function updateCartCount() {
     <style>
         /* 注册页面特定样式 */
         .register-container {
-            grid-area: content;
-            padding: 40px 60px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .register-form {
-            background: white;
-            padding: 40px;
-            border-radius: 8px;
-            width: 100%;
             max-width: 400px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-            border: 1px solid var(--c-grid);
-        }
-        
-        .form-title {
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 24px;
-            color: var(--c-primary);
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            color: var(--c-primary);
-            font-family: var(--f-mono);
-            font-size: 14px;
-        }
-        
-        .form-input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid var(--c-grid);
-            border-radius: 4px;
-            font-size: 16px;
-            color: var(--c-primary);
-            background: #fafafa;
-        }
-        
-        .form-input:focus {
-            outline: none;
-            border-color: var(--c-accent);
+            margin: 100px auto;
+            padding: 40px;
             background: white;
+            border: 1px solid var(--c-primary);
+            border-radius: 4px;
         }
         
-        .form-button {
+        .register-form input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid var(--c-grid);
+            font-family: var(--f-serif);
+        }
+        
+        .register-btn {
             width: 100%;
             padding: 12px;
             background: var(--c-primary);
             color: white;
             border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: 0.3s;
             font-family: var(--f-mono);
+            letter-spacing: 2px;
         }
         
-        .form-button:hover {
+        .register-btn:hover {
             background: var(--c-accent);
         }
         
-        .form-footer {
-            text-align: center;
-            margin-top: 20px;
-            color: var(--c-text-light);
-            font-family: var(--f-mono);
-            font-size: 14px;
+        /* 轻量级自定义光标 */
+        #custom-cursor {
+            position: fixed;
+            width: 12px;
+            height: 12px;
+            border: 2px solid var(--c-primary, #2F4842);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: transform 0.2s ease, border-color 0.2s ease;
         }
         
-        .form-footer a {
-            color: var(--c-accent);
-            text-decoration: none;
+        #custom-cursor.hover {
+            transform: translate(-50%, -50%) scale(1.2);
+            border-color: var(--c-accent, #C1A268);
         }
         
-        .back-link {
-            display: inline-block;
-            padding: 10px 16px;
-            background: #fff;
-            color: var(--c-primary);
-            text-decoration: none;
-            border: 1px solid var(--c-primary);
-            border-radius: 4px;
-            transition: 0.3s;
-            width: fit-content;
-            font-family: var(--f-mono);
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
-        
-        .back-link:hover {
-            background: var(--c-primary);
-            color: white;
+        /* 隐藏侧边栏 - 符合特定页面非必要元素隐藏规范 */
+        .sidebar {
+            display: none;
         }
     </style>
 </head>
@@ -207,38 +157,7 @@ function updateCartCount() {
         <div class="cart-count" id="floatingCartCount">0</div>
     </div>
     
-    <aside class="sidebar">
-        <div class="brand-vertical">冀遗筑梦</div>
-        <nav class="time-ruler">
-            <div class="dynasty-mark active" data-series="01">
-                <span class="node-num">01</span><span class="dynasty-text">正定华塔</span>
-            </div>
-            <div class="dynasty-mark" data-series="02">
-                <span class="node-num">02</span><span class="dynasty-text">避暑山庄</span>
-            </div>
-            <div class="dynasty-mark" data-series="03">
-                <span class="node-num">03</span><span class="dynasty-text">赵州古桥</span>
-            </div>
-            <div class="dynasty-mark" data-series="04">
-                <span class="node-num">04</span><span class="dynasty-text">隐藏典藏</span>
-            </div>
-        </nav>
-        
-        <div class="nav-links">
-            <a href="favorites.html" class="nav-link">
-                <i class="fa fa-heart"></i>
-                <span class="nav-text">收藏夹</span>
-            </a>
-            <a href="cart.html" class="nav-link">
-                <i class="fa fa-shopping-bag"></i>
-                <span class="nav-text">购物车</span>
-            </a>
-        </div>
-        <div class="social-links">
-            <i class="fa fa-weixin" title="AR小程序"></i>
-            <i class="fa fa-weibo"></i>
-        </div>
-    </aside>
+    <!-- 侧边栏已隐藏，符合规范要求 -->
 
     <div class="main-wrapper">
         <header class="top-bar" id="topBar">
@@ -293,26 +212,21 @@ function updateCartCount() {
         </main>
     </div>
 
-    <!-- 自定义光标元素 -->
-    <div class="custom-cursor"></div>
-    <div class="custom-cursor-dot"></div>
+    <!-- 轻量级自定义光标 -->
+    <div id="custom-cursor"></div>
 
     <script>
-        window.onload = function() {
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
             syncSession();
-            setupScrollHandler();
             updateCartCount();
             
             // 初始化自定义光标
-            const cursor = document.querySelector('.custom-cursor');
-            const cursorDot = document.querySelector('.custom-cursor-dot');
+            const cursor = document.getElementById('custom-cursor');
             
             document.addEventListener('mousemove', function(e) {
                 cursor.style.left = e.clientX + 'px';
                 cursor.style.top = e.clientY + 'px';
-                
-                cursorDot.style.left = e.clientX + 'px';
-                cursorDot.style.top = e.clientY + 'px';
             });
             
             // 为链接和按钮添加悬停效果
@@ -320,41 +234,50 @@ function updateCartCount() {
             
             hoverElements.forEach(element => {
                 element.addEventListener('mouseenter', () => {
-                    cursor.style.width = '40px';
-                    cursor.style.height = '40px';
-                    
-                    cursorDot.style.width = '12px';
-                    cursorDot.style.height = '12px';
+                    cursor.classList.add('hover');
                 });
                 
                 element.addEventListener('mouseleave', () => {
-                    cursor.style.width = '20px';
-                    cursor.style.height = '20px';
-                    
-                    cursorDot.style.width = '6px';
-                    cursorDot.style.height = '6px';
+                    cursor.classList.remove('hover');
                 });
             });
-        };
+        });
 
-        // 注册
+        // 注册功能
         async function register(event) {
             event.preventDefault();
             
-            const username = document.getElementById('reg-username').value;
-            const password = document.getElementById('reg-password').value;
-            const confirmPassword = document.getElementById('confirm-password').value;
-
-            // 简单验证
-            if (password !== confirmPassword) {
-                alert('两次输入的密码不一致！');
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (!username || !password) {
+                showToast('请填写完整的用户名和密码');
                 return;
             }
-
-            // 简单的本地存储注册
-            localStorage.setItem('jiyi_user', username);
-            alert('注册成功！');
-            window.location.href = 'index.html';
+            
+            try {
+                const response = await fetch(`${getApiBase()}/api/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('注册成功！正在跳转到登录页面...');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                } else {
+                    showToast(result.message || '注册失败，请重试');
+                }
+            } catch (error) {
+                console.error('注册错误:', error);
+                showToast('网络错误，请检查连接后重试');
+            }
         }
     </script>
 </body>
