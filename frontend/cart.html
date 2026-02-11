@@ -3,161 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>博古珍藏 - 冀遗筑梦</title>
+    <title>选藏清单 - 冀遗筑梦</title>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <style>
-        .cart-wrapper {
-            margin-left: 90px; /* 留出侧边栏距离 */
-            padding: 60px 100px;
-            background: linear-gradient(to bottom, #F5F3EF, #fff);
-            min-height: 100vh;
-        }
+        body { background-color: #F5F3EF; margin: 0; color: #2F4842; font-family: 'Noto Serif SC', serif; }
+        
+        .container { max-width: 1100px; margin: 0 auto; padding: 60px 40px; }
 
         .cart-header {
-            border-bottom: 2px solid var(--c-primary);
-            padding-bottom: 30px;
-            margin-bottom: 50px;
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
+            border-bottom: 2px solid #2F4842;
+            padding-bottom: 30px;
+            margin-bottom: 50px;
         }
-        .cart-header h1 { font-family: var(--f-serif); font-size: 42px; margin: 0; }
+        .cart-header h1 { font-size: 42px; margin: 0; font-weight: 900; }
+        .cart-header span { font-size: 14px; color: #C1A268; letter-spacing: 4px; font-weight: bold; }
 
-        /* 商品条目美化 */
-        .shelf-item {
+        .item-row {
             display: grid;
-            grid-template-columns: 150px 1fr 150px 100px;
+            grid-template-columns: 140px 1fr 180px 80px;
             align-items: center;
             background: #fff;
-            margin-bottom: 25px;
-            padding: 20px;
-            border: 1px solid var(--c-grid);
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1.5px solid #E6E2DC;
             transition: 0.4s;
         }
-        .shelf-item:hover {
+        .item-row:hover {
             transform: scale(1.01);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.05);
-            border-color: var(--c-accent);
+            border-color: #C1A268;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
         }
-        .shelf-item img {
-            width: 120px;
-            height: 120px;
-            object-fit: cover;
-            border: 1px solid var(--c-grid);
+        .item-row img { width: 120px; height: 120px; object-fit: cover; border: 1px solid #eee; }
+        .item-name { padding: 0 30px; }
+        .item-name h3 { margin: 0 0 10px 0; font-size: 20px; }
+        .item-name p { margin: 0; font-size: 12px; color: #999; font-family: monospace; }
+        
+        .item-price { font-size: 24px; font-weight: 900; color: #B22222; }
+        .btn-remove { 
+            background: none; border: none; color: #ccc; cursor: pointer; font-size: 20px; transition: 0.3s;
         }
-        .item-info h3 { font-family: var(--f-serif); font-size: 20px; margin-bottom: 10px; }
-        .item-info p { color: #999; font-size: 12px; font-family: var(--f-mono); }
-        .item-price { font-family: var(--f-mono); font-size: 24px; color: var(--c-danger); font-weight: 900; }
+        .btn-remove:hover { color: #B22222; }
 
-        .btn-remove {
-            background: none;
-            border: 1px solid #ddd;
-            color: #ccc;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .btn-remove:hover { border-color: var(--c-danger); color: var(--c-danger); }
-
-        /* 结算栏 */
-        .checkout-anchor {
+        .checkout-bar {
             position: sticky;
             bottom: 40px;
-            background: var(--c-primary);
+            background: #2F4842;
             color: #fff;
             padding: 30px 60px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-top: 60px;
             box-shadow: 0 20px 50px rgba(0,0,0,0.2);
-            margin-top: 80px;
         }
-        .total-amount { font-family: var(--f-mono); font-size: 32px; color: var(--c-accent); }
-        .btn-pay {
-            background: var(--c-accent);
-            color: var(--c-primary);
-            padding: 15px 45px;
+        .total-box span { font-size: 11px; opacity: 0.7; letter-spacing: 2px; }
+        .total-price { font-size: 36px; color: #C1A268; font-family: monospace; font-weight: bold; }
+        
+        .btn-take-home {
+            background: #C1A268;
+            color: #2F4842;
+            padding: 18px 45px;
             border: none;
-            font-family: var(--f-eng);
+            font-size: 15px;
             font-weight: 900;
-            letter-spacing: 3px;
+            letter-spacing: 2px;
             cursor: pointer;
             transition: 0.3s;
         }
-        .btn-pay:hover { background: #fff; transform: translateY(-3px); }
+        .btn-take-home:hover { background: #fff; transform: translateY(-3px); }
 
-        /* 空状态 */
-        .empty-state { text-align: center; padding: 100px 0; opacity: 0.2; }
-        .empty-state i { font-size: 80px; margin-bottom: 20px; }
+        .empty-hint { text-align: center; padding: 100px 0; color: #ccc; }
     </style>
 </head>
 <body>
 
-    <div class="cart-wrapper">
+    <div class="container">
         <header class="cart-header">
             <div>
-                <h1>博古珍藏</h1>
-                <span style="font-family: var(--f-mono); color: var(--c-accent);">COLLECTION ARCHIVE</span>
+                <h1>选藏清单</h1>
+                <span>SELECTION ARCHIVE</span>
             </div>
-            <a href="index.html" style="text-decoration:none; color:var(--c-primary); font-family:var(--f-mono); font-size:12px;">← BACK TO SHOP</a>
+            <a href="index.html" style="text-decoration:none; color:#2F4842; font-size:12px; font-weight:bold;">← 继续探索 / CONTINUE</a>
         </header>
 
-        <div id="shelfContainer">
-            <!-- JS 渲染 -->
+        <div id="selectionList">
+            <!-- 动态渲染 -->
         </div>
 
-        <div class="checkout-anchor" id="checkoutBar">
-            <div class="total-info">
-                <span style="opacity: 0.6; font-size: 12px; letter-spacing: 2px;">TOTAL SETTLEMENT</span>
-                <div class="total-amount" id="totalPrice">¥0</div>
+        <div class="checkout-bar" id="checkoutBar">
+            <div class="total-box">
+                <span>选藏总计 / TOTAL AMOUNT</span>
+                <div class="total-price" id="totalDisplay">¥0</div>
             </div>
-            <button class="btn-pay" onclick="location.href='pay.html'">结缘支付 / CHECKOUT</button>
+            <button class="btn-take-home" onclick="location.href='pay.html'">带走它 / TAKE ME HOME</button>
         </div>
     </div>
 
     <script src="common.js"></script>
     <script>
-        function renderShelf() {
+        function renderSelection() {
             const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
-            const container = document.getElementById('shelfContainer');
+            const listDom = document.getElementById('selectionList');
             let total = 0;
 
             if (cart.length === 0) {
-                container.innerHTML = `<div class="empty-state"><i class="fa fa-folder-open-o"></i><br>博古架尚无遗珍...</div>`;
+                listDom.innerHTML = `<div class="empty-hint"><i class="fa fa-archive" style="font-size:50px;"></i><br><br>您的选藏清单尚无遗珍...</div>`;
                 document.getElementById('checkoutBar').style.display = 'none';
                 return;
             }
 
-            container.innerHTML = cart.map((item, idx) => {
+            listDom.innerHTML = cart.map((item, idx) => {
                 total += parseFloat(item.price);
+                // 确保图片路径逻辑正确
                 const imgSrc = item.img.startsWith('http') ? item.img : `https://jiyi-zhumeng.onrender.com/images/${item.img}`;
                 return `
-                    <div class="shelf-item">
-                        <img src="${imgSrc}">
-                        <div class="item-info">
+                    <div class="item-row">
+                        <img src="${imgSrc}" onerror="this.src='https://placehold.co/200x200?text=IMAGE+LOST'">
+                        <div class="item-name">
                             <h3>${item.name}</h3>
-                            <p>SERIES: S01 / ID: #00${item.id}</p>
+                            <p>DIGITAL COLLECTION SERIES / #00${item.id}</p>
                         </div>
                         <div class="item-price">¥${item.price}</div>
-                        <button class="btn-remove" onclick="remove(event, ${idx})">&times;</button>
+                        <button class="btn-remove" onclick="removeItem(${idx})">&times;</button>
                     </div>
                 `;
             }).join('');
-            document.getElementById('totalPrice').innerText = `¥${total}`;
+            document.getElementById('totalDisplay').innerText = `¥${total}`;
         }
 
-        function remove(e, idx) {
+        function removeItem(idx) {
             let cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
             cart.splice(idx, 1);
             localStorage.setItem('jiyi_cart', JSON.stringify(cart));
-            renderShelf();
-            showToast("已移出博古架");
+            renderSelection();
         }
 
-        document.addEventListener('DOMContentLoaded', renderShelf);
+        document.addEventListener('DOMContentLoaded', renderSelection);
     </script>
 </body>
 </html>
