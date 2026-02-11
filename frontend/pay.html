@@ -1,674 +1,248 @@
-/**
- * common.js - 冀遗筑梦项目公共JavaScript
- * 包含跨页面共享的函数和配置
- */
-
-// 设置API基础URL，以便在部署时调整
-const isDeployed = window.location.hostname.includes('onrender.com');
-const API_BASE = isDeployed ? 'https://jiyi-zhumeng.onrender.com' : 'http://localhost:3000';
-
-// 全局购物车数量更新函数
-function updateCartCount() {
-    const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
-    const count = cart.length;
-    
-    // 更新所有显示购物车数量的元素
-    document.querySelectorAll('#cartBadge, #floatingCartCount').forEach(el => {
-        el.textContent = count;
-    });
-}
-
-// 页面加载完成后初始化
-document.addEventListener('DOMContentLoaded', function() {
-    // 如果存在，则更新购物车数量
-    if (document.querySelector('#cartBadge')) {
-        updateCartCount();
-    }
-});
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>支付页面 - 冀遗筑梦</title>
+    <title>结缘确权 - 冀遗筑梦</title>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    
-    <!-- 引入公共CSS和JS -->
     <link rel="stylesheet" href="styles.css">
-    <script src="common.js"></script>
-
     <style>
-        /* 支付页面特定样式 */
+        body { 
+            background-color: #F5F3EF; 
+            margin: 0; 
+            color: #2F4842; 
+            font-family: 'Noto Serif SC', serif;
+        }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background-color: var(--c-bg);
-            color: var(--c-primary);
-            font-family: var(--f-serif);
-            overflow-x: hidden;
-            background-image: 
-                linear-gradient(var(--c-grid) 1px, transparent 1px),
-                linear-gradient(90deg, var(--c-grid) 1px, transparent 1px);
-            background-size: 40px 40px;
-            background-position: center top;
+        .main-container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 60px 40px; 
+            min-height: 100vh;
         }
-        a { text-decoration: none; color: inherit; }
-        button { font-family: inherit; }
-        
-        .sidebar {
-            position: fixed;
-            left: 0; top: 0; bottom: 0;
-            width: var(--sidebar-width);
+
+        /* 头部设计 */
+        .page-header {
+            text-align: center;
+            border-bottom: 2px solid #2F4842;
+            padding-bottom: 40px;
+            margin-bottom: 50px;
+        }
+        .page-header h1 { font-size: 36px; margin: 0 0 10px 0; letter-spacing: 2px; }
+        .page-header span { font-size: 12px; color: #C1A268; font-weight: bold; letter-spacing: 5px; }
+
+        /* 订单摘要卡片 */
+        .order-card {
             background: #fff;
-            border-right: 1.5px solid var(--c-primary);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            padding: 40px 0;
-            z-index: 1000;
-            transition: 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            border: 1.5px solid #E6E2DC;
+            padding: 40px;
+            box-shadow: 15px 15px 0 rgba(193, 162, 104, 0.1);
+            margin-bottom: 40px;
         }
-        .sidebar:hover { 
-            width: 140px; 
-            box-shadow: 15px 0 30px rgba(0,0,0,0.05); 
-        }
-        .brand-vertical {
-            writing-mode: vertical-rl;
-            font-size: 20px;
-            font-weight: 900;
-            letter-spacing: 5px;
-            color: var(--c-primary);
-            background: var(--c-primary);
-            color: #fff;
-            padding: 25px 12px;
-            border-radius: 2px;
-            box-shadow: 4px 4px 0 var(--c-accent);
-            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-            /* 隐藏品牌名称 - 符合特定页面非必要元素隐藏规范 */
-            display: none !important;
-        }
-        .brand-vertical:hover {
-            transform: translate(3px, 3px);
-            box-shadow: 0 0 0 transparent;
-        }
-        .time-ruler {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 35px;
-            width: 100%;
-        }
-        .dynasty-mark {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            opacity: 0.4;
-            transition: 0.3s;
-            cursor: pointer;
-            padding: 10px;
-            font-family: var(--f-mono);
-            font-weight: 900;
+        .section-title {
             font-size: 14px;
-        }
-        .dynasty-mark.active, .dynasty-mark:hover {
-            opacity: 1;
-            color: var(--c-accent);
-            transform: translateX(5px);
-        }
-        .dynasty-text {
-            font-size: 11px;
+            color: #C1A268;
             font-weight: bold;
-            /* 隐藏品类轴文字 - 符合特定页面非必要元素隐藏规范 */
-            display: none !important;
-            white-space: nowrap;
-        }
-        .sidebar:hover .dynasty-text { 
-            display: none !important; 
-            animation: fadeIn 0.4s; 
-        }
-        .nav-links {
+            margin-bottom: 25px;
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-title::after { content: ""; flex: 1; height: 1px; background: #E6E2DC; }
+
+        .item-mini-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #F5F3EF;
+        }
+        .item-mini-name { font-size: 16px; color: #2F4842; }
+        .item-mini-price { font-family: monospace; font-weight: bold; }
+
+        /* 支付方式选择 */
+        .method-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 20px;
-            padding: 20px 0;
-        }
-        .nav-link {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            opacity: 0.6;
-            transition: 0.3s;
-            color: var(--c-primary);
-            text-decoration: none;
-            font-family: var(--f-mono);
-            font-size: 12px;
-        }
-        .nav-link:hover {
-            opacity: 1;
-            color: var(--c-accent);
-            transform: translateX(5px);
-        }
-        .nav-text {
-            display: none;
-        }
-        .sidebar:hover .nav-text {
-            display: block;
-        }
-        .social-links i {
-            display: block; margin-top: 20px;
-            color: var(--c-primary); opacity: 0.5; cursor: pointer;
-            transition: 0.3s;
-        }
-        .social-links i:hover { 
-            opacity: 1; 
-            transform: translateY(-3px); 
-        }
-        
-        .top-bar {
-            grid-area: top-bar;
-            height: 85px;
-            padding: 0 60px;
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            gap: 40px;
-            background: rgba(245, 243, 239, 0.7);
-            backdrop-filter: blur(15px);
-            transition: 0.3s;
-            z-index: 4200;
-        }
-        .top-bar.scrolled {
-            height: 70px;
-            background: rgba(255, 255, 255, 0.95);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-        }
-        .search-engine {
-            display: flex;
-            align-items: center;
-            border-bottom: 2px solid var(--c-primary);
-            padding: 2px 10px;
-            transition: 0.3s;
-        }
-        .search-engine input {
-            background: none;
-            border: none;
-            outline: none;
-            width: 180px;
-            font-family: var(--f-serif);
-            font-size: 15px;
-            color: var(--c-primary);
-        }
-        .cart-trigger {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 25px;
-            background: var(--c-primary);
-            color: #fff;
-            border-radius: 40px;
-            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-            font-family: 'Cinzel', serif;
-            font-size: 12px;
-            position: relative;
-        }
-        .cart-trigger:hover {
-            background: var(--c-accent);
-            transform: translateY(-2px);
-        }
-        #cartBadge {
-            background: #B22222;
-            color: #fff;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            font-size: 10px;
-            font-weight: bold;
-            position: absolute;
-            top: -5px;
-            right: 5px;
-            box-shadow: 0 3px 8px rgba(178, 34, 34, 0.4);
-        }
-        .auth-btn {
-            font-family: 'Cinzel', serif;
-            font-size: 13px;
-            font-weight: 900;
-            color: var(--c-primary);
-            letter-spacing: 2px;
-            transition: 0.3s;
-            border-left: 1.5px solid var(--c-grid);
-            padding-left: 30px;
-        }
-        .auth-btn:hover {
-            color: var(--c-accent);
-        }
-        
-        .pay-container {
-            padding: 40px 60px;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .pay-header {
-            margin-bottom: 30px;
-        }
-        
-        .pay-title {
-            font-size: 28px;
-            font-weight: 700;
-            color: var(--c-primary);
-            margin-bottom: 10px;
-        }
-        
-        .order-summary {
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-            border: 1px solid var(--c-grid);
-        }
-        
-        .order-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 15px 0;
-            border-bottom: 1px solid var(--c-grid);
-        }
-        
-        .order-total {
-            display: flex;
-            justify-content: space-between;
-            padding: 20px 0;
-            font-size: 20px;
-            font-weight: bold;
-            color: var(--c-accent);
-        }
-        
-        .payment-methods {
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-            border: 1px solid var(--c-grid);
-        }
-        
-        .method-option {
-            display: flex;
-            align-items: center;
-            padding: 15px;
-            border: 1px solid var(--c-grid);
-            border-radius: 4px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        
-        .method-option:hover, .method-option.selected {
-            border-color: var(--c-accent);
-            background-color: rgba(193, 162, 104, 0.05);
-        }
-        
-        .method-option input {
-            margin-right: 10px;
-        }
-        
-        .pay-button {
-            background: var(--c-primary);
-            color: white;
-            border: none;
-            padding: 16px 30px;
-            font-size: 18px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: 0.3s;
-            font-family: var(--f-mono);
-            width: 100%;
             margin-top: 20px;
         }
-        
-        .pay-button:hover {
-            background: var(--c-accent);
+        .method-item {
+            border: 1.5px solid #E6E2DC;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: 0.3s;
         }
-        
+        .method-item:hover, .method-item.active {
+            border-color: #2F4842;
+            background: rgba(47, 72, 66, 0.03);
+        }
+        .method-item.active {
+            box-shadow: inset 0 0 0 1px #2F4842;
+        }
+        .method-item i { font-size: 20px; }
+
+        /* 确权按钮区域 */
+        .footer-action {
+            margin-top: 60px;
+            text-align: center;
+        }
+        .total-display {
+            margin-bottom: 30px;
+        }
+        .total-display span { font-size: 12px; opacity: 0.6; display: block; margin-bottom: 10px; }
+        .total-display b { font-size: 48px; color: #B22222; font-family: monospace; }
+
+        .btn-secure {
+            width: 100%;
+            background: #2F4842;
+            color: #fff;
+            padding: 20px;
+            border: none;
+            font-size: 16px;
+            font-weight: 900;
+            letter-spacing: 5px;
+            cursor: pointer;
+            transition: 0.4s;
+            position: relative;
+        }
+        .btn-secure:hover {
+            background: #C1A268;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(193, 162, 104, 0.3);
+        }
+
         .back-link {
             display: inline-block;
-            padding: 10px 16px;
-            background: #fff;
-            color: var(--c-primary);
+            margin-top: 25px;
+            color: #999;
             text-decoration: none;
-            border: 1px solid var(--c-primary);
-            border-radius: 4px;
-            transition: 0.3s;
-            width: fit-content;
-            font-family: var(--f-mono);
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
-        
-        .back-link:hover {
-            background: var(--c-primary);
-            color: white;
-        }
-        
-        .floating-cart {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 60px;
-            height: 60px;
-            background: var(--c-primary);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 24px;
-            cursor: pointer;
-            z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            transition: all 0.3s;
-        }
-        .floating-cart:hover {
-            transform: scale(1.1);
-            background: var(--c-accent);
-        }
-        .cart-count {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #ff4757;
-            color: white;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
             font-size: 12px;
-            display: flex;
+            transition: 0.3s;
+        }
+        .back-link:hover { color: #2F4842; }
+
+        /* 成功动画遮罩 */
+        .success-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--c-bg);
+            display: none;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
+            z-index: 1000;
         }
-        
-        @media (max-width: 768px) {
-            .sidebar { display: none; }
-            .main-wrapper { 
-                margin-left: 0; 
-                grid-template-columns: 1fr; 
-                grid-template-areas:
-                    "top-bar"
-                    "hero"
-                    "content";
-            }
-            .pay-container {
-                padding: 20px;
-            }
-            .floating-cart { width: 50px; height: 50px; font-size: 20px; }
-        }
+        .success-overlay i { font-size: 80px; color: #C1A268; margin-bottom: 20px; }
     </style>
 </head>
 <body>
-    <div class="floating-cart" onclick="window.location.href='cart.html'">
-        <i class="fa fa-shopping-cart"></i>
-        <div class="cart-count" id="floatingCartCount">0</div>
-    </div>
-    
-    <aside class="sidebar">
-        <div class="brand-vertical">冀遗筑梦</div>
-        <nav class="time-ruler">
-            <div class="dynasty-mark active" data-series="01">
-                <span class="node-num">01</span><span class="dynasty-text">正定华塔</span>
-            </div>
-            <div class="dynasty-mark" data-series="02">
-                <span class="node-num">02</span><span class="dynasty-text">避暑山庄</span>
-            </div>
-            <div class="dynasty-mark" data-series="03">
-                <span class="node-num">03</span><span class="dynasty-text">赵州古桥</span>
-            </div>
-            <div class="dynasty-mark" data-series="04">
-                <span class="node-num">04</span><span class="dynasty-text">隐藏典藏</span>
-            </div>
-        </nav>
-        
-        <div class="nav-links">
-            <a href="favorites.html" class="nav-link">
-                <i class="fa fa-heart"></i>
-                <span class="nav-text">收藏夹</span>
-            </a>
-            <a href="cart.html" class="nav-link">
-                <i class="fa fa-shopping-bag"></i>
-                <span class="nav-text">购物车</span>
-            </a>
-        </div>
-        <div class="social-links">
-            <i class="fa fa-weixin" title="AR小程序"></i>
-            <i class="fa fa-weibo"></i>
-        </div>
-    </aside>
 
-    <div class="main-wrapper">
-        <header class="top-bar" id="topBar">
-            <div class="search-engine">
-                <i class="fa fa-search"></i>
-                <input type="text" placeholder="SEARCH ARCHIVE..." id="searchInput">
-            </div>
-
-            <div class="cart-trigger" onclick="window.location.href='cart.html'">
-                <i class="fa fa-shopping-bag"></i>
-                <span>BAG</span>
-                <div id="cartBadge">0</div>
-            </div>
-
-            <div class="auth-btn" id="authSection">
-                <!-- JS填充 -->
-            </div>
+    <div class="main-container">
+        <!-- 头部 -->
+        <header class="page-header">
+            <h1>结缘确权</h1>
+            <span>SECURE & LINK COLLECTION</span>
         </header>
-        
-        <section style="grid-area: hero; padding: 40px 60px;">
-            <h1 style="font-size: 42px; margin-bottom: 10px;">支付页面</h1>
-            <div style="font-family: var(--f-mono); color: var(--c-accent); font-size: 14px; margin-bottom: 20px;">CHECKOUT</div>
-        </section>
 
-        <main class="pay-container">
-            <a href="cart.html" class="back-link">← 返回购物车</a>
-            
-            <div class="pay-header">
-                <h2 class="pay-title">确认订单信息</h2>
-            </div>
-            
-            <div class="order-summary">
-                <h3 style="margin-bottom: 20px; color: var(--c-primary);">订单摘要</h3>
-                <div id="order-items">
-                    <!-- 订单项目将通过JS动态加载 -->
-                </div>
-                <div class="order-total">
-                    <span>总计:</span>
-                    <span id="order-total-price">¥0.00</span>
+        <main>
+            <!-- 结缘清单摘要 -->
+            <div class="order-card">
+                <div class="section-title">结缘清单 / COLLECTION SUMMARY</div>
+                <div id="orderItems">
+                    <!-- JS动态加载 -->
                 </div>
             </div>
-            
-            <div class="payment-methods">
-                <h3 style="margin-bottom: 20px; color: var(--c-primary);">选择支付方式</h3>
-                
-                <label class="method-option selected">
-                    <input type="radio" name="payment" value="wechat" checked> 微信支付
-                </label>
-                
-                <label class="method-option">
-                    <input type="radio" name="payment" value="alipay"> 支付宝
-                </label>
-                
-                <label class="method-option">
-                    <input type="radio" name="payment" value="card"> 银行卡
-                </label>
+
+            <!-- 确权方式 -->
+            <div class="order-card">
+                <div class="section-title">选择确权方式 / SELECT METHOD</div>
+                <div class="method-grid">
+                    <div class="method-item active" onclick="selectMethod(this)">
+                        <i class="fa fa-weixin" style="color: #07C160;"></i>
+                        <span>微信结缘 / WeChat</span>
+                    </div>
+                    <div class="method-item" onclick="selectMethod(this)">
+                        <i class="fa fa-paypal" style="color: #003087;"></i>
+                        <span>数字货币 / Alipay</span>
+                    </div>
+                </div>
             </div>
-            
-            <button class="pay-button" onclick="processPayment()">确认支付</button>
+
+            <!-- 最终操作 -->
+            <div class="footer-action">
+                <div class="total-display">
+                    <span>结缘总计 / TOTAL CONTRIBUTION</span>
+                    <b id="finalAmount">¥0</b>
+                </div>
+                <button class="btn-secure" onclick="startSecure()">
+                    确权并结缘 / SECURE & LINK
+                </button>
+                <br>
+                <a href="cart.html" class="back-link">返回调整清单 / BACK TO SELECTION</a>
+            </div>
         </main>
     </div>
 
+    <!-- 成功提示 -->
+    <div class="success-overlay" id="successOverlay">
+        <i class="fa fa-check-circle-o"></i>
+        <h2 style="letter-spacing: 4px;">结缘成功</h2>
+        <p style="color: #999;">主理人，您的遗珍已在空间确权</p>
+        <button class="btn-secure" style="width: 200px; margin-top: 30px;" onclick="location.href='index.html'">
+            返回空间
+        </button>
+    </div>
+
+    <script src="common.js"></script>
     <script>
-        // 设置API基础URL，以便在部署时调整
-        const isDeployed = window.location.hostname.includes('onrender.com');
-        const API_BASE = isDeployed ? 'https://jiyi-zhumeng.onrender.com' : 'http://localhost:3000';
-
-        window.onload = function() {
-            syncSession();
-            loadPaymentInfo();
-            setupScrollHandler();
-        };
-
-        // 同步用户会话状态
-        function syncSession() {
-            const currentUser = localStorage.getItem('jiyi_user');
-            const authSection = document.getElementById('authSection');
-            if(currentUser) {
-                authSection.innerHTML = `${currentUser} / SIGN OUT`;
-                authSection.onclick = () => {
-                    if (confirm('确定要登出吗？')) {
-                        localStorage.removeItem('jiyi_user');
-                        localStorage.removeItem('jiyi_cart');
-                        showToast('已登出');
-                        setTimeout(() => {
-                            window.location.href = 'index.html';
-                        }, 1000);
-                    }
-                };
-            } else {
-                showToast('请先登录！');
-                setTimeout(() => {
-                    window.location.href = 'login.html';
-                }, 2000);
-                return;
-            }
-        }
-
-        // 滚动处理
-        function setupScrollHandler() {
-            const topBar = document.getElementById('topBar');
-            window.addEventListener('scroll', () => {
-                if (window.pageYOffset > 50) {
-                    topBar.classList.add('scrolled');
-                } else {
-                    topBar.classList.remove('scrolled');
-                }
-            });
-        }
-
-        // 加载支付信息
-        function loadPaymentInfo() {
-            const currentUser = localStorage.getItem('jiyi_user');
-            if (!currentUser) {
-                showToast('请先登录！');
-                setTimeout(() => {
-                    window.location.href = 'login.html';
-                }, 2000);
-                return;
-            }
-
+        function loadOrder() {
             const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
-            
+            const container = document.getElementById('orderItems');
+            let total = 0;
+
             if (cart.length === 0) {
-                showToast('购物车为空');
-                setTimeout(() => {
-                    window.location.href = 'cart.html';
-                }, 2000);
+                location.href = 'index.html';
                 return;
             }
 
-            let totalPrice = 0;
-            let itemsHTML = '';
-
-            cart.forEach((item, index) => {
-                const itemTotal = item.price || 0;
-                totalPrice += itemTotal;
-                
-                // 处理图片路径
-                let imgSrc = item.img || '';
-                if (imgSrc) {
-                    if (imgSrc.startsWith('/')) {
-                        imgSrc = `${API_BASE}${imgSrc}`;
-                    } else if (!imgSrc.startsWith('http')) {
-                        imgSrc = `${API_BASE}/images/${imgSrc}`;
-                    }
-                }
-                if (!imgSrc) {
-                    imgSrc = `https://placehold.co/400x600/2F4842/C1A268?text=NO+IMAGE`;
-                }
-
-                itemsHTML += `
-                    <div class="order-item">
-                        <span class="item-name">${item.name}</span>
-                        <span class="item-price">¥${item.price}</span>
+            container.innerHTML = cart.map(item => {
+                total += parseFloat(item.price);
+                return `
+                    <div class="item-mini-row">
+                        <span class="item-mini-name">${item.name}</span>
+                        <span class="item-mini-price">¥${item.price}</span>
                     </div>
                 `;
-            });
+            }).join('');
 
-            document.getElementById('order-items').innerHTML = itemsHTML;
-            document.getElementById('order-total-price').textContent = `¥${totalPrice.toFixed(2)}`;
-            document.getElementById('cartBadge').textContent = cart.length;
-            document.getElementById('floatingCartCount').textContent = cart.length;
+            document.getElementById('finalAmount').innerText = `¥${total.toFixed(2)}`;
         }
 
-        // 处理支付
-        function processPayment() {
-            const paymentMethod = document.querySelector('input[name="payment"]:checked');
-            if (!paymentMethod) {
-                showToast('请选择支付方式');
-                return;
-            }
-
-            if (confirm('确认支付订单吗？')) {
-                // 清空购物车
-                localStorage.removeItem('jiyi_cart');
-                
-                // 显示支付成功信息
-                showToast('支付成功！感谢您的购买。');
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 2000);
-            }
+        function selectMethod(el) {
+            document.querySelectorAll('.method-item').forEach(m => m.classList.remove('active'));
+            el.classList.add('active');
         }
-        
-        // 非阻塞通知框函数
-        function showToast(message) {
-            // 创建或获取现有的toast元素
-            let toast = document.getElementById('toastNotification');
-            if (!toast) {
-                toast = document.createElement('div');
-                toast.id = 'toastNotification';
-                toast.style.cssText = `
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    background: rgba(47, 72, 66, 0.9);
-                    color: white;
-                    padding: 12px 20px;
-                    border-radius: 4px;
-                    font-family: var(--f-serif);
-                    font-size: 14px;
-                    z-index: 10000;
-                    opacity: 0;
-                    transform: translateX(100%);
-                    transition: all 0.3s ease;
-                    pointer-events: none;
-                `;
-                document.body.appendChild(toast);
-            }
-            
-            // 设置消息并显示
-            toast.textContent = message;
-            toast.style.opacity = '1';
-            toast.style.transform = 'translateX(0)';
-            
-            // 2秒后自动隐藏
+
+        function startSecure() {
+            const btn = document.querySelector('.btn-secure');
+            btn.innerText = "正在确权 / SECURING...";
+            btn.style.opacity = "0.7";
+            btn.disabled = true;
+
+            // 模拟结缘过程
             setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateX(100%)';
+                // 清空选藏清单
+                localStorage.removeItem('jiyi_cart');
+                // 显示成功遮罩
+                document.getElementById('successOverlay').style.display = 'flex';
             }, 2000);
         }
+
+        document.addEventListener('DOMContentLoaded', loadOrder);
     </script>
 </body>
 </html>
