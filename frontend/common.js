@@ -470,3 +470,14 @@ document.addEventListener('DOMContentLoaded', function() {
         cartTrigger.onclick = goToCart;
     }
 });
+function updateCartCount() {
+    const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
+    const count = cart.length;
+
+    // 关键修正：先判断元素是否存在，再赋值
+    const badge = document.getElementById('cartBadge');
+    const floatCount = document.getElementById('floatingCartCount');
+    
+    if (badge) badge.textContent = count;
+    if (floatCount) floatCount.textContent = count;
+}

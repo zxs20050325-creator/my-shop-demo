@@ -5,206 +5,100 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>用户登录 - 冀遗筑梦</title>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    
-    <!-- 引入公共CSS和JS -->
-    <link rel="stylesheet" href="../styles.css">
-    <script src="./common.js"></script>
-
+    <!-- 核心修正：确保路径指向当前目录下的 styles.css -->
+    <link rel="stylesheet" href="styles.css"> 
     <style>
-        /* 登录页面特定样式 */
-        .login-container {
-            max-width: 400px;
-            margin: 100px auto;
-            padding: 40px;
+        body {
+            background-color: #F5F3EF; /* 统一品牌色 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Noto Serif SC', serif;
+        }
+        .login-card {
             background: white;
-            border: 1px solid var(--c-primary);
-            border-radius: 4px;
-        }
-        
-        .login-form input {
+            padding: 40px;
             width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid var(--c-grid);
-            font-family: var(--f-serif);
+            max-width: 400px;
+            border: 2px solid #2F4842;
+            box-shadow: 15px 15px 0 #C1A268; /* 品牌鎏金阴影 */
         }
-        
-        .login-btn {
-            width: 100%;
-            padding: 12px;
-            background: var(--c-primary);
-            color: white;
-            border: none;
-            font-family: var(--f-mono);
+        .login-header h1 {
+            font-size: 28px;
+            color: #2F4842;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+        .login-header p {
+            font-size: 12px;
+            color: #C1A268;
+            text-align: center;
+            margin-bottom: 30px;
             letter-spacing: 2px;
         }
-        
-        .login-btn:hover {
-            background: var(--c-accent);
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; color: #2F4842; }
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #E6E2DC;
+            box-sizing: border-box;
+            outline: none;
         }
-        
-        /* 轻量级自定义光标 */
-        #custom-cursor {
-            position: fixed;
-            width: 12px;
-            height: 12px;
-            border: 2px solid var(--c-primary, #2F4842);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 9999;
-            transform: translate(-50%, -50%);
-            transition: transform 0.2s ease, border-color 0.2s ease;
+        .form-group input:focus { border-color: #C1A268; }
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: #2F4842;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
         }
-        
-        #custom-cursor.hover {
-            transform: translate(-50%, -50%) scale(1.2);
-            border-color: var(--c-accent, #C1A268);
-        }
-        
-        /* 隐藏侧边栏 - 符合特定页面非必要元素隐藏规范 */
-        .sidebar {
-            display: none;
+        .login-btn:hover { background: #C1A268; }
+        .back-home {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            text-decoration: none;
+            color: #666;
+            font-size: 13px;
         }
     </style>
 </head>
 <body>
-    <!-- 轻量级自定义光标 -->
-    <div id="custom-cursor"></div>
-    
-    <div class="floating-cart" onclick="window.location.href='cart.html'">
-        <i class="fa fa-shopping-cart"></i>
-        <div class="cart-count" id="floatingCartCount">0</div>
-    </div>
-    
-    <!-- 侧边栏已隐藏，符合规范要求 -->
-    <!-- <aside class="sidebar">
-        <div class="brand-vertical"></div>
-        <nav class="time-ruler">
-            <div class="dynasty-mark active" data-series="01">
-                <span class="node-num"></span><span class="dynasty-text"></span>
-            </div>
-            <div class="dynasty-mark" data-series="02">
-                <span class="node-num"></span><span class="dynasty-text"></span>
-            </div>
-            <div class="dynasty-mark" data-series="03">
-                <span class="node-num"></span><span class="dynasty-text"></span>
-            </div>
-            <div class="dynasty-mark" data-series="04">
-                <span class="node-num"></span><span class="dynasty-text"></span>
-            </div>
-        </nav>
-        
-        <div class="nav-links">
-            <a href="favorites.html" class="nav-link">
-                <i class="fa fa-heart"></i>
-                <span class="nav-text"></span>
-            </a>
-            <a href="cart.html" class="nav-link">
-                <i class="fa fa-shopping-bag"></i>
-                <span class="nav-text"></span>
-            </a>
+
+    <div class="login-card">
+        <div class="login-header">
+            <h1>用户登录</h1>
+            <p>USER LOGIN</p>
         </div>
-        <div class="social-links">
-            <i class="fa fa-weixin" title="AR小程序"></i>
-            <i class="fa fa-weibo"></i>
-        </div>
-    </aside> -->
-
-    <div class="main-wrapper">
-        <header class="top-bar" id="topBar">
-            <div class="search-engine">
-                <i class="fa fa-search"></i>
-                <input type="text" placeholder="SEARCH ARCHIVE..." id="searchInput">
-            </div>
-
-            <div class="cart-trigger" onclick="window.location.href='cart.html'">
-                <i class="fa fa-shopping-bag"></i>
-                <span>BAG</span>
-                <div id="cartBadge">0</div>
-            </div>
-
-            <div class="auth-btn" id="authSection">
-                <!-- JS填充 -->
-            </div>
-        </header>
         
-        <section style="grid-area: hero; padding: 40px 60px;">
-            <h1 style="font-size: 42px; margin-bottom: 10px;">用户登录</h1>
-            <div style="font-family: var(--f-mono); color: var(--c-accent); font-size: 14px; margin-bottom: 20px;">USER LOGIN</div>
-        </section>
+        <form onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label>名号 / Username</label>
+                <input type="text" id="username" placeholder="请输入您的名号" required>
+            </div>
+            <div class="form-group">
+                <label>秘钥 / Password</label>
+                <input type="password" id="password" placeholder="请输入密码" required>
+            </div>
+            <button type="submit" class="login-btn">开启结缘</button>
+        </form>
 
-        <main class="login-container">
-            <a href="index.html" class="back-link">← 返回首页</a>
-            
-            <form class="login-form" onsubmit="login(event)">
-                <h2 class="form-title">登录账户</h2>
-                
-                <div class="form-group">
-                    <label class="form-label" for="username">用户名</label>
-                    <input type="text" id="username" class="login-form-input" placeholder="请输入用户名" required>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="password">密码</label>
-                    <input type="password" id="password" class="login-form-input" placeholder="请输入密码" required>
-                </div>
-                
-                <button type="submit" class="login-btn">登录</button>
-                
-                <div class="form-footer">
-                    还没有账户？ <a href="register.html">立即注册</a>
-                </div>
-            </form>
-        </main>
+        <a href="index.html" class="back-home">← 返回首页探索</a>
     </div>
 
+    <script src="common.js"></script>
     <script>
-        // 设置API基础URL，以便在部署时调整
-        const isDeployed = window.location.hostname.includes('onrender.com');
-        const API_BASE = isDeployed ? 'https://jiyi-zhumeng.onrender.com' : 'http://localhost:3000';
-
-        window.onload = function() {
-            syncSession();
-            setupScrollHandler();
-        };
-
-        // 同步用户会话状态
-        function syncSession() {
-            const currentUser = localStorage.getItem('jiyi_user');
-            const authSection = document.getElementById('authSection');
-            if(currentUser) {
-                authSection.innerHTML = `${currentUser} / SIGN OUT`;
-                authSection.onclick = () => {
-                    localStorage.clear(); 
-                    location.reload();
-                };
-            } else {
-                // 在登录页面，不显示任何内容
-                authSection.innerHTML = "";
-            }
-        }
-
-        // 滚动处理
-        function setupScrollHandler() {
-            const topBar = document.getElementById('topBar');
-            window.addEventListener('scroll', () => {
-                if (window.pageYOffset > 50) {
-                    topBar.classList.add('scrolled');
-                } else {
-                    topBar.classList.remove('scrolled');
-                }
-            });
-        }
-
-        // 登录
-        async function login(event) {
+        function handleLogin(event) {
             event.preventDefault();
-            
-            const username = document.getElementById('username').value;
-
-            // 简单的本地存储登录（因为后端可能没有实现完整的登录API）
-            localStorage.setItem('jiyi_user', username);
-            alert('登录成功！');
+            const user = document.getElementById('username').value;
+            localStorage.setItem('jiyi_user', user);
+            alert('同步成功，欢迎归来：' + user);
             window.location.href = 'index.html';
         }
     </script>

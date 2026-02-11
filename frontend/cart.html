@@ -3,43 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的购物车 - 冀遗筑梦</title>
+    <title>博古架 - 冀遗筑梦</title>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    
-    <!-- 引入公共CSS和JS -->
-    <link rel="stylesheet" href="../styles.css">
-    <script src="../common.js"></script>
-
+    <link rel="stylesheet" href="styles.css"> <!-- 修正路径 -->
     <style>
-        /* 购物车页面特定样式 */
-        .cart-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 40px;
+        .cart-page-container {
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #fff;
+            border: 1px solid #2F4842;
         }
-        
-        .empty-cart {
-            text-align: center;
-            padding: 60px;
-            opacity: 0.4;
-        }
-        
-        .checkout-btn {
-            background: var(--c-primary);
-            color: white;
-            padding: 15px 30px;
-            border: none;
-            font-family: var(--f-eng);
-            letter-spacing: 2px;
-            transition: 0.3s;
-        }
-        
-        .checkout-btn:hover {
-            background: var(--c-accent);
-            transform: translateY(-2px);
-        }
-        
-        /* 购物车商品项样式 */
         .cart-item {
             display: flex;
             align-items: center;
@@ -47,276 +21,84 @@
             border-bottom: 1px solid #eee;
             gap: 20px;
         }
-        
-        .cart-item img {
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-            border-radius: 4px;
-        }
-        
-        .item-info {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .item-info h3 {
-            font-size: 16px;
-            font-weight: bold;
-            color: var(--c-primary);
-            margin: 0;
-        }
-        
-        .item-price {
-            color: var(--c-danger);
-            font-family: var(--f-mono);
-            font-size: 14px;
-            margin: 0;
-        }
-        
-        .quantity-control {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .qty-btn {
-            width: 30px;
-            height: 30px;
-            background: var(--c-primary);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            font-family: var(--f-mono);
-            font-size: 16px;
-            transition: 0.2s;
-        }
-        
-        .qty-btn:hover {
-            background: var(--c-accent);
-            transform: scale(1.1);
-        }
-        
-        .qty-value {
-            min-width: 30px;
-            text-align: center;
-            font-family: var(--f-mono);
-            font-weight: bold;
-        }
-        
-        .item-total {
-            font-family: var(--f-mono);
-            font-size: 18px;
-            font-weight: bold;
-            color: var(--c-danger);
-            min-width: 80px;
+        .cart-item img { width: 100px; height: 100px; object-fit: cover; border: 1px solid #ddd; }
+        .item-detail { flex: 1; }
+        .price { color: #B22222; font-weight: bold; }
+        .remove-btn { color: #999; cursor: pointer; font-size: 12px; }
+        .remove-btn:hover { color: #f00; }
+        .checkout-bar {
+            margin-top: 30px;
             text-align: right;
+            padding: 20px;
+            background: #f9f9f9;
         }
-        
-        .btn-remove {
-            background: #ff4444;
+        .btn-pay {
+            background: #2F4842;
             color: white;
+            padding: 15px 40px;
             border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
             cursor: pointer;
-            font-family: var(--f-mono);
-            transition: 0.2s;
-        }
-        
-        .btn-remove:hover {
-            background: #cc0000;
-        }
-        
-        /* 隐藏侧边栏 - 符合特定页面非必要元素隐藏规范 */
-        .sidebar {
-            display: none;
         }
     </style>
 </head>
 <body>
-    <!-- 轻量级自定义光标 -->
-    <div id="custom-cursor"></div>
-    
-    <div class="floating-cart" onclick="window.location.href='../cart.html'">
-        <i class="fa fa-shopping-cart"></i>
-        <div class="cart-count" id="floatingCartCount">0</div>
-    </div>
-    
-    <!-- 侧边栏已隐藏，符合规范要求 -->
 
-    <div class="main-wrapper">
-        <header class="top-bar" id="topBar">
-            <div class="search-engine">
-                <i class="fa fa-search"></i>
-                <input type="text" placeholder="SEARCH ARCHIVE..." id="searchInput">
-            </div>
+    <div class="cart-page-container">
+        <h2 style="border-left: 5px solid #C1A268; padding-left: 15px; margin-bottom: 30px;">
+            我的博古架 <span style="font-size: 14px; color: #999;">/ SHOPPING BAG</span>
+        </h2>
 
-            <div class="cart-trigger" onclick="window.location.href='cart.html'">
-                <i class="fa fa-shopping-bag"></i>
-                <span>BAG</span>
-                <div id="cartBadge">0</div>
-            </div>
+        <div id="cartList">
+            <!-- 动态渲染内容 -->
+        </div>
 
-            <div class="auth-btn" id="authSection">
-                <!-- JS填充 -->
-            </div>
-        </header>
+        <div class="checkout-bar" id="checkoutBar">
+            <span style="margin-right: 20px;">共计: <b class="price" id="totalPrice">¥0</b></span>
+            <button class="btn-pay" onclick="location.href='pay.html'">结缘支付</button>
+        </div>
         
-        <main class="cart-container">
-            <h1 style="font-size: 32px; margin-bottom: 20px;">我的购物车</h1>
-            
-            <div id="cartItems">
-                <!-- 商品列表将通过JavaScript动态生成 -->
-            </div>
-            
-            <div class="empty-cart" id="emptyCart" style="display: none;">
-                <h2>您的购物车是空的</h2>
-                <p>快去挑选心仪的商品吧！</p>
-                <button class="checkout-btn" onclick="window.location.href='index.html'" style="margin-top: 20px;">继续购物</button>
-            </div>
-            
-            <div style="text-align: right; margin-top: 40px;">
-                <button class="checkout-btn" onclick="checkout()">结算</button>
-            </div>
-        </main>
+        <a href="index.html" style="display:inline-block; margin-top:20px; color:#2F4842;">← 继续寻宝</a>
     </div>
 
+    <script src="common.js"></script>
     <script>
-        // 页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            syncSession();
-            updateCartCount();
-            loadCartItems();
+        document.addEventListener('DOMContentLoaded', () => {
+            renderCart();
         });
 
-        // 加载购物车商品
-        function loadCartItems() {
+        function renderCart() {
             const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
-            const cartItems = document.getElementById('cartItems');
-            const emptyCart = document.getElementById('emptyCart');
-            
+            const listDom = document.getElementById('cartList');
+            let total = 0;
+
             if (cart.length === 0) {
-                cartItems.innerHTML = '';
-                emptyCart.style.display = 'block';
+                listDom.innerHTML = `<p style="padding:50px; text-align:center; color:#ccc;">博古架空空如也...</p>`;
+                document.getElementById('checkoutBar').style.display = 'none';
                 return;
             }
-            
-            emptyCart.style.display = 'none';
-            let html = '';
-            
-            cart.forEach((item, index) => {
-                html += `
+
+            listDom.innerHTML = cart.map((item, index) => {
+                total += parseFloat(item.price);
+                return `
                     <div class="cart-item">
-                        <img src="${buildImageUrl(item.img)}" alt="${item.name}">
-                        <div class="item-info">
-                            <h3>${item.name}</h3>
-                            <div class="item-price">¥${item.price}</div>
+                        <img src="${item.img.startsWith('http') ? item.img : 'https://jiyi-zhumeng.onrender.com/images/'+item.img}" >
+                        <div class="item-detail">
+                            <div style="font-weight:bold;">${item.name}</div>
+                            <div class="price">¥${item.price}</div>
                         </div>
-                        <div class="quantity-control">
-                            <button class="qty-btn" onclick="updateQuantity(${index}, ${item.quantity} - 1)">-</button>
-                            <span class="qty-value">${item.quantity}</span>
-                            <button class="qty-btn" onclick="updateQuantity(${index}, ${item.quantity} + 1)">+</button>
-                        </div>
-                        <div class="item-total">¥${(item.price * item.quantity).toFixed(2)}</div>
-                        <button class="btn-remove" onclick="removeItem(${index})">删除</button>
+                        <div class="remove-btn" onclick="removeItem(${index})">移除</div>
                     </div>
                 `;
-            });
-            
-            cartItems.innerHTML = html;
+            }).join('');
+
+            document.getElementById('totalPrice').innerText = '¥' + total;
         }
 
-        // 更新商品数量
-        function updateQuantity(index, newQuantity) {
-            if (newQuantity <= 0) {
-                removeItem(index);
-                return;
-            }
-            
-            const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
-            if (index >= 0 && index < cart.length) {
-                cart[index].quantity = newQuantity;
-                localStorage.setItem('jiyi_cart', JSON.stringify(cart));
-                loadCartItems();
-                updateCartCount();
-            }
-        }
-
-        // 删除商品
         function removeItem(index) {
-            const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
-            if (index >= 0 && index < cart.length) {
-                cart.splice(index, 1);
-                localStorage.setItem('jiyi_cart', JSON.stringify(cart));
-                loadCartItems();
-                updateCartCount();
-                showToast('商品已从购物车移除');
-            }
-        }
-
-        // 结算功能
-        function checkout() {
-            const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
-            if (cart.length === 0) {
-                showToast('购物车为空，无法结算');
-                return;
-            }
-            
-            // 这里可以跳转到支付页面或实现其他结算逻辑
-            window.location.href = 'pay.html';
-        }
-        
-        // 构建图片URL
-        function buildImageUrl(imgPath) {
-            if (!imgPath) {
-                return 'https://placehold.co/200x200/2F4842/C1A268?text=NO+IMAGE';
-            }
-            if (imgPath.startsWith('http')) {
-                return imgPath;
-            }
-            if (imgPath.startsWith('/images/')) {
-                return `https://jiyi-zhumeng.onrender.com${imgPath}`;
-            }
-            return `https://jiyi-zhumeng.onrender.com/images/${imgPath}`;
-        }
-        
-        // 显示提示信息
-        function showToast(message) {
-            let toast = document.getElementById('toastNotification');
-            if (!toast) {
-                toast = document.createElement('div');
-                toast.id = 'toastNotification';
-                toast.style.cssText = `
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    background: rgba(47, 72, 66, 0.9);
-                    color: white;
-                    padding: 12px 20px;
-                    border-radius: 4px;
-                    font-family: var(--f-serif);
-                    font-size: 14px;
-                    z-index: 10000;
-                    opacity: 0;
-                    transform: translateX(100%);
-                    transition: all 0.3s ease;
-                    pointer-events: none;
-                `;
-                document.body.appendChild(toast);
-            }
-            
-            toast.textContent = message;
-            toast.style.opacity = '1';
-            toast.style.transform = 'translateX(0)';
-            
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateX(100%)';
-            }, 2000);
+            let cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
+            cart.splice(index, 1);
+            localStorage.setItem('jiyi_cart', JSON.stringify(cart));
+            renderCart();
         }
     </script>
 </body>
