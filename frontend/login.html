@@ -3,169 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>数字化结缘 - 冀遗筑梦</title>
+    <title>主理人登录 - 冀遗筑梦</title>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <style>
         body {
-            background-color: var(--c-bg);
+            background-color: #F5F3EF;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
             overflow: hidden;
+            font-family: 'Noto Serif SC', serif;
         }
 
-        /* 复用首页的水印层 */
-        .watermark-bg {
+        /* 艺术水印背景 */
+        .bg-watermark {
             position: fixed;
             font-family: 'Ma Shan Zheng', serif;
-            font-size: 30vw;
-            opacity: 0.05;
+            font-size: 25vw;
+            color: #2F4842;
+            opacity: 0.03;
             z-index: -1;
             user-select: none;
         }
 
-        .login-box {
+        .login-card {
             background: #fff;
             width: 100%;
-            max-width: 420px;
+            max-width: 400px;
             padding: 60px 40px;
-            border: 2px solid var(--c-primary);
+            border: 2px solid #2F4842;
+            box-shadow: 20px 20px 0 #C1A268; /* 鎏金阴影 */
             position: relative;
-            box-shadow: 25px 25px 0 var(--c-accent); /* 标志性鎏金投影 */
-            animation: modalPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        @keyframes modalPop {
-            from { transform: translateY(30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .login-box::before {
-            content: "JIYI ZHUMENG";
+        .login-card::after {
+            content: "ARCHIVE ID: 8.2V";
             position: absolute;
-            top: 20px;
-            left: 20px;
-            font-family: var(--f-mono);
+            bottom: 20px;
+            right: 20px;
             font-size: 10px;
-            color: var(--c-accent);
-            letter-spacing: 2px;
+            color: #ccc;
+            font-family: monospace;
         }
 
-        .login-header { text-align: center; margin-bottom: 40px; }
-        .login-header h2 { 
-            font-family: var(--f-serif); 
-            font-size: 32px; 
-            color: var(--c-primary); 
-            margin: 0;
-        }
-        .login-header span { 
-            font-family: var(--f-eng); 
-            font-size: 12px; 
-            color: var(--c-accent);
-            letter-spacing: 4px;
-        }
+        .header-title { text-align: center; margin-bottom: 45px; }
+        .header-title h2 { font-size: 32px; color: #2F4842; margin: 0; letter-spacing: 2px; }
+        .header-title span { font-size: 12px; color: #C1A268; letter-spacing: 5px; font-weight: bold; }
 
-        .input-group { position: relative; margin-bottom: 30px; }
-        .input-group input {
+        .input-box { position: relative; margin-bottom: 35px; }
+        .input-box input {
             width: 100%;
-            padding: 15px 5px;
+            padding: 12px 0;
             border: none;
-            border-bottom: 2px solid var(--c-grid);
+            border-bottom: 1.5px solid #E6E2DC;
             background: transparent;
-            font-family: var(--f-serif);
             font-size: 16px;
             outline: none;
             transition: 0.3s;
         }
-        .input-group input:focus { border-bottom-color: var(--c-primary); }
-        .input-group label {
+        .input-box input:focus { border-bottom-color: #2F4842; }
+        .input-box label {
             position: absolute;
-            left: 5px;
-            top: 15px;
+            left: 0;
+            top: 12px;
             color: #999;
             pointer-events: none;
             transition: 0.3s;
+            font-size: 14px;
         }
-        .input-group input:focus ~ label,
-        .input-group input:valid ~ label {
-            top: -10px;
-            font-size: 12px;
-            color: var(--c-accent);
+        .input-box input:focus ~ label,
+        .input-box input:valid ~ label {
+            top: -12px;
+            font-size: 11px;
+            color: #C1A268;
+            font-weight: bold;
         }
 
-        .btn-login {
+        .btn-connect {
             width: 100%;
             padding: 18px;
-            background: var(--c-primary);
+            background: #2F4842;
             color: #fff;
             border: none;
-            font-family: var(--f-eng);
-            letter-spacing: 5px;
             cursor: pointer;
+            font-size: 14px;
+            letter-spacing: 4px;
             transition: 0.4s;
-            position: relative;
-            overflow: hidden;
+            font-weight: bold;
         }
-        .btn-login:hover {
-            background: var(--c-accent);
+        .btn-connect:hover {
+            background: #C1A268;
             transform: translateY(-3px);
             box-shadow: 0 10px 20px rgba(193, 162, 104, 0.3);
         }
 
-        .footer-links {
-            margin-top: 30px;
+        .back-link {
+            display: block;
             text-align: center;
-            font-size: 13px;
-        }
-        .footer-links a { 
-            color: var(--c-primary); 
-            text-decoration: none; 
-            margin: 0 10px; 
+            margin-top: 30px;
+            color: #2F4842;
+            text-decoration: none;
+            font-size: 12px;
             opacity: 0.6;
+            transition: 0.3s;
         }
-        .footer-links a:hover { opacity: 1; color: var(--c-accent); }
+        .back-link:hover { opacity: 1; color: #C1A268; }
     </style>
 </head>
 <body>
-    <div class="watermark-bg" style="top: -5%; left: 2%;">筑</div>
-    <div class="watermark-bg" style="bottom: -5%; right: 2%;">梦</div>
+    <div class="bg-watermark" style="left: -5%; top: 5%;">筑</div>
+    <div class="bg-watermark" style="right: -5%; bottom: 5%;">梦</div>
 
-    <div class="login-box magnetic-target">
-        <div class="login-header">
-            <h2>数字化结缘</h2>
-            <span>USER LOGIN</span>
+    <div class="login-card">
+        <div class="header-title">
+            <h2>主理人登录</h2>
+            <span>OWNER LOGIN</span>
         </div>
 
         <form onsubmit="handleLogin(event)">
-            <div class="input-group">
-                <input type="text" id="uName" required>
-                <label>名号 / Identity</label>
+            <div class="input-box">
+                <input type="text" id="username" required>
+                <label>主理人账号 / ACCOUNT ID</label>
             </div>
-            <div class="input-group">
-                <input type="password" id="uPass" required>
-                <label>密令 / Password</label>
+            <div class="input-box">
+                <input type="password" id="password" required>
+                <label>连接密令 / PASSWORD</label>
             </div>
-            <button type="submit" class="btn-login">开启寻遗之旅</button>
+            <button type="submit" class="btn-connect">连接空间 / CONNECT</button>
         </form>
 
-        <div class="footer-links">
-            <a href="index.html">← 返回首页</a>
-            <a href="#">忘记密令？</a>
-            <a href="#">申请入册</a>
-        </div>
+        <a href="index.html" class="back-link">← 返回首页探索 / BACK HOME</a>
     </div>
 
     <script src="common.js"></script>
     <script>
         function handleLogin(e) {
             e.preventDefault();
-            const name = document.getElementById('uName').value;
-            localStorage.setItem('jiyi_user', name);
-            showToast("结缘成功，正在同步数据...");
-            setTimeout(() => location.href = 'index.html', 1500);
+            const user = document.getElementById('username').value;
+            localStorage.setItem('jiyi_user', user);
+            alert('主理人身份已确认，正在开启空间...');
+            window.location.href = 'index.html';
         }
     </script>
 </body>
