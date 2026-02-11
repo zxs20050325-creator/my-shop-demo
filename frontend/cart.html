@@ -3,103 +3,161 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>博古架 - 冀遗筑梦</title>
+    <title>博古珍藏 - 冀遗筑梦</title>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css"> <!-- 修正路径 -->
+    <link rel="stylesheet" href="styles.css">
     <style>
-        .cart-page-container {
-            max-width: 1000px;
-            margin: 50px auto;
-            padding: 20px;
-            background: #fff;
-            border: 1px solid #2F4842;
+        .cart-wrapper {
+            margin-left: 90px; /* 留出侧边栏距离 */
+            padding: 60px 100px;
+            background: linear-gradient(to bottom, #F5F3EF, #fff);
+            min-height: 100vh;
         }
-        .cart-item {
+
+        .cart-header {
+            border-bottom: 2px solid var(--c-primary);
+            padding-bottom: 30px;
+            margin-bottom: 50px;
             display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .cart-header h1 { font-family: var(--f-serif); font-size: 42px; margin: 0; }
+
+        /* 商品条目美化 */
+        .shelf-item {
+            display: grid;
+            grid-template-columns: 150px 1fr 150px 100px;
             align-items: center;
+            background: #fff;
+            margin-bottom: 25px;
             padding: 20px;
-            border-bottom: 1px solid #eee;
-            gap: 20px;
+            border: 1px solid var(--c-grid);
+            transition: 0.4s;
         }
-        .cart-item img { width: 100px; height: 100px; object-fit: cover; border: 1px solid #ddd; }
-        .item-detail { flex: 1; }
-        .price { color: #B22222; font-weight: bold; }
-        .remove-btn { color: #999; cursor: pointer; font-size: 12px; }
-        .remove-btn:hover { color: #f00; }
-        .checkout-bar {
-            margin-top: 30px;
-            text-align: right;
-            padding: 20px;
-            background: #f9f9f9;
+        .shelf-item:hover {
+            transform: scale(1.01);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+            border-color: var(--c-accent);
         }
-        .btn-pay {
-            background: #2F4842;
-            color: white;
-            padding: 15px 40px;
-            border: none;
+        .shelf-item img {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border: 1px solid var(--c-grid);
+        }
+        .item-info h3 { font-family: var(--f-serif); font-size: 20px; margin-bottom: 10px; }
+        .item-info p { color: #999; font-size: 12px; font-family: var(--f-mono); }
+        .item-price { font-family: var(--f-mono); font-size: 24px; color: var(--c-danger); font-weight: 900; }
+
+        .btn-remove {
+            background: none;
+            border: 1px solid #ddd;
+            color: #ccc;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
             cursor: pointer;
+            transition: 0.3s;
         }
+        .btn-remove:hover { border-color: var(--c-danger); color: var(--c-danger); }
+
+        /* 结算栏 */
+        .checkout-anchor {
+            position: sticky;
+            bottom: 40px;
+            background: var(--c-primary);
+            color: #fff;
+            padding: 30px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            margin-top: 80px;
+        }
+        .total-amount { font-family: var(--f-mono); font-size: 32px; color: var(--c-accent); }
+        .btn-pay {
+            background: var(--c-accent);
+            color: var(--c-primary);
+            padding: 15px 45px;
+            border: none;
+            font-family: var(--f-eng);
+            font-weight: 900;
+            letter-spacing: 3px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-pay:hover { background: #fff; transform: translateY(-3px); }
+
+        /* 空状态 */
+        .empty-state { text-align: center; padding: 100px 0; opacity: 0.2; }
+        .empty-state i { font-size: 80px; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
-    <div class="cart-page-container">
-        <h2 style="border-left: 5px solid #C1A268; padding-left: 15px; margin-bottom: 30px;">
-            我的博古架 <span style="font-size: 14px; color: #999;">/ SHOPPING BAG</span>
-        </h2>
+    <div class="cart-wrapper">
+        <header class="cart-header">
+            <div>
+                <h1>博古珍藏</h1>
+                <span style="font-family: var(--f-mono); color: var(--c-accent);">COLLECTION ARCHIVE</span>
+            </div>
+            <a href="index.html" style="text-decoration:none; color:var(--c-primary); font-family:var(--f-mono); font-size:12px;">← BACK TO SHOP</a>
+        </header>
 
-        <div id="cartList">
-            <!-- 动态渲染内容 -->
+        <div id="shelfContainer">
+            <!-- JS 渲染 -->
         </div>
 
-        <div class="checkout-bar" id="checkoutBar">
-            <span style="margin-right: 20px;">共计: <b class="price" id="totalPrice">¥0</b></span>
-            <button class="btn-pay" onclick="location.href='pay.html'">结缘支付</button>
+        <div class="checkout-anchor" id="checkoutBar">
+            <div class="total-info">
+                <span style="opacity: 0.6; font-size: 12px; letter-spacing: 2px;">TOTAL SETTLEMENT</span>
+                <div class="total-amount" id="totalPrice">¥0</div>
+            </div>
+            <button class="btn-pay" onclick="location.href='pay.html'">结缘支付 / CHECKOUT</button>
         </div>
-        
-        <a href="index.html" style="display:inline-block; margin-top:20px; color:#2F4842;">← 继续寻宝</a>
     </div>
 
     <script src="common.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            renderCart();
-        });
-
-        function renderCart() {
+        function renderShelf() {
             const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
-            const listDom = document.getElementById('cartList');
+            const container = document.getElementById('shelfContainer');
             let total = 0;
 
             if (cart.length === 0) {
-                listDom.innerHTML = `<p style="padding:50px; text-align:center; color:#ccc;">博古架空空如也...</p>`;
+                container.innerHTML = `<div class="empty-state"><i class="fa fa-folder-open-o"></i><br>博古架尚无遗珍...</div>`;
                 document.getElementById('checkoutBar').style.display = 'none';
                 return;
             }
 
-            listDom.innerHTML = cart.map((item, index) => {
+            container.innerHTML = cart.map((item, idx) => {
                 total += parseFloat(item.price);
+                const imgSrc = item.img.startsWith('http') ? item.img : `https://jiyi-zhumeng.onrender.com/images/${item.img}`;
                 return `
-                    <div class="cart-item">
-                        <img src="${item.img.startsWith('http') ? item.img : 'https://jiyi-zhumeng.onrender.com/images/'+item.img}" >
-                        <div class="item-detail">
-                            <div style="font-weight:bold;">${item.name}</div>
-                            <div class="price">¥${item.price}</div>
+                    <div class="shelf-item">
+                        <img src="${imgSrc}">
+                        <div class="item-info">
+                            <h3>${item.name}</h3>
+                            <p>SERIES: S01 / ID: #00${item.id}</p>
                         </div>
-                        <div class="remove-btn" onclick="removeItem(${index})">移除</div>
+                        <div class="item-price">¥${item.price}</div>
+                        <button class="btn-remove" onclick="remove(event, ${idx})">&times;</button>
                     </div>
                 `;
             }).join('');
-
-            document.getElementById('totalPrice').innerText = '¥' + total;
+            document.getElementById('totalPrice').innerText = `¥${total}`;
         }
 
-        function removeItem(index) {
+        function remove(e, idx) {
             let cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
-            cart.splice(index, 1);
+            cart.splice(idx, 1);
             localStorage.setItem('jiyi_cart', JSON.stringify(cart));
-            renderCart();
+            renderShelf();
+            showToast("已移出博古架");
         }
+
+        document.addEventListener('DOMContentLoaded', renderShelf);
     </script>
 </body>
 </html>
