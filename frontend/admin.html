@@ -344,7 +344,7 @@
 
             <!-- 图表区域 -->
             <div class="chart-box chart-full">
-                <div class="section-title">24小时流量趋势 (Traffic)</div>
+                <div class="section-title">每日流量趋势 (1月1日至今)</div>
                 <canvas id="trafficChart"></canvas>
             </div>
             <div class="chart-box chart-half">
@@ -529,26 +529,40 @@
         }
 
         function initCharts() {
-            // 流量图 - 修改为按月份显示
+            // 流量图 - 修改为显示每日数据 (1月1日至今)
             const ctx1 = document.getElementById('trafficChart').getContext('2d');
             const gradient = ctx1.createLinearGradient(0, 0, 0, 400);
             gradient.addColorStop(0, 'rgba(47, 72, 66, 0.2)');
             gradient.addColorStop(1, 'rgba(47, 72, 66, 0)');
 
-            // 生成月份标签 (1月到当前月份)
-            const currentMonth = new Date().getMonth() + 1; // 当前月份 (1-12)
-            const monthLabels = [];
-            for (let i = 1; i <= currentMonth; i++) {
-                monthLabels.push(`${i}月`);
+            // 生成从1月1日到当前日期的每日标签
+            const now = new Date();
+            const startYear = now.getFullYear();
+            const startDate = new Date(startYear, 0, 1); // 1月1日
+            const endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            
+            const dateLabels = [];
+            let currentDate = new Date(startDate);
+            
+            while (currentDate <= endDate) {
+                const month = currentDate.getMonth() + 1;
+                const day = currentDate.getDate();
+                // 每7天显示一次完整日期，其他只显示日
+                if (currentDate.getDate() === 1 || (currentDate.getTime() - startDate.getTime()) % (7 * 24 * 60 * 60 * 1000) === 0) {
+                    dateLabels.push(`${month}/${day}`);
+                } else {
+                    dateLabels.push(`${day}`);
+                }
+                currentDate.setDate(currentDate.getDate() + 1);
             }
 
             trafficChart = new Chart(ctx1, {
                 type: 'line',
                 data: {
-                    labels: monthLabels,
+                    labels: dateLabels,
                     datasets: [{
                         label: '访问量',
-                        data: Array(monthLabels.length).fill(0),
+                        data: Array(dateLabels.length).fill(0),
                         borderColor: '#2F4842',
                         backgroundColor: gradient,
                         borderWidth: 2,
@@ -556,16 +570,34 @@
                         tension: 0.4,
                         pointBackgroundColor: '#fff',
                         pointBorderColor: '#C1A268',
-                        pointRadius: 3
+                        pointRadius: 2 // 减小点的大小以适应更多数据点
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    const index = context[0].dataIndex;
+                                    const fullDate = new Date(startYear, 0, 1 + index);
+                                    return `${startYear}年${fullDate.getMonth() + 1}月${fullDate.getDate()}日`;
+                                }
+                            }
+                        }
+                    },
                     scales: { 
                         y: { beginAtZero: true, grid: { borderDash: [5, 5] } },
-                        x: { grid: { display: false } }
+                        x: { 
+                            grid: { display: false },
+                            ticks: {
+                                maxRotation: 0,
+                                autoSkip: true,
+                                maxTicksLimit: 20 // 限制显示的标签数量
+                            }
+                        }
                     }
                 }
             });
