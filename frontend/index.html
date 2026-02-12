@@ -996,6 +996,21 @@
 
             // 页面加载时同步会话状态
             syncSession();
+            // 初始化公共功能，包括购物车跳转
+            initCommonFeatures();
+            
+            // 确保购物车按钮跳转正常工作
+            const cartTrigger = document.getElementById('cartTrigger');
+            if (cartTrigger) {
+                cartTrigger.onclick = function() {
+                    const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
+                    if (cart.length === 0) {
+                        showToast('购物车为空');
+                        return;
+                    }
+                    window.location.href = 'cart.html';
+                };
+            }
         });
     </script>
 </body>
