@@ -614,7 +614,14 @@
                         </div>
                     `;
 
-                    card.onclick = (e) => { if(!e.target.closest('button') && !item.isOpened) this.openBox(item, card); };
+                    card.onclick = (e) => { 
+                        if(!e.target.closest('button') && !item.isOpened) {
+                            this.openBox(item, card);
+                            // 添加商品详情查看追踪
+                            const currentUser = getCurrentUser() || '游客';
+                            trackUserAction('查看商品详情', item.name);
+                        }
+                    };
                     
                     // 组合交互效果：平面平移 + 边框高亮
                     // 鼠标进入时应用边框高亮和基础缩放
@@ -668,6 +675,11 @@
                 document.documentElement.style.setProperty('--c-grid', colors[sId]);
                 this.loadData();
                 document.getElementById('shop').scrollIntoView({behavior:'smooth'});
+                
+                // 添加品类筛选追踪
+                const seriesNames = { '01': '工艺品', '02': '剪纸', '03': '雕塑', '04': '陶瓷' };
+                const currentUser = getCurrentUser() || '游客';
+                trackUserAction('筛选品类', seriesNames[sId] || `品类${sId}`);
             }
 
             addToCart(e, id) {
@@ -994,10 +1006,30 @@
                 }
             });
 
+            // 搜索功能
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        const searchTerm = searchInput.value.trim();
+                        if (searchTerm) {
+                            const currentUser = getCurrentUser() || '游客';
+                            trackUserAction('搜索商品', searchTerm);
+                            console.log('搜索:', searchTerm);
+                            // 这里可以添加实际的搜索逻辑
+                        }
+                    }
+                });
+            }
+            
             // 页面加载时同步会话状态
             syncSession();
             // 初始化公共功能，包括购物车跳转
             initCommonFeatures();
+            
+            // 记录页面浏览行为
+            const currentUser = getCurrentUser() || '游客';
+            trackUserAction('浏览主页', '首页');
             
             // 确保购物车按钮跳转正常工作
             const cartTrigger = document.getElementById('cartTrigger');
