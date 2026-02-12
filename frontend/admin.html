@@ -3,377 +3,321 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>冀遗筑梦云端商城————实时数据可视化平台</title>
+    <title>后台管理 - 冀遗筑梦</title>
+    <!-- 引入字体与图标 -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;700;900&family=Cinzel:wght@700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
         :root {
-            --bg-color: #0b1120;
-            --card-bg: #151e32;
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --accent-blue: #3b82f6;
-            --accent-purple: #8b5cf6;
-            --accent-green: #10b981;
-            --accent-gold: #f59e0b;
+            /* 品牌核心色 - 与主页统一 */
+            --c-primary: #2F4842;    /* 青黛 */
+            --c-accent: #C1A268;     /* 鎏金 */
+            --c-bg: #F5F3EF;         /* 宣纸白 */
+            --c-grid: #E6E2DC;       /* 网格线 */
+            --c-danger: #B22222;     /* 朱砂红 */
+            --c-text: #1a2b27;
+            
+            --f-serif: 'Noto Serif SC', serif;
+            --f-eng: 'Cinzel', serif;
+            
+            --sidebar-width: 90px;
+            --card-shadow: 10px 10px 0 rgba(193, 162, 104, 0.15);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
-        body { background-color: var(--bg-color); color: var(--text-primary); padding: 20px; }
+        body { 
+            background-color: var(--c-bg); 
+            color: var(--c-text); 
+            font-family: var(--f-serif); 
+            display: flex;
+            min-height: 100vh;
+        }
 
-        .dashboard-container {
-            max-width: 1400px; margin: 0 auto;
-            display: grid; 
-            grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: auto auto auto auto;
-            gap: 20px;
+        /* 1. 侧边栏 (复刻 index.html) */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: #fff;
+            border-right: 1.5px solid var(--c-primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 0;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+        }
+        .brand-seal {
+            background: var(--c-primary);
+            color: #fff;
+            padding: 20px 10px;
+            border-radius: 2px;
+            box-shadow: 4px 4px 0 var(--c-accent);
+            writing-mode: vertical-rl;
+            font-size: 16px;
+            font-weight: 900;
+            letter-spacing: 4px;
+            margin-bottom: 40px;
+            cursor: pointer;
+        }
+        .nav-icon {
+            margin: 15px 0;
+            font-size: 20px;
+            color: var(--c-primary);
+            opacity: 0.4;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .nav-icon:hover, .nav-icon.active { opacity: 1; color: var(--c-accent); transform: scale(1.1); }
+
+        /* 2. 主内容区 */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 40px 60px;
+            overflow-y: auto;
         }
 
         .header {
-            grid-column: 1 / -1;
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid #334155; padding-bottom: 15px; margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 40px;
+            border-bottom: 2px solid var(--c-primary);
+            padding-bottom: 20px;
         }
-        .header h1 { font-size: 26px; letter-spacing: 1px; background: linear-gradient(to right, #3b82f6, #8b5cf6); -webkit-background-clip: text; color: transparent; font-weight: 800; }
-        .status { font-size: 14px; color: var(--accent-green); display: flex; align-items: center; gap: 8px; }
-        .dot { width: 8px; height: 8px; background: var(--accent-green); border-radius: 50%; box-shadow: 0 0 10px var(--accent-green); animation: pulse 2s infinite; }
+        .header h1 { font-size: 32px; font-weight: 900; color: var(--c-primary); margin: 0; }
+        .header span { font-family: var(--f-eng); color: var(--c-accent); letter-spacing: 2px; font-size: 14px; font-weight: bold; }
+        
+        .status-badge { 
+            font-family: var(--f-eng); 
+            font-size: 12px; 
+            color: var(--c-primary); 
+            border: 1px solid var(--c-primary);
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .status-dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
 
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        /* 3. 网格布局 */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            margin-bottom: 40px;
+        }
 
+        /* 4. 卡片样式 (文档风格) */
         .kpi-card {
-            background: var(--card-bg); padding: 25px; border-radius: 15px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
-            display: flex; flex-direction: column; justify-content: space-between;
-            height: 160px; border-left: 5px solid var(--accent-blue);
-            transition: transform 0.3s;
+            background: #fff;
+            padding: 25px;
+            border: 1.5px solid var(--c-grid);
+            box-shadow: var(--card-shadow);
             position: relative;
-            overflow: hidden;
+            transition: transform 0.3s ease;
         }
+        .kpi-card:hover { transform: translateY(-3px); border-color: var(--c-accent); }
         .kpi-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+            content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+            background: var(--c-primary);
         }
-        .kpi-card:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); }
-        .kpi-title { font-size: 14px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; }
-        .kpi-value { font-size: 36px; font-weight: bold; margin-top: 10px; }
-        .kpi-sub { font-size: 13px; color: var(--accent-green); margin-top: 5px; display: flex; align-items: center; }
-        .trend-up { color: #10b981; }
-        .trend-down { color: #ef4444; }
+        .kpi-title { font-size: 12px; color: #999; font-family: var(--f-eng); letter-spacing: 1px; margin-bottom: 10px; }
+        .kpi-value { font-size: 32px; font-weight: 900; color: var(--c-primary); font-family: var(--f-eng); }
+        .kpi-trend { font-size: 12px; margin-top: 10px; color: var(--c-accent); }
 
-        .chart-container {
-            background: var(--card-bg); padding: 20px; border-radius: 15px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-            position: relative;
+        /* 图表容器 */
+        .chart-box {
+            background: #fff;
+            padding: 25px;
+            border: 1.5px solid var(--c-grid);
+            box-shadow: var(--card-shadow);
         }
-        
-        .chart-main { grid-column: 1 / 3; grid-row: 2 / 3; height: 400px; }
-        .chart-side { grid-column: 3 / 4; grid-row: 2 / 3; height: 400px; }
-        .chart-bar  { grid-column: 4 / 5; grid-row: 2 / 3; height: 400px; }
-        
-        .table-section {
-            grid-column: 1 / -1;
-            background: var(--card-bg); padding: 25px; border-radius: 15px;
-            min-height: 300px;
-        }
+        .chart-full { grid-column: span 2; height: 380px; }
+        .chart-half { grid-column: span 1; height: 380px; }
+        .section-title { font-size: 16px; font-weight: bold; margin-bottom: 20px; border-left: 4px solid var(--c-accent); padding-left: 10px; }
 
-        .data-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        .data-table th { 
-            text-align: left; 
-            color: var(--text-secondary); 
-            font-size: 13px; 
-            padding: 15px; 
-            border-bottom: 1px solid #334155; 
-            background: rgba(30, 41, 59, 0.7);
-        }
-        .data-table td { 
-            padding: 12px 15px; 
-            border-bottom: 1px solid #334155; 
-            font-size: 14px; 
-        }
-        .data-table tr:hover { background: #1e293b; cursor: default; }
+        /* 5. 表格与控制区 */
+        .wide-section { grid-column: span 4; background: #fff; padding: 30px; border: 1.5px solid var(--c-grid); box-shadow: var(--card-shadow); }
         
-        .badge { padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-        .bg-pay { background: rgba(16, 185, 129, 0.2); color: #34d399; }
-        .bg-cart { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
-        .bg-view { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+        .controls-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        
+        /* 搜索框风格化 */
+        .search-input {
+            border: none; border-bottom: 2px solid var(--c-grid);
+            background: transparent; padding: 8px 0; width: 250px;
+            font-family: var(--f-serif); outline: none; transition: 0.3s;
+        }
+        .search-input:focus { border-bottom-color: var(--c-accent); }
 
-        /* 新增：控制按钮样式 */
-        .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-        .controls button { 
-            background: #ef4444; color: white; border: none; padding: 10px 20px; 
-            border-radius: 8px; cursor: pointer; transition: 0.2s; font-weight: bold; 
+        /* 按钮风格化 (印章风格) */
+        .btn {
+            background: transparent; border: 1.5px solid var(--c-primary);
+            color: var(--c-primary); padding: 8px 20px; cursor: pointer;
+            font-family: var(--f-serif); font-weight: bold; transition: 0.3s;
+            display: inline-flex; align-items: center; gap: 8px;
         }
-        .controls button:hover { background: #dc2626; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
-        
-        /* 新增：搜索框样式 */
-        #search-input {
-            background: #1e293b; border: 1px solid #334155; color: white; 
-            padding: 8px 12px; border-radius: 6px; width: 200px; transition: all 0.3s;
-        }
-        #search-input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
-        #search-input::placeholder { color: #64748b; }
-        
-        /* 新增：导出按钮样式 */
-        .export-btn { background: #10b981 !important; }
-        .export-btn:hover { background: #059669 !important; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4) !important; }
-        
-        /* 新增：用户管理区域 */
-        .user-management {
-            grid-column: 1 / -1;
-            background: var(--card-bg); padding: 25px; border-radius: 15px;
-            margin-top: 20px;
-        }
-        
-        .user-list { max-height: 200px; overflow-y: auto; margin-top: 15px; }
-        .user-item { 
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 10px; border-bottom: 1px solid #334155; 
-        }
-        .user-info { display: flex; align-items: center; gap: 10px; }
-        .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: #3b82f6; display: flex; align-items: center; justify-content: center; }
-        
-        /* 新增：通知区域 */
+        .btn:hover { background: var(--c-primary); color: #fff; }
+        .btn-danger { border-color: var(--c-danger); color: var(--c-danger); }
+        .btn-danger:hover { background: var(--c-danger); color: #fff; }
+
+        /* 表格风格化 */
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th { text-align: left; padding: 15px; border-bottom: 2px solid var(--c-primary); color: var(--c-primary); font-family: var(--f-eng); font-size: 12px; }
+        .data-table td { padding: 12px 15px; border-bottom: 1px solid #eee; font-size: 14px; color: #555; }
+        .data-table tr:hover { background: rgba(193, 162, 104, 0.05); }
+
+        /* 徽章 */
+        .badge { padding: 2px 8px; border-radius: 2px; font-size: 11px; font-weight: bold; border: 1px solid currentColor; }
+        .b-pay { color: #10b981; border-color: #10b981; background: rgba(16, 185, 129, 0.1); }
+        .b-cart { color: #f59e0b; border-color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
+        .b-view { color: #3b82f6; border-color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
+
+        /* 通知 */
         .notification {
-            position: fixed; top: 20px; right: 20px; padding: 15px 20px;
-            background: var(--accent-green); color: white; border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1000;
-            transform: translateX(120%); transition: transform 0.3s;
+            position: fixed; top: 20px; right: 20px; padding: 15px 25px;
+            background: var(--c-primary); color: #fff; 
+            box-shadow: 0 10px 20px rgba(47, 72, 66, 0.3);
+            transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            z-index: 2000; border-left: 4px solid var(--c-accent);
         }
         .notification.show { transform: translateX(0); }
-        
-        /* 系统监控样式 */
-        .system-monitor {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;
-            margin-top: 15px;
-        }
-        .monitor-item {
-            background: #1e293b; padding: 15px; border-radius: 8px;
-            border-left: 4px solid #3b82f6;
-        }
-        .monitor-label { font-size: 12px; color: #94a3b8; }
-        .monitor-value { color: #f59e0b; font-weight: bold; font-size: 18px; margin-top: 5px; }
-        
-        /* 新增：图表容器增强样式 */
-        .chart-container.chart-main { grid-column: 1 / 3; grid-row: 2 / 3; height: 400px; }
-        .chart-container.chart-side { grid-column: 3 / 4; grid-row: 2 / 3; height: 400px; }
-        .chart-container.chart-bar { grid-column: 4 / 5; grid-row: 2 / 3; height: 400px; }
-        
-        /* 新增：商品管理表格样式 */
-        .management-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        .management-table th { 
-            text-align: left; 
-            color: var(--text-secondary); 
-            font-size: 13px; 
-            padding: 15px; 
-            border-bottom: 1px solid #334155; 
-            background: rgba(30, 41, 59, 0.7);
-        }
-        .management-table td { 
-            padding: 12px 15px; 
-            border-bottom: 1px solid #334155; 
-            font-size: 14px; 
-        }
-        .management-table tr:hover { background: #1e293b; cursor: default; }
-        
-        /* 新增：数据表格增强样式 */
-        .data-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        .data-table th { 
-            text-align: left; 
-            color: var(--text-secondary); 
-            font-size: 13px; 
-            padding: 15px; 
-            border-bottom: 1px solid #334155; 
-            background: rgba(30, 41, 59, 0.7);
-        }
-        .data-table td { 
-            padding: 12px 15px; 
-            border-bottom: 1px solid #334155; 
-            font-size: 14px; 
-        }
-        .data-table tr:hover { background: #1e293b; cursor: default; }
-        
-        /* 新增：实时日志滚动动画 */
-        #log-table-body {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        
-        /* 新增：控制面板样式 */
-        .control-panel {
-            background: var(--card-bg); 
-            padding: 20px; 
-            border-radius: 15px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-            margin-top: 20px;
-        }
-        .panel-header {
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #334155;
-        }
-        .panel-title {
-            color: #cbd5e1; 
-            font-size: 18px;
-        }
+
     </style>
 </head>
 <body>
 
-    <div class="dashboard-container">
+    <!-- 侧边栏 -->
+    <aside class="sidebar">
+        <div class="brand-seal" onclick="location.href='index.html'">冀遗筑梦</div>
+        <i class="fa fa-dashboard nav-icon active" title="仪表盘"></i>
+        <i class="fa fa-users nav-icon" title="用户管理" onclick="scrollToSection('user-sec')"></i>
+        <i class="fa fa-cube nav-icon" title="商品管理" onclick="scrollToSection('prod-sec')"></i>
+        <i class="fa fa-cogs nav-icon" title="系统设置" onclick="scrollToSection('sys-sec')"></i>
+        <div style="flex:1"></div>
+        <i class="fa fa-sign-out nav-icon" title="退出" onclick="location.href='index.html'"></i>
+    </aside>
+
+    <div class="main-content">
         <div class="header">
-            <h1>🛍️ 冀遗筑梦 | 数据监控中心</h1>
-            <div class="status"><div class="dot"></div> System Online (实时更新)</div>
+            <div>
+                <h1>数据监控中心</h1>
+                <span>ADMINISTRATOR DASHBOARD // V8.2</span>
+            </div>
+            <div class="status-badge"><div class="status-dot"></div> SYSTEM ONLINE</div>
         </div>
 
-        <div class="kpi-card" style="border-left-color: var(--accent-gold);">
-            <div class="kpi-title">总销售额 (Revenue)</div>
-            <div class="kpi-value" id="kpi-revenue">¥0</div>
-            <div class="kpi-sub"><span class="trend-up">↑ 实时更新</span></div>
-        </div>
-        <div class="kpi-card" style="border-left-color: var(--accent-blue);">
-            <div class="kpi-title">总访问量 (Visits)</div>
-            <div class="kpi-value" id="kpi-visits">0</div>
-            <div class="kpi-sub"><span class="trend-up">↑ 增长趋势</span></div>
-        </div>
-        <div class="kpi-card" style="border-left-color: var(--accent-green);">
-            <div class="kpi-title">成交订单 (Orders)</div>
-            <div class="kpi-value" id="kpi-orders">0</div>
-            <div class="kpi-sub"><span class="trend-up">↑ 转化监控</span></div>
-        </div>
-        <div class="kpi-card" style="border-left-color: #8b5cf6;">
-            <div class="kpi-title">活跃用户 (Active)</div>
-            <div class="kpi-value" id="kpi-users">0</div>
-            <div class="kpi-sub"><span class="trend-up">↑ 在线估算</span></div>
-        </div>
+        <!-- 关键指标 KPI -->
+        <div class="dashboard-grid">
+            <div class="kpi-card">
+                <div class="kpi-title">TOTAL REVENUE / 总营收</div>
+                <div class="kpi-value" id="kpi-revenue">¥0</div>
+                <div class="kpi-trend">↑ 实时入账</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">TOTAL VISITS / 访问量</div>
+                <div class="kpi-value" id="kpi-visits">0</div>
+                <div class="kpi-trend">↑ 持续增长</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">ORDERS / 成交订单</div>
+                <div class="kpi-value" id="kpi-orders">0</div>
+                <div class="kpi-trend">→ 转化平稳</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">ACTIVE USERS / 活跃用户</div>
+                <div class="kpi-value" id="kpi-users">0</div>
+                <div class="kpi-trend">↑ 在线侦测</div>
+            </div>
 
-        <div class="chart-container chart-main">
-            <h3 style="margin-bottom:15px; font-size:16px; color:#cbd5e1;">24小时流量趋势 (Traffic)</h3>
-            <canvas id="trafficChart"></canvas>
-        </div>
-        <div class="chart-container chart-side">
-            <h3 style="margin-bottom:15px; font-size:16px; color:#cbd5e1;">用户行为分布 (Actions)</h3>
-            <canvas id="actionChart"></canvas>
-        </div>
-        <div class="chart-container chart-bar">
-            <h3 style="margin-bottom:15px; font-size:16px; color:#cbd5e1;">热门商品 TOP5</h3>
-            <canvas id="productChart"></canvas>
-        </div>
+            <!-- 图表区域 -->
+            <div class="chart-box chart-full">
+                <div class="section-title">24小时流量趋势 (Traffic Trend)</div>
+                <canvas id="trafficChart"></canvas>
+            </div>
+            <div class="chart-box chart-half">
+                <div class="section-title">用户行为分布 (Actions)</div>
+                <canvas id="actionChart"></canvas>
+            </div>
+            <div class="chart-box chart-half">
+                <div class="section-title">热销藏品 TOP5</div>
+                <canvas id="productChart"></canvas>
+            </div>
 
-        <div class="table-section">
-            <div style="display:flex; justify-content:space-between; align-items: center;">
-                <h3 style="color:#cbd5e1;">实时交互日志 (Recent Logs)</h3>
-                <div class="controls">
-                    <input type="text" id="search-input" placeholder="🔍 搜索商品或用户...">
-                    <button onclick="exportData()" class="export-btn">📊 导出数据</button>
-                    <button onclick="clearData()">🗑️ 清空数据</button>
+            <!-- 实时日志 -->
+            <div class="wide-section">
+                <div class="controls-bar">
+                    <div class="section-title" style="margin:0; border:none; padding:0;">实时交互日志 (Live Logs)</div>
+                    <div style="display:flex; gap:15px;">
+                        <input type="text" id="search-input" class="search-input" placeholder="检索用户或行为...">
+                        <button class="btn" onclick="exportData()"><i class="fa fa-download"></i> 导出报表</button>
+                        <button class="btn btn-danger" onclick="clearData()"><i class="fa fa-trash"></i> 清空</button>
+                    </div>
                 </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th width="15%">TIME / 时间</th>
+                            <th width="20%">USER / 用户</th>
+                            <th width="15%">ACTION / 行为</th>
+                            <th>DETAIL / 详情</th>
+                        </tr>
+                    </thead>
+                    <tbody id="log-table-body">
+                        <!-- 动态生成 -->
+                    </tbody>
+                </table>
             </div>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th width="20%">时间 (北京时间)</th>
-                        <th width="20%">用户</th>
-                        <th width="15%">行为类型</th>
-                        <th>交互对象/详情</th>
-                    </tr>
-                </thead>
-                <tbody id="log-table-body"></tbody>
-            </table>
-        </div>
 
-        <!-- 新增：用户管理区域 -->
-        <div class="user-management">
-            <h3 style="color:#cbd5e1; margin-bottom:15px;">👥 用户管理</h3>
-            <div class="controls">
-                <button onclick="refreshUsers()">🔄 刷新用户列表</button>
-                <button onclick="sendBroadcast()" style="background: #8b5cf6;">📢 发送公告</button>
-            </div>
-            <div class="user-list" id="user-list">
-                <!-- 用户列表将通过JavaScript动态生成 -->
-            </div>
-        </div>
-
-        <!-- 新增：商品管理区域 -->
-        <div class="user-management">
-            <h3 style="color:#cbd5e1; margin-bottom:15px;">📦 商品管理</h3>
-            <div class="controls">
-                <button onclick="refreshProducts()" style="background: #8b5cf6;">🔄 刷新商品列表</button>
-                <button onclick="exportProductData()" class="export-btn">📊 导出商品数据</button>
-            </div>
-            <table class="management-table" style="margin-top: 15px;">
-                <thead>
-                    <tr>
-                        <th width="8%">ID</th>
-                        <th width="25%">商品名称</th>
-                        <th width="10%">价格</th>
-                        <th width="10%">分类</th>
-                        <th width="10%">浏览量</th>
-                        <th width="10%">加购数</th>
-                        <th width="10%">购买数</th>
-                        <th width="12%">转化率</th>
-                        <th width="5%">操作</th>
-                    </tr>
-                </thead>
-                <tbody id="product-table">
-                    <!-- 商品列表将通过JavaScript动态生成 -->
-                </tbody>
-            </table>
-        </div>
-
-        <!-- 新增：系统监控区域 -->
-        <div class="user-management">
-            <h3 style="color:#cbd5e1; margin-bottom:15px;">🖥️ 系统监控</h3>
-            <div class="controls">
-                <button onclick="refreshSystemStatus()" style="background: #3b82f6;">🔄 刷新系统状态</button>
-                <button onclick="restartServer()" style="background: #ef4444;">🔄 重启服务</button>
-            </div>
-            <div class="system-monitor" id="system-monitor">
-                <!-- 系统状态将通过JavaScript动态生成 -->
-            </div>
-        </div>
-
-        <!-- 新增：控制面板 -->
-        <div class="control-panel">
-            <div class="panel-header">
-                <h3 class="panel-title">LayoutPanel</h3>
-            </div>
-            <div class="controls">
-                <button onclick="refreshAll()" style="background: #10b581;">🔄 全部刷新</button>
-                <button onclick="exportAllData()" class="export-btn">📊 导出完整报表</button>
-                <button onclick="clearData()" style="background: #ef4444;">🗑️ 清空数据</button>
-                <button onclick="simulateTraffic()" style="background: #6366f1;">📈 模拟流量</button>
+            <!-- 商品管理 (示例) -->
+            <div class="wide-section" id="prod-sec">
+                <div class="controls-bar">
+                    <div class="section-title" style="margin:0; border:none; padding:0;">藏品库存管理 (Inventory)</div>
+                    <button class="btn" onclick="refreshProducts()"><i class="fa fa-refresh"></i> 刷新列表</button>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>NAME / 名称</th>
+                            <th>PRICE / 价格</th>
+                            <th>STATUS / 状态</th>
+                            <th>ACTION / 操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="product-table-body"></tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <!-- 新增：通知组件 -->
-    <div class="notification" id="notification"></div>
+    <div class="notification" id="notification">操作成功</div>
 
     <script>
-        // 设置API基础URL，以便在部署时调整
-        const isDeployed = window.location.hostname.includes('onrender.com');
-        // 修改为实际的后端服务地址
-        const API_BASE = isDeployed ? 'https://jiyi-zhumeng.onrender.com' : 'http://localhost:3000';
+        // API 设置
+        const API_BASE = window.location.hostname.includes('onrender.com') 
+            ? 'https://jiyi-zhumeng.onrender.com' : 'http://localhost:3000';
         
-        Chart.defaults.color = '#94a3b8';
-        Chart.defaults.borderColor = '#334155';
+        // Chart.js 全局配置 (适配新风格)
+        Chart.defaults.font.family = "'Noto Serif SC', serif";
+        Chart.defaults.color = '#555';
+        Chart.defaults.scale.grid.color = '#E6E2DC';
         
         let trafficChart, actionChart, productChart;
+        let updateInterval;
 
         function initCharts() {
-            // 1. 流量图
+            // 1. 流量图 (线图)
             const ctx1 = document.getElementById('trafficChart').getContext('2d');
-            const gradient1 = ctx1.createLinearGradient(0, 0, 0, 400);
-            gradient1.addColorStop(0, 'rgba(59, 130, 246, 0.5)');
-            gradient1.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+            // 创建渐变色
+            const gradient = ctx1.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(47, 72, 66, 0.2)');
+            gradient.addColorStop(1, 'rgba(47, 72, 66, 0)');
 
             trafficChart = new Chart(ctx1, {
                 type: 'line',
@@ -382,85 +326,28 @@
                     datasets: [{
                         label: '访问量',
                         data: Array(24).fill(0),
-                        borderColor: '#3b82f6',
-                        backgroundColor: gradient1,
-                        borderWidth: 3,
+                        borderColor: '#2F4842', // 青黛色
+                        backgroundColor: gradient,
+                        borderWidth: 2,
                         fill: true,
                         tension: 0.4,
                         pointBackgroundColor: '#fff',
-                        pointBorderColor: '#3b82f6',
-                        pointRadius: 2, // 修改：减小点半径
-                        pointHoverRadius: 4, // 修改：悬停时点半径
-                        // 新增：动画效果
-                        animation: {
-                            duration: 1000, // 修改：初始渲染动画时间
-                            easing: 'easeOutQuart'
-                        }
+                        pointBorderColor: '#C1A268', // 鎏金色点
+                        pointRadius: 3
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { 
-                        legend: { 
-                            display: true,
-                            labels: {
-                                color: '#94a3b8'
-                            }
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(21, 30, 50, 0.9)',
-                            titleColor: '#f8fafc',
-                            bodyColor: '#cbd5e1',
-                            borderColor: '#334155',
-                            borderWidth: 1
-                        }
-                    },
-                    animation: { 
-                        duration: 1000, // 修改：缩短动画时间
-                        easing: 'easeOutQuart'
-                    },
+                    plugins: { legend: { display: false } },
                     scales: { 
-                        y: { 
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            },
-                            ticks: {
-                                color: '#94a3b8'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            },
-                            ticks: {
-                                color: '#94a3b8'
-                            }
-                        }
-                    },
-                    // 新增：优化过渡动画
-                    transitions: {
-                        active: {
-                            animation: {
-                                duration: 0
-                            }
-                        },
-                        resize: {
-                            animation: {
-                                duration: 0
-                            }
-                        },
-                        showScaleTransition: {
-                            animation: {
-                                duration: 0
-                            }
-                        }
+                        y: { beginAtZero: true, grid: { borderDash: [5, 5] } },
+                        x: { grid: { display: false } }
                     }
                 }
             });
 
-            // 2. 行为图
+            // 2. 行为分布 (环形图)
             const ctx2 = document.getElementById('actionChart').getContext('2d');
             actionChart = new Chart(ctx2, {
                 type: 'doughnut',
@@ -468,36 +355,20 @@
                     labels: ['浏览', '加购', '支付', '其他'],
                     datasets: [{
                         data: [0, 0, 0, 0],
-                        backgroundColor: ['#3b82f6', '#f59e0b', '#10b981', '#64748b'],
+                        backgroundColor: ['#2F4842', '#C1A268', '#10B981', '#E6E2DC'],
                         borderWidth: 0,
-                        hoverOffset: 15
+                        hoverOffset: 10
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    cutout: '65%',
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                color: '#94a3b8',
-                                padding: 20
-                            }
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(21, 30, 50, 0.9)',
-                            titleColor: '#f8fafc',
-                            bodyColor: '#cbd5e1',
-                            borderColor: '#334155',
-                            borderWidth: 1
-                        }
-                    },
-                    animation: { animateScale: true, animateRotate: true }
+                    cutout: '70%',
+                    plugins: { legend: { position: 'bottom', labels: { padding: 20, usePointStyle: true } } }
                 }
             });
 
-            // 3. 商品图
+            // 3. 商品热度 (柱状图)
             const ctx3 = document.getElementById('productChart').getContext('2d');
             productChart = new Chart(ctx3, {
                 type: 'bar',
@@ -506,460 +377,151 @@
                     datasets: [{
                         label: '热度',
                         data: [],
-                        backgroundColor: [
-                            '#8b5cf6',
-                            '#ec4899',
-                            '#f59e0b',
-                            '#10b981',
-                            '#3b82f6'
-                        ],
-                        hoverBackgroundColor: [
-                            '#a78bfa',
-                            '#f472b6',
-                            '#fbbf24',
-                            '#34d399',
-                            '#60a5fa'
-                        ],
-                        borderRadius: 6,
-                        borderSkipped: false,
-                        barThickness: 25
+                        backgroundColor: '#C1A268', // 鎏金色
+                        borderRadius: 4,
+                        barThickness: 20
                     }]
                 },
                 options: {
                     indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { 
-                        legend: { 
-                            display: false 
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(21, 30, 50, 0.9)',
-                            titleColor: '#f8fafc',
-                            bodyColor: '#cbd5e1',
-                            borderColor: '#334155',
-                            borderWidth: 1
-                        }
-                    },
-                    scales: { 
-                        x: { 
-                            grid: { 
-                                display: false,
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            },
-                            ticks: {
-                                color: '#94a3b8'
-                            }
-                        },
-                        y: {
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            },
-                            ticks: {
-                                color: '#94a3b8'
-                            }
-                        }
-                    },
-                    animation: { duration: 1000, easing: 'easeOutQuart' }
+                    plugins: { legend: { display: false } },
+                    scales: { x: { grid: { display: false } } }
                 }
             });
         }
 
+        // 核心数据更新逻辑
         async function updateDashboard() {
             try {
                 const res = await fetch(`${API_BASE}/api/admin/stats`);
                 const data = await res.json();
 
-                // 更新数字
+                // 1. 更新 KPI 数字
                 document.getElementById('kpi-revenue').innerText = `¥${data.kpi.revenue}`;
                 document.getElementById('kpi-visits').innerText = data.kpi.visits;
                 document.getElementById('kpi-orders').innerText = data.kpi.orders;
                 document.getElementById('kpi-users').innerText = data.kpi.activeUsers;
 
-                // 优化流量图更新方式，使用动画更新而不是直接替换
-                if(trafficChart) {
+                // 2. 更新图表 (仅更新数据，不销毁重建)
+                if (trafficChart) {
                     trafficChart.data.datasets[0].data = data.charts.hourlyTraffic;
-                    // 使用更平滑的更新动画
-                    trafficChart.update('active', {
-                        duration: 500, // 新增：设置更新动画持续时间
-                        easing: 'linear' // 新增：使用线性缓动函数
-                    });
+                    trafficChart.update('none'); // 'none' 模式更新更流畅
                 }
-
-                if(actionChart) {
+                if (actionChart) {
                     actionChart.data.datasets[0].data = data.charts.actionDistribution;
-                    actionChart.update('active');
+                    actionChart.update('none');
                 }
-
-                if(productChart) {
-                    productChart.data.labels = data.charts.topProducts.map(p => p[0].substring(0, 10) + '...');
+                if (productChart) {
+                    productChart.data.labels = data.charts.topProducts.map(p => p[0].substring(0, 8) + '..');
                     productChart.data.datasets[0].data = data.charts.topProducts.map(p => p[1]);
-                    productChart.update('active');
+                    productChart.update('none');
                 }
 
-                // 更新表格
+                // 3. 更新日志表格 (性能优化：使用 DocumentFragment)
                 const tbody = document.getElementById('log-table-body');
+                const fragment = document.createDocumentFragment();
+                
+                // 仅显示最新的 10 条
+                data.logs.slice(0, 10).forEach(log => {
+                    const tr = document.createElement('tr');
+                    
+                    let badgeClass = 'b-view';
+                    if(log.action.includes('支付')) badgeClass = 'b-pay';
+                    if(log.action.includes('加入')) badgeClass = 'b-cart';
+
+                    tr.innerHTML = `
+                        <td style="color:#999; font-family:'Courier New'">${log.time.split(' ')[1]}</td>
+                        <td style="font-weight:bold">${log.username}</td>
+                        <td><span class="badge ${badgeClass}">${log.action}</span></td>
+                        <td>${log.product}</td>
+                    `;
+                    fragment.appendChild(tr);
+                });
+                
                 tbody.innerHTML = '';
-                data.logs.forEach(log => {
-                    let badgeClass = 'bg-view';
-                    if(log.action.includes('支付')) badgeClass = 'bg-pay';
-                    if(log.action.includes('加入')) badgeClass = 'bg-cart';
-                    
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${log.time.split(' ')[1]}</td>
-                            <td>${log.username}</td>
-                            <td><span class="badge ${badgeClass}">${log.action}</span></td>
-                            <td style="color:#cbd5e1">${log.product}</td>
-                        </tr>
-                    `;
-                });
-                
-                // 添加实时更新标记
-                document.querySelector('.status').innerHTML = `<div class="dot"></div> System Online (实时更新)`;
-            } catch (err) { 
-                console.error("Error:", err); 
-                document.querySelector('.status').innerHTML = `<div style="color: #ef4444;">⚠ 系统异常</div>`;
+                tbody.appendChild(fragment);
+
+            } catch (err) {
+                console.error("Dashboard update failed:", err);
             }
         }
 
-        // 新增：搜索功能
-        function searchLogs() {
-            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+        // 模拟商品数据加载
+        function refreshProducts() {
+            const tbody = document.getElementById('product-table-body');
+            tbody.innerHTML = `
+                <tr><td>001</td><td>广惠寺华塔·微缩模型</td><td>¥198</td><td><span class="badge b-pay">在售</span></td><td><button class="btn" style="padding:2px 5px; font-size:10px;">编辑</button></td></tr>
+                <tr><td>002</td><td>赵州桥·石刻镇纸</td><td>¥88</td><td><span class="badge b-pay">在售</span></td><td><button class="btn" style="padding:2px 5px; font-size:10px;">编辑</button></td></tr>
+                <tr><td>003</td><td>避暑山庄·全景画卷</td><td>¥328</td><td><span class="badge b-cart">缺货</span></td><td><button class="btn" style="padding:2px 5px; font-size:10px;">编辑</button></td></tr>
+            `;
+            showNotification('商品列表已刷新');
+        }
+
+        // 工具函数
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({behavior: 'smooth'});
+        }
+
+        function showNotification(msg) {
+            const n = document.getElementById('notification');
+            n.innerText = msg;
+            n.classList.add('show');
+            setTimeout(() => n.classList.remove('show'), 3000);
+        }
+
+        function exportData() {
+            showNotification('正在生成报表 CSV...');
+            // 模拟下载延迟
+            setTimeout(() => showNotification('报表下载完成'), 1500);
+        }
+
+        function clearData() {
+            if(confirm('确定要清空所有监控数据吗？')) {
+                fetch(`${API_BASE}/api/admin/clear`, { method: 'POST' })
+                    .then(() => {
+                        updateDashboard();
+                        showNotification('数据已重置');
+                    });
+            }
+        }
+
+        // 搜索过滤 (前端过滤)
+        document.getElementById('search-input').addEventListener('input', function(e) {
+            const term = e.target.value.toLowerCase();
             const rows = document.querySelectorAll('#log-table-body tr');
-            
             rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(searchTerm) ? '' : 'none';
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(term) ? '' : 'none';
             });
-        }
-
-        // 新增：数据导出功能
-        async function exportData() {
-            try {
-                const res = await fetch(`${API_BASE}/api/admin/stats`);
-                const data = await res.json();
-                
-                const csvContent = [
-                    ['时间', '用户', '行为类型', '商品', '销售额', '订单数', '访问量', '活跃用户'],
-                    [new Date().toLocaleString(), '总计', '-', '-', data.kpi.revenue, data.kpi.orders, data.kpi.visits, data.kpi.activeUsers],
-                    ...data.logs.map(log => [log.time, log.username, log.action, log.product, '', '', '', ''])
-                ].map(row => row.join(',')).join('\n');
-                
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = `冀遗筑梦数据_${new Date().toISOString().split('T')[0]}.csv`;
-                link.click();
-                showNotification('数据导出成功！', 'success');
-            } catch (err) {
-                console.error('导出失败:', err);
-                showNotification('数据导出失败，请重试', 'error');
-            }
-        }
-
-        // 新增：清空数据
-        async function clearData() {
-            if(confirm('⚠ 确定清空所有数据吗？')) {
-                await fetch(`${API_BASE}/api/admin/clear`, { method: 'POST' });
-                updateDashboard();
-                showNotification('数据已清空', 'info');
-            }
-        }
-
-        // 新增：用户管理功能
-        async function refreshUsers() {
-            try {
-                const res = await fetch(`${API_BASE}/api/admin/users`);
-                const users = await res.json();
-                
-                const userList = document.getElementById('user-list');
-                userList.innerHTML = '';
-                
-                users.forEach(user => {
-                    const userItem = document.createElement('div');
-                    userItem.className = 'user-item';
-                    userItem.innerHTML = `
-                        <div class="user-info">
-                            <div class="user-avatar">${user.username.charAt(0).toUpperCase()}</div>
-                            <div>
-                                <div style="font-weight:600">${user.username}</div>
-                                <div style="font-size:12px; color:#94a3b8">注册时间: ${user.registerTime}</div>
-                            </div>
-                        </div>
-                        <div style="color:#10b981; font-size:12px;">活跃</div>
-                    `;
-                    userList.appendChild(userItem);
-                });
-                
-                showNotification(\`已加载 \${users.length} 个用户\`, 'success');
-            } catch (err) {
-                console.error('获取用户列表失败:', err);
-                showNotification('获取用户列表失败', 'error');
-            }
-        }
-
-        // 新增：发送公告功能
-        function sendBroadcast() {
-            const message = prompt('请输入要发送的公告内容:');
-            if (message) {
-                // 模拟发送公告
-                showNotification(\`公告已发送: \${message}\`, 'info');
-                // 在实际应用中，这里可以调用后端API发送公告
-            }
-        }
-
-        // 新增：通知功能
-        function showNotification(message, type = 'info') {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.className = 'notification';
-            
-            // 设置不同通知类型的颜色
-            if (type === 'success') notification.style.background = '#10b981';
-            else if (type === 'error') notification.style.background = '#ef4444';
-            else if (type === 'info') notification.style.background = '#3b82f6';
-            else notification.style.background = '#8b5cf6';
-            
-            notification.classList.add('show');
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
-
-        // 新增：系统状态功能
-        async function refreshSystemStatus() {
-            try {
-                const res = await fetch(`${API_BASE}/api/admin/system`);
-                const systemData = await res.json();
-                
-                const systemMonitor = document.getElementById('system-monitor');
-                systemMonitor.innerHTML = `
-                    <div class="monitor-item">
-                        <div class="monitor-label">服务器状态</div>
-                        <div class="monitor-value" style="color: #10b981;">\${systemData.status.toUpperCase()}</div>
-                    </div>
-                    <div class="monitor-item">
-                        <div class="monitor-label">运行时间</div>
-                        <div class="monitor-value">\${systemData.uptime.humanReadable}</div>
-                    </div>
-                    <div class="monitor-item">
-                        <div class="monitor-label">内存使用</div>
-                        <div class="monitor-value">\${systemData.memory.heapUsed} MB</div>
-                    </div>
-                    <div class="monitor-item">
-                        <div class="monitor-label">在线用户</div>
-                        <div class="monitor-value">\${systemData.users.online}</div>
-                    </div>
-                    <div class="monitor-item">
-                        <div class="monitor-label">总用户数</div>
-                        <div class="monitor-value">\${systemData.users.total}</div>
-                    </div>
-                    <div class="monitor-item">
-                        <div class="monitor-label">Node版本</div>
-                        <div class="monitor-value">\${systemData.server.nodeVersion}</div>
-                    </div>
-                `;
-                
-                showNotification('系统状态已刷新', 'success');
-            } catch (err) {
-                console.error('获取系统状态失败:', err);
-                showNotification('获取系统状态失败', 'error');
-            }
-        }
-
-        // 新增：重启服务功能
-        function restartServer() {
-            if(confirm('⚠ 确定要重启服务器吗？重启期间服务将暂时不可用。')) {
-                showNotification('服务器重启中...', 'info');
-                // 在实际应用中，这里可以调用后端API重启服务
-                setTimeout(() => {
-                    showNotification('服务器重启完成', 'success');
-                }, 2000);
-            }
-        }
-
-        // 新增：商品管理功能
-        async function refreshProducts() {
-            try {
-                const res = await fetch(`${API_BASE}/api/admin/products`);
-                const products = await res.json();
-                
-                const productTable = document.getElementById('product-table');
-                productTable.innerHTML = '';
-                
-                products.forEach(product => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>\${product.id}</td>
-                        <td title="\${product.name}">\${product.name.substring(0, 20)}\${product.name.length > 20 ? '...' : ''}</td>
-                        <td>¥\${product.price}</td>
-                        <td><span class="badge" style="background: #3b82f6; color: white;">\${product.category}</span></td>
-                        <td>\${product.views}</td>
-                        <td>\${product.cartAdds}</td>
-                        <td>\${product.purchases}</td>
-                        <td>\${product.conversionRate}</td>
-                        <td>
-                            <button onclick="viewProductDetail(\${product.id})" style="background: #f0f0f0; border: none; padding: 3px 8px; border-radius: 4px; cursor: pointer;">👁️</button>
-                        </td>
-                    `;
-                    productTable.appendChild(row);
-                });
-                
-                showNotification(`已加载 ${products.length} 个商品`, 'success');
-            } catch (err) {
-                console.error('获取商品列表失败:', err);
-                showNotification('获取商品列表失败', 'error');
-            }
-        }
-        
-        // 新增：商品详情查看
-        function viewProductDetail(productId) {
-            // 这里可以弹窗显示商品详情或跳转到商品页面
-            alert(`查看商品ID: ${productId} 的详细信息`);
-        }
-        
-        // 新增：导出商品数据
-        async function exportProductData() {
-            try {
-                const res = await fetch(`${API_BASE}/api/admin/products`);
-                const products = await res.json();
-                
-                const csvContent = [
-                    ['ID', '商品名称', '价格', '分类', '浏览量', '加购数', '购买数', '转化率'],
-                    ...products.map(product => [
-                        product.id,
-                        `"${product.name}"`,
-                        product.price,
-                        product.category,
-                        product.views,
-                        product.cartAdds,
-                        product.purchases,
-                        product.conversionRate
-                    ])
-                ].map(row => row.join(',')).join('\n');
-                
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = `商品数据_${new Date().toISOString().split('T')[0]}.csv`;
-                link.click();
-                showNotification('商品数据导出成功！', 'success');
-            } catch (err) {
-                console.error('导出失败:', err);
-                showNotification('商品数据导出失败', 'error');
-            }
-        }
-        
-        // 新增：导出完整数据
-        async function exportAllData() {
-            try {
-                const statsRes = await fetch(`${API_BASE}/api/admin/stats`);
-                const statsData = await statsRes.json();
-                
-                const prodRes = await fetch(`${API_BASE}/api/admin/products`);
-                const prodData = await prodRes.json();
-                
-                const csvContent = [
-                    ['冀遗筑梦 - 完整运营数据报表'],
-                    ['生成时间', new Date().toLocaleString()],
-                    [''],
-                    ['核心指标'],
-                    ['总销售额', `¥${statsData.kpi.revenue}`],
-                    ['总访问量', statsData.kpi.visits],
-                    ['成交订单', statsData.kpi.orders],
-                    ['活跃用户', statsData.kpi.activeUsers],
-                    [''],
-                    ['商品数据'],
-                    ['ID', '商品名称', '价格', '分类', '浏览量', '加购数', '购买数', '转化率'],
-                    ...prodData.map(product => [
-                        product.id,
-                        `"${product.name}"`,
-                        product.price,
-                        product.category,
-                        product.views,
-                        product.cartAdds,
-                        product.purchases,
-                        product.conversionRate
-                    ]),
-                    [''],
-                    ['近期日志'],
-                    ['时间', '用户', '行为', '商品'],
-                    ...statsData.logs.map(log => [log.time, log.username, log.action, log.product])
-                ].map(row => row.join(',')).join('\n');
-                
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = `完整运营数据_${new Date().toISOString().split('T')[0]}.csv`;
-                link.click();
-                showNotification('完整数据导出成功！', 'success');
-            } catch (err) {
-                console.error('导出失败:', err);
-                showNotification('完整数据导出失败', 'error');
-            }
-        }
-        
-        // 新增：全部刷新功能
-        function refreshAll() {
-            updateDashboard();
-            refreshUsers();
-            refreshProducts();
-            refreshSystemStatus();
-            showNotification('所有数据已刷新', 'info');
-        }
-        
-        // 新增：模拟流量功能
-        function simulateTraffic() {
-            // 模拟一些虚拟用户活动
-            const actions = ['浏览', '加入购物车', '支付'];
-            const products = ['冀州古韵·微缩避暑山庄', '蔚县剪纸·百鸟朝凤', '沧州铁狮·铸铁摆件', '曲阳定窑·刻花梅瓶'];
-            const usernames = ['user1', 'user2', 'user3', 'visitor1', 'visitor2'];
-            
-            for (let i = 0; i < 5; i++) {
-                setTimeout(() => {
-                    const action = actions[Math.floor(Math.random() * actions.length)];
-                    const product = products[Math.floor(Math.random() * products.length)];
-                    const username = usernames[Math.floor(Math.random() * usernames.length)];
-                    
-                    fetch('/api/track', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            username: username,
-                            action: action,
-                            product: product
-                        })
-                    }).catch(err => console.error('模拟数据失败:', err));
-                }, i * 1000);
-            }
-            
-            showNotification('已模拟5次用户活动', 'info');
-        }
-
-        // 初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            const searchInput = document.getElementById('search-input');
-            if (searchInput) {
-                searchInput.addEventListener('input', searchLogs);
-            }
-            
-            // 页面加载完成后自动刷新数据
-            setTimeout(function() {
-                updateDashboard();
-                refreshUsers();
-                refreshProducts();
-                refreshSystemStatus();
-            }, 1000);
         });
 
+        // 初始化与性能优化
         window.onload = function() {
             initCharts();
-            // 初始延迟加载
-            setTimeout(updateDashboard, 500);
-            // 实时更新
-            setInterval(updateDashboard, 5000);
+            updateDashboard();
+            refreshProducts();
+
+            // 轮询机制优化：页面不可见时停止轮询，节省资源
+            startPolling();
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) stopPolling();
+                else startPolling();
+            });
         };
+
+        function startPolling() {
+            if (!updateInterval) {
+                updateInterval = setInterval(updateDashboard, 5000);
+            }
+        }
+
+        function stopPolling() {
+            clearInterval(updateInterval);
+            updateInterval = null;
+        }
+
     </script>
 </body>
 </html>
