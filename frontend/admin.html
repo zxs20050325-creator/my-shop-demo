@@ -1,3 +1,5 @@
+--- START OF FILE admin.html ---
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -11,7 +13,7 @@
 
     <style>
         :root {
-            /* 品牌核心色 - 与主页统一 */
+            /* 品牌核心色 */
             --c-primary: #2F4842;    /* 青黛 */
             --c-accent: #C1A268;     /* 鎏金 */
             --c-bg: #F5F3EF;         /* 宣纸白 */
@@ -24,75 +26,6 @@
             
             --sidebar-width: 90px;
             --card-shadow: 10px 10px 0 rgba(193, 162, 104, 0.15);
-        }
-
-        .dashboard-section {
-            background: #fff;
-            padding: 30px;
-            margin-bottom: 30px;
-            border: 1.5px solid var(--c-primary);
-            box-shadow: var(--card-shadow);
-        }
-        
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .stat-card {
-            background: rgba(47, 72, 66, 0.05);
-            padding: 20px;
-            text-align: center;
-            border-radius: 8px;
-            border-left: 4px solid var(--c-primary);
-        }
-        
-        .stat-value {
-            font-size: 28px;
-            font-weight: bold;
-            color: var(--c-primary);
-            margin-bottom: 8px;
-        }
-        
-        .stat-label {
-            font-size: 14px;
-            color: var(--c-text);
-            opacity: 0.8;
-        }
-        
-        .table-container {
-            margin-top: 20px;
-        }
-        
-        .table-container h3 {
-            margin-bottom: 15px;
-            color: var(--c-primary);
-            font-size: 18px;
-        }
-        
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-        }
-        
-        .data-table th,
-        .data-table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid var(--c-grid);
-        }
-        
-        .data-table th {
-            background: rgba(47, 72, 66, 0.05);
-            font-weight: bold;
-            color: var(--c-primary);
-        }
-        
-        .data-table tr:hover {
-            background: rgba(193, 162, 104, 0.05);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -215,8 +148,9 @@
             box-shadow: var(--card-shadow);
             position: relative;
         }
-        .chart-full { grid-column: span 2; height: 380px; }
-        .chart-half { grid-column: span 1; height: 380px; }
+        /* 布局调整：图表各占一半宽度 (span 2) */
+        .chart-half { grid-column: span 2; height: 380px; }
+        
         .section-title { font-size: 16px; font-weight: bold; margin-bottom: 20px; border-left: 4px solid var(--c-accent); padding-left: 10px; }
 
         /* 5. 表格与控制区 */
@@ -261,7 +195,7 @@
         }
         .notification.show { transform: translateX(0); }
 
-        /* 移动端覆盖样式 (New!) */
+        /* 移动端覆盖样式 */
         .sidebar-mask {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.5); z-index: 900; backdrop-filter: blur(5px);
@@ -270,22 +204,17 @@
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); width: 200px; padding-top: 60px; align-items: flex-start; padding-left: 30px; }
             .sidebar.open { transform: translateX(0); }
-            .sidebar .nav-icon { display: flex; gap: 10px; width: 100%; font-size: 16px; margin: 10px 0; opacity: 1; }
-            .sidebar .nav-icon::after { content: attr(title); font-size: 14px; }
-            .sidebar .brand-seal { display: none; } /* 移动端隐藏侧边栏印章 */
             
             .main-content { margin-left: 0; padding: 20px; }
             .mobile-menu-btn { display: block; }
             
             .dashboard-grid { grid-template-columns: 1fr; gap: 20px; }
-            .kpi-card { margin-bottom: 0; }
-            .chart-full, .chart-half, .wide-section { grid-column: span 1; height: auto; }
+            /* 移动端图表强制占满一行 */
+            .chart-half, .wide-section { grid-column: span 1; height: auto; }
             .chart-box canvas { min-height: 250px; }
             
             .header h1 { font-size: 20px; }
-            .header span { display: block; margin-top: 5px; }
-            
-            .data-table th:nth-child(4), .data-table td:nth-child(4) { display: none; } /* 手机端隐藏详情列 */
+            .data-table th:nth-child(4), .data-table td:nth-child(4) { display: none; } 
             .controls-bar { flex-direction: column; align-items: stretch; }
             .search-input { width: 100%; }
         }
@@ -319,7 +248,7 @@
             <div class="status-badge"><div class="status-dot"></div> ONLINE</div>
         </div>
 
-        <!-- 关键指标 KPI (数字带动画) -->
+        <!-- 关键指标 KPI -->
         <div class="dashboard-grid">
             <div class="kpi-card">
                 <div class="kpi-title">TOTAL REVENUE / 总营收</div>
@@ -342,13 +271,19 @@
                 <div class="kpi-trend">↑ 在线侦测</div>
             </div>
 
-            <!-- 图表区域 -->
-            <div class="chart-box chart-full">
-                <div class="section-title">每日流量趋势 (1月1日至今)</div>
+            <!-- 图表区域 - 第一排 (流量 + 用户) -->
+            <div class="chart-box chart-half">
+                <div class="section-title">每日流量趋势 (Page Views)</div>
                 <canvas id="trafficChart"></canvas>
             </div>
             <div class="chart-box chart-half">
-                <div class="section-title">用户行为分布 (可点击筛选)</div>
+                <div class="section-title">每日活跃用户 (Daily Active Users)</div>
+                <canvas id="dailyUserChart"></canvas>
+            </div>
+
+            <!-- 图表区域 - 第二排 (行为 + 热销) -->
+            <div class="chart-box chart-half">
+                <div class="section-title">用户行为分布 (Action)</div>
                 <canvas id="actionChart"></canvas>
             </div>
             <div class="chart-box chart-half">
@@ -356,14 +291,13 @@
                 <canvas id="productChart"></canvas>
             </div>
 
-            <!-- 实时日志 (支持真实导出) -->
+            <!-- 实时日志 -->
             <div class="wide-section">
                 <div class="controls-bar">
                     <div class="section-title" style="margin:0; border:none; padding:0;">实时交互日志 (Live Logs)</div>
                     <div style="display:flex; gap:10px; flex-wrap:wrap;">
                         <input type="text" id="search-input" class="search-input" placeholder="检索用户或行为...">
                         <button class="btn" onclick="realExportData()"><i class="fa fa-download"></i> 导出 CSV</button>
-                        <button class="btn btn-danger" onclick="clearData()"><i class="fa fa-trash"></i> 清空</button>
                     </div>
                 </div>
                 <table class="data-table">
@@ -381,39 +315,14 @@
                 </table>
             </div>
 
-            <!-- 新增：所有用户数据面板 -->
+            <!-- 所有用户数据面板 -->
             <div class="wide-section" id="users-section">
                 <div class="controls-bar">
-                    <div class="section-title">所有用户数据</div>
-                </div>
-                
-                <!-- 统计卡片 -->
-                <div class="dashboard-grid" style="margin-bottom: 30px;">
-                    <div class="kpi-card">
-                        <div class="kpi-title">TOTAL USERS / 总用户数</div>
-                        <div class="kpi-value count-up" id="totalUsers" data-target="0">0</div>
-                        <div class="kpi-trend">↑ 持续增长</div>
-                    </div>
-                    <div class="kpi-card">
-                        <div class="kpi-title">CART ITEMS / 购物车商品</div>
-                        <div class="kpi-value count-up" id="totalCartItems" data-target="0">0</div>
-                        <div class="kpi-trend">→ 热门选择</div>
-                    </div>
-                    <div class="kpi-card">
-                        <div class="kpi-title">FAVORITES / 收藏商品</div>
-                        <div class="kpi-value count-up" id="totalFavorites" data-target="0">0</div>
-                        <div class="kpi-trend">★ 精选收藏</div>
-                    </div>
-                    <div class="kpi-card">
-                        <div class="kpi-title">LOG RECORDS / 活动记录</div>
-                        <div class="kpi-value count-up" id="totalLogs" data-target="0">0</div>
-                        <div class="kpi-trend">📝 完整追踪</div>
-                    </div>
+                    <div class="section-title">所有用户数据 (User Management)</div>
                 </div>
                 
                 <!-- 用户列表 -->
                 <div class="table-container" style="margin-bottom: 30px;">
-                    <h3 class="section-title" style="margin-bottom: 15px;">用户列表</h3>
                     <table class="data-table">
                         <thead>
                             <tr>
@@ -427,50 +336,6 @@
                         <tbody id="users-table-body"></tbody>
                     </table>
                 </div>
-                
-                <!-- 完整活动日志 -->
-                <div class="table-container">
-                    <div class="controls-bar">
-                        <h3 class="section-title" style="margin:0;">完整活动日志</h3>
-                        <div style="display:flex; gap:10px;">
-                            <input type="text" id="full-search-input" class="search-input" placeholder="搜索用户、操作或商品..." style="width: 250px;">
-                            <button class="btn" onclick="exportFullData()" style="background: var(--c-primary); color: white;"><i class="fa fa-download"></i> 导出完整数据</button>
-                        </div>
-                    </div>
-                    <div style="max-height: 400px; overflow-y: auto; margin-top: 15px;">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th width="20%">时间</th>
-                                    <th width="20%">用户名</th>
-                                    <th width="20%">操作类型</th>
-                                    <th>商品信息</th>
-                                </tr>
-                            </thead>
-                            <tbody id="full-logs-table-body"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 商品管理 (示例) -->
-            <div class="wide-section" id="prod-sec">
-                <div class="controls-bar">
-                    <div class="section-title" style="margin:0; border:none; padding:0;">藏品库存管理 (Inventory)</div>
-                    <button class="btn" onclick="refreshProducts()"><i class="fa fa-refresh"></i> 刷新列表</button>
-                </div>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>NAME / 名称</th>
-                            <th>PRICE / 价格</th>
-                            <th>STATUS / 状态</th>
-                            <th>ACTION / 操作</th>
-                        </tr>
-                    </thead>
-                    <tbody id="product-table-body"></tbody>
-                </table>
             </div>
         </div>
     </div>
@@ -487,12 +352,12 @@
         Chart.defaults.color = '#555';
         Chart.defaults.scale.grid.color = '#E6E2DC';
         
-        let trafficChart, actionChart, productChart;
+        let trafficChart, dailyUserChart, actionChart, productChart;
         let updateInterval;
-        let currentLogs = []; // 存储当前日志用于导出和筛选
-        let allUserData = null; // 存储所有用户数据
+        let currentLogs = []; 
+        let allUserData = null; 
 
-        // 1. 移动端侧边栏切换
+        // 1. 移动端侧边栏
         function toggleSidebar() {
             const sb = document.getElementById('sidebar');
             const mask = document.getElementById('sidebar-mask');
@@ -500,86 +365,86 @@
             mask.style.display = sb.classList.contains('open') ? 'block' : 'none';
         }
 
-        // 2. 数字滚动动画函数
+        // 2. 数字滚动动画
         function animateNumber(elementId, endValue) {
             const el = document.getElementById(elementId);
             const startValue = parseInt(el.innerText.replace(/,/g, '')) || 0;
             if (startValue === endValue) return;
-
             const duration = 1000;
             const startTime = performance.now();
-
             function update(currentTime) {
                 const elapsed = currentTime - startTime;
                 const progress = Math.min(elapsed / duration, 1);
-                
-                // easeOutQuart 缓动算法
                 const ease = 1 - Math.pow(1 - progress, 4);
-                
                 const current = Math.floor(startValue + (endValue - startValue) * ease);
-                el.innerText = current.toLocaleString(); // 添加千位分隔符
-
-                if (progress < 1) {
-                    requestAnimationFrame(update);
-                } else {
-                    el.innerText = endValue.toLocaleString();
-                }
+                el.innerText = current.toLocaleString();
+                if (progress < 1) requestAnimationFrame(update);
+                else el.innerText = endValue.toLocaleString();
             }
             requestAnimationFrame(update);
         }
 
+        // 3. 初始化所有图表
         function initCharts() {
-            // 流量图 - 初始化空图表，数据将在 updateDashboard 中填充
+            // A. 左侧：流量图 (Line Chart)
             const ctx1 = document.getElementById('trafficChart').getContext('2d');
-            const gradient = ctx1.createLinearGradient(0, 0, 0, 400);
-            gradient.addColorStop(0, 'rgba(47, 72, 66, 0.2)');
-            gradient.addColorStop(1, 'rgba(47, 72, 66, 0)');
+            const gradient1 = ctx1.createLinearGradient(0, 0, 0, 400);
+            gradient1.addColorStop(0, 'rgba(47, 72, 66, 0.2)');
+            gradient1.addColorStop(1, 'rgba(47, 72, 66, 0)');
 
             trafficChart = new Chart(ctx1, {
                 type: 'line',
                 data: {
-                    labels: [],
+                    labels: [], // 将由后端提供 MM-DD 格式
                     datasets: [{
-                        label: '访问量',
+                        label: '访问量 (PV)',
                         data: [],
                         borderColor: '#2F4842',
-                        backgroundColor: gradient,
+                        backgroundColor: gradient1,
                         borderWidth: 2,
                         fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: '#fff',
-                        pointBorderColor: '#C1A268',
+                        tension: 0.3,
                         pointRadius: 2
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { 
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                title: function(context) {
-                                    return context[0].label;
-                                }
-                            }
-                        }
-                    },
-                    scales: { 
-                        y: { beginAtZero: true, grid: { borderDash: [5, 5] } },
-                        x: { 
-                            grid: { display: false },
-                            ticks: {
-                                maxRotation: 0,
-                                autoSkip: true,
-                                maxTicksLimit: 20
-                            }
-                        }
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { maxTicksLimit: 10 } },
+                        y: { beginAtZero: true }
                     }
                 }
             });
 
-            // 行为分布 (支持点击交互)
+            // B. 右侧：每日活跃用户 (Bar Chart)
+            const ctxUser = document.getElementById('dailyUserChart').getContext('2d');
+            dailyUserChart = new Chart(ctxUser, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '活跃用户 (UV)',
+                        data: [],
+                        backgroundColor: '#C1A268',
+                        borderRadius: 4,
+                        barThickness: 'flex',
+                        maxBarThickness: 30
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { maxTicksLimit: 10 } },
+                        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                    }
+                }
+            });
+
+            // C. 行为分布
             const ctx2 = document.getElementById('actionChart').getContext('2d');
             actionChart = new Chart(ctx2, {
                 type: 'doughnut',
@@ -588,92 +453,51 @@
                     datasets: [{
                         data: [0, 0, 0, 0],
                         backgroundColor: ['#2F4842', '#C1A268', '#10B981', '#E6E2DC'],
-                        borderWidth: 0,
-                        hoverOffset: 10
+                        borderWidth: 0
                     }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '70%',
-                    plugins: { legend: { position: 'bottom', labels: { padding: 20, usePointStyle: true } } },
-                    onClick: (evt, elements) => {
-                        if (elements.length > 0) {
-                            const index = elements[0].index;
-                            const label = actionChart.data.labels[index];
-                            filterLogsByAction(label);
-                        } else {
-                            // 点击空白处重置
-                            renderLogs(currentLogs);
-                        }
-                    }
+                    responsive: true, maintainAspectRatio: false, cutout: '70%',
+                    plugins: { legend: { position: 'bottom' } }
                 }
             });
 
-            // 商品热度
+            // D. 商品热度
             const ctx3 = document.getElementById('productChart').getContext('2d');
             productChart = new Chart(ctx3, {
                 type: 'bar',
                 data: {
                     labels: [],
                     datasets: [{
-                        label: '热度',
-                        data: [],
-                        backgroundColor: '#C1A268',
-                        borderRadius: 4,
-                        barThickness: 20
+                        label: '热度', data: [], backgroundColor: '#C1A268', borderRadius: 4, barThickness: 20
                     }]
                 },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { x: { grid: { display: false } } }
-                }
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
         }
 
-        // 3. 核心数据更新逻辑
+        // 4. 数据更新逻辑
         async function updateDashboard() {
             try {
                 const res = await fetch(`${API_BASE}/api/admin/stats`);
                 const data = await res.json();
                 
-                // 使用动画更新数字
+                // 更新KPI
                 animateNumber('kpi-revenue', data.kpi.revenue);
                 animateNumber('kpi-visits', data.kpi.visits);
                 animateNumber('kpi-orders', data.kpi.orders);
                 animateNumber('kpi-users', data.kpi.activeUsers);
 
-                // 更新图表
-                if (trafficChart) {
-                    // 生成从1月1日到当前日期的标签
-                    const now = new Date();
-                    const startYear = now.getFullYear();
-                    const startDate = new Date(startYear, 0, 1);
-                    const endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                    
-                    const dateLabels = [];
-                    let currentDate = new Date(startDate);
-                    
-                    while (currentDate <= endDate) {
-                        const month = currentDate.getMonth() + 1;
-                        const day = currentDate.getDate();
-                        if (currentDate.getDate() === 1) {
-                            dateLabels.push(`${month}月`);
-                        } else {
-                            dateLabels.push(`${day}`);
-                        }
-                        currentDate.setDate(currentDate.getDate() + 1);
-                    }
-                    
-                    // 确保数据长度与标签长度匹配
-                    const trafficData = data.charts.hourlyTraffic || Array(dateLabels.length).fill(0);
-                    
-                    trafficChart.data.labels = dateLabels;
-                    trafficChart.data.datasets[0].data = trafficData;
+                // 更新图表数据
+                if (trafficChart && data.charts.dateLabels) {
+                    trafficChart.data.labels = data.charts.dateLabels;
+                    trafficChart.data.datasets[0].data = data.charts.dailyTraffic;
                     trafficChart.update('none');
+                }
+                if (dailyUserChart && data.charts.dateLabels) {
+                    dailyUserChart.data.labels = data.charts.dateLabels;
+                    dailyUserChart.data.datasets[0].data = data.charts.dailyActiveUsers;
+                    dailyUserChart.update('none');
                 }
                 if (actionChart) {
                     actionChart.data.datasets[0].data = data.charts.actionDistribution;
@@ -685,9 +509,7 @@
                     productChart.update('none');
                 }
 
-                // 保存当前日志并渲染
                 currentLogs = data.logs;
-                // 如果搜索框为空，才刷新表格，避免用户搜索时被打断
                 if(document.getElementById('search-input').value === '') {
                     renderLogs(currentLogs);
                 }
@@ -697,279 +519,272 @@
             }
         }
 
-        // 新增：获取所有用户数据
         async function fetchAllUserData() {
             try {
-                const res = await fetch(`${API_BASE}/api/admin/users-data`);
-                if (!res.ok) {
-                    throw new Error(`HTTP error! status: ${res.status}`);
-                }
+                const res = await fetch(`${API_BASE}/api/admin/users-data`); // 需后端配合，若无则跳过
+                if (!res.ok) return;
                 const data = await res.json();
                 allUserData = data;
-                
-                // 使用动画更新数字
-                animateNumber('totalUsers', data.summary.total_users || 0);
-                animateNumber('totalCartItems', data.summary.total_cart_items || 0);
-                animateNumber('totalFavorites', data.summary.total_favorites || 0);
-                animateNumber('totalLogs', data.summary.total_logs || 0);
-                
-                // 渲染用户列表
                 renderUsersTable(data.users, data.carts, data.favorites, data.logs);
-                
-                // 渲染完整活动日志
-                renderFullLogsTable(data.logs);
-                
             } catch (error) {
-                console.error('获取所有用户数据失败:', error);
-                showNotification('获取用户数据失败，请重试');
+                console.log('用户数据加载: 暂无接口');
             }
         }
 
-        // 新增：渲染用户列表
         function renderUsersTable(users, carts, favorites, logs) {
             const tbody = document.getElementById('users-table-body');
-            const fragment = document.createDocumentFragment();
-            
-            users.forEach(user => {
-                // 计算用户的购物车商品数
-                const userCartItems = carts.filter(item => item.username === user.username).length;
-                // 计算用户的收藏商品数
-                const userFavorites = favorites.filter(item => item.username === user.username).length;
-                // 获取用户的最近活动
-                const userLogs = logs.filter(log => log.username === user.username);
-                const latestActivity = userLogs.length > 0 ? 
-                    `${userLogs[0].action} - ${new Date(userLogs[0].time).toLocaleString()}` : '无活动';
-                
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
+            tbody.innerHTML = users.map(user => {
+                const c = carts.filter(i => i.username === user.username).length;
+                const f = favorites.filter(i => i.username === user.username).length;
+                const l = logs.filter(i => i.username === user.username);
+                const last = l.length > 0 ? `${l[0].action} (${new Date(l[0].time).toLocaleDateString()})` : '无活动';
+                return `<tr>
                     <td style="font-weight:bold">${user.username}</td>
-                    <td>${new Date(user.created_at || user.time).toLocaleString()}</td>
-                    <td>${userCartItems}</td>
-                    <td>${userFavorites}</td>
-                    <td style="font-size: 12px; color: #666;">${latestActivity}</td>
-                `;
-                fragment.appendChild(tr);
-            });
-            
-            tbody.innerHTML = '';
-            tbody.appendChild(fragment);
+                    <td>${new Date(user.created_at || Date.now()).toLocaleDateString()}</td>
+                    <td>${c}</td><td>${f}</td><td style="color:#666">${last}</td>
+                </tr>`;
+            }).join('');
         }
 
-        // 新增：渲染完整活动日志
-        function renderFullLogsTable(logs) {
-            const tbody = document.getElementById('full-logs-table-body');
-            const fragment = document.createDocumentFragment();
-            
-            // 按时间倒序排列
-            const sortedLogs = [...logs].sort((a, b) => new Date(b.time) - new Date(a.time));
-            
-            sortedLogs.forEach(log => {
-                const tr = document.createElement('tr');
-                let badgeClass = 'b-view';
-                if(log.action.includes('支付')) badgeClass = 'b-pay';
-                if(log.action.includes('加入')) badgeClass = 'b-cart';
-                if(log.action.includes('收藏')) badgeClass = 'b-fav';
-
-                tr.innerHTML = `
-                    <td style="color:#999; font-family:'Courier New'; font-size: 12px;">${new Date(log.time).toLocaleString()}</td>
-                    <td style="font-weight:bold">${log.username}</td>
-                    <td><span class="badge ${badgeClass}">${log.action}</span></td>
-                    <td style="font-size: 12px;">${log.product || '无'}</td>
-                `;
-                fragment.appendChild(tr);
-            });
-            
-            tbody.innerHTML = '';
-            tbody.appendChild(fragment);
-        }
-
-        // 新增：完整数据导出
-        function exportFullData() {
-            if (!allUserData || !allUserData.logs) {
-                showNotification('暂无完整数据可导出');
-                return;
-            }
-
-            let csvContent = "\uFEFF时间,用户名,操作类型,商品信息\n";
-            
-            allUserData.logs.forEach(log => {
-                const time = new Date(log.time).toLocaleString();
-                csvContent += `"${time}","${log.username}","${log.action}","${log.product || ''}"\n`;
-            });
-
-            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-            const link = document.createElement("a");
-            const url = URL.createObjectURL(blob);
-            
-            const timestamp = new Date().toISOString().slice(0,10);
-            link.setAttribute("href", url);
-            link.setAttribute("download", `Jiyi_Full_Report_${timestamp}.csv`);
-            link.style.visibility = 'hidden';
-            
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            showNotification('完整数据导出成功');
-        }
-
-        // 渲染日志表格辅助函数
         function renderLogs(logs) {
             const tbody = document.getElementById('log-table-body');
-            const fragment = document.createDocumentFragment();
-            
-            // 默认显示前15条
-            logs.slice(0, 15).forEach(log => {
-                const tr = document.createElement('tr');
-                let badgeClass = 'b-view';
-                if(log.action.includes('支付')) badgeClass = 'b-pay';
-                if(log.action.includes('加入')) badgeClass = 'b-cart';
-
-                tr.innerHTML = `
-                    <td style="color:#999; font-family:'Courier New'">${log.time.split(' ')[1]}</td>
+            tbody.innerHTML = logs.slice(0, 15).map(log => {
+                let bc = 'b-view';
+                if(log.action.includes('支付')) bc = 'b-pay';
+                if(log.action.includes('加入')) bc = 'b-cart';
+                return `<tr>
+                    <td style="color:#999; font-family:'Courier New'">${new Date(log.time).toLocaleTimeString()}</td>
                     <td style="font-weight:bold">${log.username}</td>
-                    <td><span class="badge ${badgeClass}">${log.action}</span></td>
-                    <td>${log.product}</td>
-                `;
-                fragment.appendChild(tr);
-            });
-            
-            tbody.innerHTML = '';
-            tbody.appendChild(fragment);
+                    <td><span class="badge ${bc}">${log.action}</span></td>
+                    <td>${log.product || '-'}</td>
+                </tr>`;
+            }).join('');
         }
 
-        // 图表筛选逻辑
-        function filterLogsByAction(actionType) {
-            const filtered = currentLogs.filter(log => log.action.includes(actionType));
-            renderLogs(filtered);
-            showNotification(`已筛选: ${actionType} (${filtered.length}条)`);
-        }
-
-        // 4. 真实 CSV 导出
         function realExportData() {
-            if (!currentLogs || currentLogs.length === 0) {
-                showNotification('暂无数据可导出');
-                return;
-            }
-
-            // CSV 表头
-            let csvContent = "\uFEFFTime,User,Action,Product\n"; // 添加 BOM 解决乱码
-            
-            // CSV 内容
-            currentLogs.forEach(row => {
-                csvContent += `${row.time},${row.username},${row.action},${row.product}\n`;
-            });
-
-            // 创建 Blob 并下载
-            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+            if (!currentLogs.length) return showNotification('无数据');
+            let csv = "\uFEFFTime,User,Action,Product\n";
+            currentLogs.forEach(r => csv += `${r.time},${r.username},${r.action},${r.product}\n`);
+            const blob = new Blob([csv], {type: "text/csv;charset=utf-8;"});
             const link = document.createElement("a");
-            const url = URL.createObjectURL(blob);
-            
-            const timestamp = new Date().toISOString().slice(0,10);
-            link.setAttribute("href", url);
-            link.setAttribute("download", `Jiyi_Report_${timestamp}.csv`);
-            link.style.visibility = 'hidden';
-            
-            document.body.appendChild(link);
+            link.href = URL.createObjectURL(blob);
+            link.download = `Report_${Date.now()}.csv`;
             link.click();
-            document.body.removeChild(link);
-            
-            showNotification('报表下载成功');
         }
 
-        // 模拟商品刷新
-        function refreshProducts() {
-            const tbody = document.getElementById('product-table-body');
-            tbody.innerHTML = `
-                <tr><td>001</td><td>广惠寺华塔·微缩模型</td><td>¥198</td><td><span class="badge b-pay">在售</span></td><td><button class="btn" style="padding:2px 5px; font-size:10px;">编辑</button></td></tr>
-                <tr><td>002</td><td>赵州桥·石刻镇纸</td><td>¥88</td><td><span class="badge b-pay">在售</span></td><td><button class="btn" style="padding:2px 5px; font-size:10px;">编辑</button></td></tr>
-                <tr><td>003</td><td>避暑山庄·全景画卷</td><td>¥328</td><td><span class="badge b-cart">缺货</span></td><td><button class="btn" style="padding:2px 5px; font-size:10px;">编辑</button></td></tr>
-            `;
-            showNotification('商品列表已刷新');
+        function scrollToSection(id) { document.getElementById(id).scrollIntoView({behavior:'smooth'}); }
+        function showNotification(msg) { 
+            const n = document.getElementById('notification'); 
+            n.innerText = msg; n.classList.add('show'); 
+            setTimeout(()=>n.classList.remove('show'),3000); 
         }
-
-        function scrollToSection(id) {
-            document.getElementById(id).scrollIntoView({behavior: 'smooth'});
-        }
-
-        function showNotification(msg) {
-            const n = document.getElementById('notification');
-            n.innerText = msg;
-            n.classList.add('show');
-            setTimeout(() => n.classList.remove('show'), 3000);
-        }
-
-        function clearData() {
-            if(confirm('确定要清空所有监控数据吗？')) {
-                fetch(`${API_BASE}/api/admin/clear`, { method: 'POST' })
-                    .then(() => {
-                        updateDashboard();
-                        showNotification('数据已重置');
-                    });
-            }
-        }
-
-        // 搜索过滤
-        document.getElementById('search-input').addEventListener('input', function(e) {
-            const term = e.target.value.toLowerCase();
-            const filtered = currentLogs.filter(log => 
-                log.username.toLowerCase().includes(term) || 
-                log.action.toLowerCase().includes(term) ||
-                log.product.toLowerCase().includes(term)
-            );
-            renderLogs(filtered);
-        });
-
-        // 搜索过滤完整日志
-        document.getElementById('full-search-input').addEventListener('input', function(e) {
-            const term = e.target.value.toLowerCase();
-            if (!allUserData || !allUserData.logs) return;
-            
-            const filtered = allUserData.logs.filter(log => 
-                log.username.toLowerCase().includes(term) || 
-                log.action.toLowerCase().includes(term) ||
-                (log.product && log.product.toLowerCase().includes(term))
-            );
-            
-            renderFullLogsTable(filtered);
-        });
 
         // 初始化
         window.onload = function() {
             initCharts();
             updateDashboard();
-            refreshProducts();
-            fetchAllUserData(); // 新增：获取所有用户数据
-
-            // 轮询与页面可见性检测
-            startPolling();
-            document.addEventListener('visibilitychange', () => {
-                if (document.hidden) stopPolling();
-                else startPolling();
-            });
+            if(window.location.hostname.includes('localhost')) fetchAllUserData(); // 仅本地或有接口时调用
+            
+            // 轮询
+            updateInterval = setInterval(() => {
+                updateDashboard();
+                if(window.location.hostname.includes('localhost')) fetchAllUserData();
+            }, 5000);
         };
-
-        // 修改轮询函数，也更新用户数据
-        function startPolling() {
-            if (!updateInterval) {
-                updateInterval = setInterval(() => {
-                    updateDashboard();
-                    fetchAllUserData(); // 同时更新用户数据
-                }, 5000);
-            }
-        }
-
-        function startPolling() {
-            if (!updateInterval) {
-                updateInterval = setInterval(updateDashboard, 5000);
-            }
-        }
-
-        function stopPolling() {
-            clearInterval(updateInterval);
-            updateInterval = null;
-        }
-
     </script>
 </body>
 </html>
+
+--- START OF FILE index.js ---
+
+// server.js - 完整后端 (集成Supabase数据库与统计优化)
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+require('dotenv').config();
+
+const app = express();
+app.use(express.json());
+app.use(cors());
+
+// 静态资源
+app.use('/images', express.static(path.join(__dirname, 'public', 'images')));
+app.use('/frontend', express.static(path.join(__dirname, '..', 'frontend')));
+
+// 数据库服务 (Supabase 封装在 db.js 中)
+const db = require('./db');
+
+// 商品数据 (静态)
+const MOCK_PRODUCTS = [
+    { id: 1, name: "广惠寺华塔·微缩模型", price: 198, img: "/images/001.jpg", category: "数字藏品" },
+    { id: 2, name: "赵州桥·石刻镇纸", price: 88, img: "/images/002.jpg", category: "文创周边" },
+    { id: 3, name: "避暑山庄·全景画卷", price: 328, img: "/images/003.jpg", category: "数字画作" },
+    { id: 4, name: "正定古城·隐藏款", price: 999, img: "/images/004.jpg", category: "典藏精品" },
+    { id: 5, name: "蔚县剪纸·窗花", price: 58, img: "/images/005.jpg", category: "非遗手作" },
+    { id: 6, name: "唐山皮影·礼盒", price: 168, img: "/images/006.jpg", category: "非遗手作" }
+];
+
+// ------------------------------------------
+// 1. 核心业务接口 (注册/登录/商品/行为)
+// ------------------------------------------
+
+app.get('/api/products', (req, res) => {
+    res.json({ items: MOCK_PRODUCTS });
+});
+
+app.get('/api/products/:id', (req, res) => {
+    const p = MOCK_PRODUCTS.find(i => i.id == req.params.id);
+    p ? res.json(p) : res.status(404).json({error: 'Not found'});
+});
+
+// 用户注册
+app.post('/api/register', async (req, res) => {
+    const { username, password } = req.body;
+    try {
+        const exists = await db.getUserByUsername(username);
+        if(exists) return res.status(409).json({success:false, message:'用户已存在'});
+        await db.createUser(username, password);
+        res.json({success:true});
+    } catch(e) { res.status(500).json({success:false}); }
+});
+
+// 用户登录
+app.post('/api/login', async (req, res) => {
+    const { username, password } = req.body;
+    try {
+        const user = await db.getUserByUsername(username);
+        if(user && user.password === password) res.json({success:true});
+        else res.status(401).json({success:false});
+    } catch(e) { res.status(500).json({success:false}); }
+});
+
+// 行为跟踪 (写入日志表)
+app.post('/api/track', async (req, res) => {
+    const { username, action, product } = req.body;
+    try {
+        await db.addLog(username || '游客', action, product || '');
+        res.json({success:true});
+    } catch(e) { res.status(500).json({success:false}); }
+});
+
+// 购物车添加
+app.post('/api/cart/add', async (req, res) => {
+    const { username, product } = req.body;
+    try {
+        await db.addToCart(username, product);
+        res.json({success:true});
+    } catch(e) { res.status(500).json({success:false}); }
+});
+
+// ------------------------------------------
+// 2. 管理员数据统计接口 (Admin Stats) - 深度优化版
+// ------------------------------------------
+app.get('/api/admin/stats', async (req, res) => {
+    try {
+        // A. 获取基础数据
+        const stats = await db.getLatestStats(); // 获取总营收/订单数
+        const logs = await db.getRecentLogs(2000); // 获取最近2000条日志进行分析
+        
+        // B. 生成日期范围 (今年1月1日至今)
+        const generateDateRange = () => {
+            const now = new Date();
+            const start = new Date(now.getFullYear(), 0, 1);
+            const end = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const dates = [];
+            let curr = new Date(start);
+            while(curr <= end) {
+                dates.push(new Date(curr));
+                curr.setDate(curr.getDate() + 1);
+            }
+            return dates;
+        };
+        const dateRange = generateDateRange();
+
+        // C. 数据聚合逻辑 (按天分组)
+        const logsByDate = {};
+        logs.forEach(log => {
+            if(log.created_at) {
+                // 截取 YYYY-MM-DD
+                const dateStr = new Date(log.created_at).toISOString().split('T')[0];
+                if(!logsByDate[dateStr]) logsByDate[dateStr] = { count: 0, users: new Set() };
+                logsByDate[dateStr].count++; // 流量 +1
+                logsByDate[dateStr].users.add(log.username); // 记录用户 (去重)
+            }
+        });
+
+        // D. 填充图表数据
+        const dateLabels = [];
+        const dailyTraffic = [];
+        const dailyActiveUsers = [];
+
+        dateRange.forEach(date => {
+            const dateStr = date.toISOString().split('T')[0];
+            const label = `${date.getMonth()+1}-${date.getDate()}`; // 生成 M-D 格式
+            dateLabels.push(label);
+            
+            const dayData = logsByDate[dateStr] || { count: 0, users: new Set() };
+            dailyTraffic.push(dayData.count);
+            dailyActiveUsers.push(dayData.users.size);
+        });
+
+        // E. 计算其他统计
+        // 行为分布
+        let actionDist = [0, 0, 0, 0]; // 浏览, 加购, 支付, 其他
+        logs.forEach(l => {
+            if(l.action.includes('浏览')) actionDist[0]++;
+            else if(l.action.includes('加入')) actionDist[1]++;
+            else if(l.action.includes('支付') || l.action.includes('结算')) actionDist[2]++;
+            else actionDist[3]++;
+        });
+
+        // 热门商品 (简单统计)
+        const prodCount = {};
+        logs.filter(l => l.product).forEach(l => {
+            prodCount[l.product] = (prodCount[l.product] || 0) + 1;
+        });
+        const topProducts = Object.entries(prodCount)
+            .sort((a,b) => b[1] - a[1])
+            .slice(0, 5);
+
+        // F. 返回最终JSON
+        res.json({
+            kpi: {
+                revenue: stats.total_revenue || 0,
+                orders: stats.total_orders || 0,
+                visits: logs.length,
+                activeUsers: new Set(logs.map(l => l.username)).size
+            },
+            charts: {
+                dateLabels,        // [ "1-1", "1-2", ... ]
+                dailyTraffic,      // [ 10, 25, ... ]
+                dailyActiveUsers,  // [ 3, 5, ... ]
+                topProducts,
+                actionDistribution: actionDist
+            },
+            logs: logs.slice(0, 50).map(l => ({ // 只返回最新50条用于列表展示
+                time: l.created_at,
+                username: l.username,
+                action: l.action,
+                product: l.product
+            }))
+        });
+
+    } catch(err) {
+        console.error("Admin stats error:", err);
+        res.status(500).json({ error: "Stats failed" });
+    }
+});
+
+// 管理员获取所有用户详细数据
+app.get('/api/admin/users-data', async (req, res) => {
+    try {
+        const users = await db.getAllUsers();
+        const carts = await db.getAllCarts();
+        const favs = await db.getAllFavorites();
+        const logs = await db.getRecentLogs(200);
+        res.json({ users, carts, favorites: favs, logs });
+    } catch(e) { res.status(500).json({error:e.message}); }
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
