@@ -267,8 +267,60 @@ app.get('/api/admin/stats', async (req, res) => {
             actionDistribution = [100, 50, 30, 20];
         }
         
-        // 24小时流量数据（模拟）
-        const hourlyTraffic = Array.from({length: 24}, () => Math.floor(Math.random() * 50));
+        // 生成从今年1月1日到现在的日期时间轴数据
+        const generateDateRange = () => {
+            const now = new Date();
+            const startYear = now.getFullYear();
+            const startDate = new Date(startYear, 0, 1); // 1月1日（月份从0开始）
+            const endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            
+            const dateRange = [];
+            let currentDate = new Date(startDate);
+            
+            while (currentDate <= endDate) {
+                dateRange.push(new Date(currentDate));
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            
+            return dateRange;
+        };
+        
+        // 生成流量数据（基于真实用户日志数据）
+        const generateTrafficData = (dates) => {
+            // 获取所有用户日志用于生成真实的流量数据
+            const allLogs = db.getRecentLogs(10000); // 获取最多10000条日志
+            
+            return allLogs.then(logs => {
+                const trafficData = [];
+                const logMap = new Map();
+                
+                // 按日期统计日志数量
+                logs.forEach(log => {
+                    if (log.created_at) {
+                        const dateStr = log.created_at.split('T')[0];
+                        logMap.set(dateStr, (logMap.get(dateStr) || 0) + 1);
+                    }
+                });
+                
+                // 为每个日期生成流量数据
+                dates.forEach(date => {
+                    const dateStr = date.toISOString().split('T')[0];
+                    const value = logMap.get(dateStr) || 0;
+                    trafficData.push({
+                        date: dateStr,
+                        value: value
+                    });
+                });
+                
+                return trafficData;
+            });
+        };
+        
+        const dateRange = generateDateRange();
+        const hourlyTrafficPromise = generateTrafficData(dateRange);
+        
+        // 等待流量数据生成完成
+        const hourlyTraffic = await hourlyTrafficPromise;
         
         res.json({
             kpi: {
@@ -294,7 +346,7 @@ app.get('/api/admin/stats', async (req, res) => {
         res.status(500).json({
             kpi: { revenue: 0, orders: 0, visits: 0, activeUsers: 0 },
             charts: {
-                hourlyTraffic: Array(24).fill(0),
+                hourlyTraffic: [],
                 topProducts: [],
                 actionDistribution: [0, 0, 0, 0]
             },
