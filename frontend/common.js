@@ -453,26 +453,25 @@ function initCommonFeatures() {
 function syncSession() {
     const currentUser = localStorage.getItem('jiyi_user');
     const authSection = document.getElementById('authSection');
-    if (currentUser) {
-        authSection.innerHTML = `${currentUser} / SIGN OUT`;
-        authSection.onclick = () => {
-            if (confirm('确定要登出吗？')) {
-                localStorage.removeItem('jiyi_user');
-                localStorage.removeItem('jiyi_cart');
-                showToast('已登出');
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 1000);
-            }
-        };
-    } else {
-        authSection.innerHTML = "SIGN IN / JOIN";
-        authSection.onclick = () => {
-            showToast('请先登录');
-            setTimeout(() => {
+    if (authSection) {
+        if (currentUser) {
+            authSection.innerHTML = `${currentUser} / SIGN OUT`;
+            authSection.onclick = () => {
+                if (confirm('确定要登出吗？')) {
+                    localStorage.removeItem('jiyi_user');
+                    localStorage.removeItem('jiyi_cart');
+                    showToast('已登出');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                }
+            };
+        } else {
+            authSection.innerHTML = "SIGN IN / JOIN";
+            authSection.onclick = () => {
                 window.location.href = 'login.html';
-            }, 1500);
-        };
+            };
+        }
     }
 }
 
