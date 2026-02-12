@@ -155,6 +155,50 @@ class DatabaseService {
         if (error) throw error;
         return data;
     }
+
+    // 新增方法：获取所有用户
+    async getAllUsers() {
+        const { data, error } = await supabase
+            .from('users')
+            .select('*')
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        return data;
+    }
+
+    // 新增方法：获取所有购物车数据
+    async getAllCarts() {
+        const { data, error } = await supabase
+            .from('carts')
+            .select('*')
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        return data;
+    }
+
+    // 新增方法：获取所有收藏夹数据
+    async getAllFavorites() {
+        const { data, error } = await supabase
+            .from('favorites')
+            .select('*')
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        return data;
+    }
+
+    // 新增方法：获取所有系统统计记录
+    async getAllStats() {
+        const { data, error } = await supabase
+            .from('system_stats')
+            .select('*')
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        return data;
+    }
 }
 
 module.exports = new DatabaseService();

@@ -38,6 +38,45 @@ const MOCK_PRODUCTS = [
 
 // ====================== 核心接口 ======================
 
+// 获取所有用户数据（仅用于开发/调试）
+app.get('/api/users/all-data', async (req, res) => {
+    try {
+        // 获取所有用户
+        const users = await db.getAllUsers();
+        
+        // 获取所有购物车数据
+        const allCarts = await db.getAllCarts();
+        
+        // 获取所有收藏夹数据  
+        const allFavorites = await db.getAllFavorites();
+        
+        // 获取所有用户行为日志
+        const logs = await db.getRecentLogs(1000); // 获取最多1000条日志
+        
+        // 获取系统统计
+        const stats = await db.getAllStats();
+
+        res.json({
+            users: users || [],
+            carts: allCarts || [],
+            favorites: allFavorites || [],
+            logs: logs || [],
+            stats: stats || [],
+            summary: {
+                total_users: users?.length || 0,
+                total_cart_items: allCarts?.length || 0,
+                total_favorites: allFavorites?.length || 0,
+                total_logs: logs?.length || 0,
+                total_stats_records: stats?.length || 0
+            }
+        });
+
+    } catch (error) {
+        console.error('获取全部用户数据失败:', error);
+        res.status(500).json({ error: '服务器内部错误' });
+    }
+});
+
 app.get('/api/products', (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const series = req.query.series || null;
