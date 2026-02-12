@@ -1,11 +1,4 @@
-# Dependencies
-node_modules/
-
-# Environment variables
-.env
-.env.local
-
-# OS generated files
+# 系统文件
 .DS_Store
 .DS_Store?
 ._*
@@ -14,31 +7,28 @@ node_modules/
 ehthumbs.db
 Thumbs.db
 
-# Logs
-logs/
-*.log
+# Windows系统文件
+$RECYCLE.BIN/
+System Volume Information/
+*.tmp
+*.temp
 
-# Runtime data
-pids/
-*.pid
-*.seed
-*.pid.lock
+# Node.js依赖
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Coverage directory used by tools like istanbul
-coverage/
-*.lcov
+# 环境变量
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# Temporary folders
-tmp/
-temp/
-
-# Data files
-data.json
-
-# Backend logs
-backend/logs/
-backend/*.log
-
-# Frontend build artifacts (if any)
+# 构建输出
+dist/
+build/
+out/
 frontend/build/
 frontend/dist/
