@@ -247,11 +247,17 @@ function updateCartCount() {
         async function register(event) {
             event.preventDefault();
             
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
+            const username = document.getElementById('reg-username').value;
+            const password = document.getElementById('reg-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
             
             if (!username || !password) {
                 showToast('请填写完整的用户名和密码');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showToast('两次输入的密码不一致');
                 return;
             }
             
