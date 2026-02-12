@@ -267,26 +267,22 @@ app.get('/api/admin/stats', async (req, res) => {
             actionDistribution = [100, 50, 30, 20];
         }
         
-        // 生成从今年1月1日到现在的日期时间轴数据
-        const generateDateRange = () => {
+        // 生成从今年1月1日到现在的月份时间轴数据
+        const generateMonthRange = () => {
             const now = new Date();
             const startYear = now.getFullYear();
-            const startDate = new Date(startYear, 0, 1); // 1月1日（月份从0开始）
-            const endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const currentMonth = now.getMonth() + 1; // 当前月份 (1-12)
             
-            const dateRange = [];
-            let currentDate = new Date(startDate);
-            
-            while (currentDate <= endDate) {
-                dateRange.push(new Date(currentDate));
-                currentDate.setDate(currentDate.getDate() + 1);
+            const monthRange = [];
+            for (let month = 1; month <= currentMonth; month++) {
+                monthRange.push(month);
             }
             
-            return dateRange;
+            return monthRange;
         };
         
-        // 生成流量数据（基于真实用户日志数据）
-        const generateTrafficData = (dates) => {
+        // 生成流量数据（基于真实用户日志数据，按月份分组）
+        const generateTrafficDataByMonth = (months) => {
             // 获取所有用户日志用于生成真实的流量数据
             const allLogs = db.getRecentLogs(10000); // 获取最多10000条日志
             
@@ -294,30 +290,34 @@ app.get('/api/admin/stats', async (req, res) => {
                 const trafficData = [];
                 const logMap = new Map();
                 
-                // 按日期统计日志数量
+                // 按月份统计日志数量
                 logs.forEach(log => {
                     if (log.created_at) {
-                        const dateStr = log.created_at.split('T')[0];
-                        logMap.set(dateStr, (logMap.get(dateStr) || 0) + 1);
+                        const date = new Date(log.created_at);
+                        const year = date.getFullYear();
+                        const month = date.getMonth() + 1; // 月份 (1-12)
+                        const currentYear = new Date().getFullYear();
+                        
+                        // 只统计今年的数据
+                        if (year === currentYear) {
+                            const monthKey = month;
+                            logMap.set(monthKey, (logMap.get(monthKey) || 0) + 1);
+                        }
                     }
                 });
                 
-                // 为每个日期生成流量数据
-                dates.forEach(date => {
-                    const dateStr = date.toISOString().split('T')[0];
-                    const value = logMap.get(dateStr) || 0;
-                    trafficData.push({
-                        date: dateStr,
-                        value: value
-                    });
+                // 为每个月份生成流量数据
+                months.forEach(month => {
+                    const value = logMap.get(month) || 0;
+                    trafficData.push(value);
                 });
                 
                 return trafficData;
             });
         };
         
-        const dateRange = generateDateRange();
-        const hourlyTrafficPromise = generateTrafficData(dateRange);
+        const monthRange = generateMonthRange();
+        const hourlyTrafficPromise = generateTrafficDataByMonth(monthRange);
         
         // 等待流量数据生成完成
         const hourlyTraffic = await hourlyTrafficPromise;

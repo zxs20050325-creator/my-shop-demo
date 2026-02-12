@@ -529,19 +529,26 @@
         }
 
         function initCharts() {
-            // 流量图
+            // 流量图 - 修改为按月份显示
             const ctx1 = document.getElementById('trafficChart').getContext('2d');
             const gradient = ctx1.createLinearGradient(0, 0, 0, 400);
             gradient.addColorStop(0, 'rgba(47, 72, 66, 0.2)');
             gradient.addColorStop(1, 'rgba(47, 72, 66, 0)');
 
+            // 生成月份标签 (1月到当前月份)
+            const currentMonth = new Date().getMonth() + 1; // 当前月份 (1-12)
+            const monthLabels = [];
+            for (let i = 1; i <= currentMonth; i++) {
+                monthLabels.push(`${i}月`);
+            }
+
             trafficChart = new Chart(ctx1, {
                 type: 'line',
                 data: {
-                    labels: Array.from({length: 24}, (_, i) => `${i}:00`),
+                    labels: monthLabels,
                     datasets: [{
                         label: '访问量',
-                        data: Array(24).fill(0),
+                        data: Array(monthLabels.length).fill(0),
                         borderColor: '#2F4842',
                         backgroundColor: gradient,
                         borderWidth: 2,
