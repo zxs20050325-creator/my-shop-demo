@@ -446,57 +446,14 @@
         const API_BASE = isDeployed ? 'https://jiyi-zhumeng.onrender.com' : 'http://localhost:3000';
         let currentProduct = null;
 
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProductDetails();
+            trackPageView(); // 添加浏览跟踪
+        });
+
         // 页面加载完成后获取商品详情
-        window.onload = function() {
-            syncSession();
-            loadProductDetail();
-            initFloatingCart();
-            setupScrollHandler();
-        };
-
-        // 同步用户会话状态
-        function syncSession() {
-            const currentUser = localStorage.getItem('jiyi_user');
-            const authSection = document.getElementById('authSection');
-            if(currentUser) {
-                authSection.innerHTML = `${currentUser} / SIGN OUT`;
-                authSection.onclick = () => {
-                    localStorage.clear(); 
-                    location.reload();
-                };
-            } else {
-                authSection.innerHTML = "ACCOUNT / SIGN IN";
-                authSection.onclick = () => {
-                    window.location.href = 'login.html';
-                };
-            }
-        }
-
-        // 初始化浮动购物车
-        async function initFloatingCart() {
-            try {
-                const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
-                document.getElementById('cartBadge').textContent = cart.length;
-                document.getElementById('floatingCartCount').textContent = cart.length;
-            } catch (e) {
-                console.error('获取购物车信息失败:', e);
-            }
-        }
-
-        // 滚动处理
-        function setupScrollHandler() {
-            const topBar = document.getElementById('topBar');
-            window.addEventListener('scroll', () => {
-                if (window.pageYOffset > 50) {
-                    topBar.classList.add('scrolled');
-                } else {
-                    topBar.classList.remove('scrolled');
-                }
-            });
-        }
-
-        // 加载商品详情
-        async function loadProductDetail() {
+        async function loadProductDetails() {
             // 从URL参数中获取商品ID
             const urlParams = new URLSearchParams(window.location.search);
             const productId = urlParams.get('id');
@@ -544,7 +501,48 @@
             }
         }
 
-        // 添加到购物车
+        // 同步用户会话状态
+        function syncSession() {
+            const currentUser = localStorage.getItem('jiyi_user');
+            const authSection = document.getElementById('authSection');
+            if(currentUser) {
+                authSection.innerHTML = `${currentUser} / SIGN OUT`;
+                authSection.onclick = () => {
+                    localStorage.clear(); 
+                    location.reload();
+                };
+            } else {
+                authSection.innerHTML = "ACCOUNT / SIGN IN";
+                authSection.onclick = () => {
+                    window.location.href = 'login.html';
+                };
+            }
+        }
+
+        // 初始化浮动购物车
+        async function initFloatingCart() {
+            try {
+                const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
+                document.getElementById('cartBadge').textContent = cart.length;
+                document.getElementById('floatingCartCount').textContent = cart.length;
+            } catch (e) {
+                console.error('获取购物车信息失败:', e);
+            }
+        }
+
+        // 滚动处理
+        function setupScrollHandler() {
+            const topBar = document.getElementById('topBar');
+            window.addEventListener('scroll', () => {
+                if (window.pageYOffset > 50) {
+                    topBar.classList.add('scrolled');
+                } else {
+                    topBar.classList.remove('scrolled');
+                }
+            });
+        }
+
+        // 添加到购物车（同时同步到后端）
         async function addToCart() {
             const currentUser = localStorage.getItem('jiyi_user');
             if(!currentUser) {
@@ -558,9 +556,29 @@
                 return;
             }
 
+            // 先更新本地存储
             const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
             cart.push(currentProduct);
             localStorage.setItem('jiyi_cart', JSON.stringify(cart));
+            
+            // 同步到后端
+            try {
+                const API_BASE = window.location.hostname.includes('onrender.com') 
+                    ? 'https://jiyi-zhumeng.onrender.com' : '';
+                
+                await fetch(`${API_BASE}/api/cart/add`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: currentUser,
+                        product: currentProduct
+                    })
+                });
+                
+                console.log('购物车数据已同步到服务器');
+            } catch (error) {
+                console.error('同步购物车失败:', error);
+            }
             
             // 更新UI
             document.querySelector('.btn-buy').textContent = '已加入购物车!';
@@ -571,17 +589,113 @@
             initFloatingCart();
         }
 
-        // 切换收藏状态
-        function toggleFavorite() {
-            const button = document.querySelector('.btn-favorite');
-            const originalText = button.textContent;
-            button.disabled = true;
-            button.textContent = '功能开发中...';
+        // 切换收藏状态（同步到后端）
+        async function toggleFavorite() {
+            const currentUser = localStorage.getItem('jiyi_user');
+            if(!currentUser) {
+                alert("请先登录");
+                window.location.href = 'login.html';
+                return;
+            }
 
+            if(!currentProduct) {
+                alert('商品信息无效');
+                return;
+            }
+
+            const button = document.querySelector('.btn-favorite');
+            button.disabled = true;
+            button.textContent = '处理中...';
+
+            try {
+                const API_BASE = window.location.hostname.includes('onrender.com') 
+                    ? 'https://jiyi-zhumeng.onrender.com' : '';
+                
+                const response = await fetch(`${API_BASE}/api/favorites/add`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: currentUser,
+                        product: currentProduct
+                    })
+                });
+                
+                const result = await response.json();
+                if(result.success) {
+                    showToast('已添加到收藏夹');
+                    
+                    // 同时更新本地存储
+                    const favorites = JSON.parse(localStorage.getItem('jiyi_favorites') || '[]');
+                    favorites.push(currentProduct.id);
+                    localStorage.setItem('jiyi_favorites', JSON.stringify(favorites));
+                } else {
+                    showToast(result.message || '操作失败');
+                }
+            } catch (error) {
+                console.error('收藏操作失败:', error);
+                showToast('网络错误，请重试');
+            }
+            
             setTimeout(() => {
-                button.textContent = originalText;
+                button.textContent = '收藏';
                 button.disabled = false;
             }, 1000);
+        }
+        
+        // 页面加载时记录商品浏览
+        async function trackPageView() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get('id');
+            
+            if(productId && currentProduct) {
+                const currentUser = localStorage.getItem('jiyi_user') || '游客';
+                
+                try {
+                    const API_BASE = window.location.hostname.includes('onrender.com') 
+                        ? 'https://jiyi-zhumeng.onrender.com' : '';
+                    
+                    await fetch(`${API_BASE}/api/track`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            username: currentUser,
+                            action: '浏览商品',
+                            product: currentProduct.name
+                        })
+                    });
+                } catch (error) {
+                    console.error('记录浏览行为失败:', error);
+                }
+            }
+        }
+        
+        // 显示提示消息
+        function showToast(message) {
+            let toast = document.getElementById('toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'toast';
+                toast.style.cssText = `
+                    position: fixed;
+                    bottom: 20px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: rgba(0,0,0,0.8);
+                    color: white;
+                    padding: 10px 20px;
+                    border-radius: 4px;
+                    z-index: 9999;
+                    font-size: 14px;
+                `;
+                document.body.appendChild(toast);
+            }
+            
+            toast.textContent = message;
+            toast.style.display = 'block';
+            
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 2000);
         }
     </script>
 </body>

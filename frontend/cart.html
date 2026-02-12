@@ -99,7 +99,7 @@
                 <span>选藏总计 / TOTAL AMOUNT</span>
                 <div class="total-price" id="totalDisplay">¥0</div>
             </div>
-            <button class="btn-take-home" onclick="location.href='pay.html'">带走它 / TAKE ME HOME</button>
+            <button class="btn-take-home" onclick="checkout()">带走它 / TAKE ME HOME</button>
         </div>
     </div>
 
@@ -140,6 +140,73 @@
             cart.splice(idx, 1);
             localStorage.setItem('jiyi_cart', JSON.stringify(cart));
             renderSelection();
+            
+            // 同步到后端（可选）
+            const currentUser = localStorage.getItem('jiyi_user');
+            if(currentUser) {
+                try {
+                    const API_BASE = window.location.hostname.includes('onrender.com') 
+                        ? 'https://jiyi-zhumeng.onrender.com' : '';
+                    
+                    fetch(`${API_BASE}/api/cart/remove`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            username: currentUser,
+                            index: idx
+                        })
+                    });
+                } catch (error) {
+                    console.error('同步移除购物车失败:', error);
+                }
+            }
+        }
+        
+        // 结算功能 - 同步到后端
+        async function checkout() {
+            const currentUser = localStorage.getItem('jiyi_user');
+            if(!currentUser) {
+                alert("请先登录");
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
+            if(cart.length === 0) {
+                alert('购物车为空');
+                return;
+            }
+            
+            const total = cart.reduce((sum, item) => sum + parseFloat(item.price), 0);
+            
+            try {
+                const API_BASE = window.location.hostname.includes('onrender.com') 
+                    ? 'https://jiyi-zhumeng.onrender.com' : '';
+                
+                const response = await fetch(`${API_BASE}/api/cart/checkout`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: currentUser,
+                        totalPrice: total
+                    })
+                });
+                
+                const result = await response.json();
+                if(result.success) {
+                    // 清空本地购物车
+                    localStorage.removeItem('jiyi_cart');
+                    showToast('结算成功！');
+                    setTimeout(() => {
+                        window.location.href = 'pay.html';
+                    }, 1500);
+                } else {
+                    alert('结算失败，请重试');
+                }
+            } catch (error) {
+                console.error('结算失败:', error);
+                alert('网络错误，请重试');
+            }
         }
 
         document.addEventListener('DOMContentLoaded', renderSelection);

@@ -208,6 +208,82 @@ function buildImageUrl(imagePath) {
     return apiBase ? `${apiBase}/images/${imagePath}` : `./images/${imagePath}`;
 }
 
+/**
+ * 记录用户行为到后端
+ * @param {string} action - 行为类型
+ * @param {string} product - 商品信息（可选）
+ */
+async function trackUserAction(action, product = null) {
+    const currentUser = getCurrentUser() || '游客';
+    const apiBase = getApiBase();
+    
+    try {
+        await fetch(`${apiBase}/api/track`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                username: currentUser,
+                action: action,
+                product: product
+            })
+        });
+    } catch (error) {
+        console.error('记录用户行为失败:', error);
+    }
+}
+
+/**
+ * 同步购物车到后端
+ * @param {Object} product - 商品对象
+ * @param {number} quantity - 数量
+ */
+async function syncCartToBackend(product, quantity = 1) {
+    const currentUser = getCurrentUser();
+    if (!currentUser) return false;
+    
+    const apiBase = getApiBase();
+    try {
+        const response = await fetch(`${apiBase}/api/cart/add`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                username: currentUser,
+                product: product
+            })
+        });
+        return response.ok;
+    } catch (error) {
+        console.error('同步购物车失败:', error);
+        return false;
+    }
+}
+
+/**
+ * 同步收藏到后端
+ * @param {Object} product - 商品对象
+ */
+async function syncFavoriteToBackend(product) {
+    const currentUser = getCurrentUser();
+    if (!currentUser) return false;
+    
+    const apiBase = getApiBase();
+    try {
+        const response = await fetch(`${apiBase}/api/favorites/add`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                username: currentUser,
+                product: product
+            })
+        });
+        const result = await response.json();
+        return result.success;
+    } catch (error) {
+        console.error('同步收藏失败:', error);
+        return false;
+    }
+}
+
 // ========================================
 // 4. 购物车相关工具函数
 // ========================================

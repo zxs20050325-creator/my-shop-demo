@@ -690,6 +690,31 @@
                 
                 if (success) {
                     this.renderCart();
+                    
+                    // 同步到后端并记录行为
+                    const currentUser = getCurrentUser() || '游客';
+                    const apiBase = getApiBase();
+                    
+                    // 添加购物车同步
+                    fetch(`${apiBase}/api/cart/add`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            username: currentUser,
+                            product: p
+                        })
+                    }).catch(error => console.error('同步购物车失败:', error));
+                    
+                    // 记录浏览行为
+                    fetch(`${apiBase}/api/track`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            username: currentUser,
+                            action: '加入购物车',
+                            product: p.name
+                        })
+                    }).catch(error => console.error('记录行为失败:', error));
                 }
             }
 
