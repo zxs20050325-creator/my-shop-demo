@@ -135,17 +135,48 @@
             <button type="submit" class="btn-connect">连接空间 / CONNECT</button>
         </form>
 
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="register.html" style="color: #2F4842; text-decoration: none; font-size: 12px; opacity: 0.6; transition: 0.3s;">还没有账户？立即注册</a>
+        </div>
+
         <a href="index.html" class="back-link">← 返回首页探索 / BACK HOME</a>
     </div>
 
     <script src="common.js"></script>
     <script>
-        function handleLogin(e) {
+        async function handleLogin(e) {
             e.preventDefault();
-            const user = document.getElementById('username').value;
-            localStorage.setItem('jiyi_user', user);
-            alert('主理人身份已确认，正在开启空间...');
-            window.location.href = 'index.html';
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (!username || !password) {
+                alert('请输入完整的用户名和密码');
+                return;
+            }
+            
+            try {
+                const apiBase = getApiBase();
+                const response = await fetch(`${apiBase}/api/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    localStorage.setItem('jiyi_user', username);
+                    alert('主理人身份已确认，正在开启空间...');
+                    window.location.href = 'index.html';
+                } else {
+                    alert(result.message || '登录失败，请检查用户名和密码');
+                }
+            } catch (error) {
+                console.error('登录请求失败:', error);
+                alert('网络错误，请检查连接后重试');
+            }
         }
     </script>
 </body>
