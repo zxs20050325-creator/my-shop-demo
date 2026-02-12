@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>后台管理 - 冀遗筑梦</title>
     <!-- 引入字体与图标 -->
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
@@ -34,9 +34,10 @@
             font-family: var(--f-serif); 
             display: flex;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        /* 1. 侧边栏 (复刻 index.html) */
+        /* 1. 侧边栏 */
         .sidebar {
             width: var(--sidebar-width);
             background: #fff;
@@ -47,7 +48,8 @@
             padding: 30px 0;
             position: fixed;
             height: 100vh;
-            z-index: 100;
+            z-index: 1000;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .brand-seal {
             background: var(--c-primary);
@@ -78,6 +80,7 @@
             margin-left: var(--sidebar-width);
             padding: 40px 60px;
             overflow-y: auto;
+            transition: margin-left 0.3s ease;
         }
 
         .header {
@@ -88,6 +91,9 @@
             border-bottom: 2px solid var(--c-primary);
             padding-bottom: 20px;
         }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .mobile-menu-btn { display: none; font-size: 24px; color: var(--c-primary); cursor: pointer; }
+
         .header h1 { font-size: 32px; font-weight: 900; color: var(--c-primary); margin: 0; }
         .header span { font-family: var(--f-eng); color: var(--c-accent); letter-spacing: 2px; font-size: 14px; font-weight: bold; }
         
@@ -113,7 +119,7 @@
             margin-bottom: 40px;
         }
 
-        /* 4. 卡片样式 (文档风格) */
+        /* 4. 卡片样式 */
         .kpi-card {
             background: #fff;
             padding: 25px;
@@ -121,6 +127,7 @@
             box-shadow: var(--card-shadow);
             position: relative;
             transition: transform 0.3s ease;
+            overflow: hidden;
         }
         .kpi-card:hover { transform: translateY(-3px); border-color: var(--c-accent); }
         .kpi-card::before {
@@ -129,7 +136,7 @@
         }
         .kpi-title { font-size: 12px; color: #999; font-family: var(--f-eng); letter-spacing: 1px; margin-bottom: 10px; }
         .kpi-value { font-size: 32px; font-weight: 900; color: var(--c-primary); font-family: var(--f-eng); }
-        .kpi-trend { font-size: 12px; margin-top: 10px; color: var(--c-accent); }
+        .kpi-trend { font-size: 12px; margin-top: 10px; color: var(--c-accent); display: flex; align-items: center; gap: 5px; }
 
         /* 图表容器 */
         .chart-box {
@@ -137,6 +144,7 @@
             padding: 25px;
             border: 1.5px solid var(--c-grid);
             box-shadow: var(--card-shadow);
+            position: relative;
         }
         .chart-full { grid-column: span 2; height: 380px; }
         .chart-half { grid-column: span 1; height: 380px; }
@@ -145,9 +153,8 @@
         /* 5. 表格与控制区 */
         .wide-section { grid-column: span 4; background: #fff; padding: 30px; border: 1.5px solid var(--c-grid); box-shadow: var(--card-shadow); }
         
-        .controls-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .controls-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
         
-        /* 搜索框风格化 */
         .search-input {
             border: none; border-bottom: 2px solid var(--c-grid);
             background: transparent; padding: 8px 0; width: 250px;
@@ -155,30 +162,26 @@
         }
         .search-input:focus { border-bottom-color: var(--c-accent); }
 
-        /* 按钮风格化 (印章风格) */
         .btn {
             background: transparent; border: 1.5px solid var(--c-primary);
             color: var(--c-primary); padding: 8px 20px; cursor: pointer;
             font-family: var(--f-serif); font-weight: bold; transition: 0.3s;
-            display: inline-flex; align-items: center; gap: 8px;
+            display: inline-flex; align-items: center; gap: 8px; white-space: nowrap;
         }
         .btn:hover { background: var(--c-primary); color: #fff; }
         .btn-danger { border-color: var(--c-danger); color: var(--c-danger); }
         .btn-danger:hover { background: var(--c-danger); color: #fff; }
 
-        /* 表格风格化 */
         .data-table { width: 100%; border-collapse: collapse; }
         .data-table th { text-align: left; padding: 15px; border-bottom: 2px solid var(--c-primary); color: var(--c-primary); font-family: var(--f-eng); font-size: 12px; }
         .data-table td { padding: 12px 15px; border-bottom: 1px solid #eee; font-size: 14px; color: #555; }
         .data-table tr:hover { background: rgba(193, 162, 104, 0.05); }
 
-        /* 徽章 */
         .badge { padding: 2px 8px; border-radius: 2px; font-size: 11px; font-weight: bold; border: 1px solid currentColor; }
         .b-pay { color: #10b981; border-color: #10b981; background: rgba(16, 185, 129, 0.1); }
         .b-cart { color: #f59e0b; border-color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
         .b-view { color: #3b82f6; border-color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
 
-        /* 通知 */
         .notification {
             position: fixed; top: 20px; right: 20px; padding: 15px 25px;
             background: var(--c-primary); color: #fff; 
@@ -188,60 +191,94 @@
         }
         .notification.show { transform: translateX(0); }
 
+        /* 移动端覆盖样式 (New!) */
+        .sidebar-mask {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 900; backdrop-filter: blur(5px);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); width: 200px; padding-top: 60px; align-items: flex-start; padding-left: 30px; }
+            .sidebar.open { transform: translateX(0); }
+            .sidebar .nav-icon { display: flex; gap: 10px; width: 100%; font-size: 16px; margin: 10px 0; opacity: 1; }
+            .sidebar .nav-icon::after { content: attr(title); font-size: 14px; }
+            .sidebar .brand-seal { display: none; } /* 移动端隐藏侧边栏印章 */
+            
+            .main-content { margin-left: 0; padding: 20px; }
+            .mobile-menu-btn { display: block; }
+            
+            .dashboard-grid { grid-template-columns: 1fr; gap: 20px; }
+            .kpi-card { margin-bottom: 0; }
+            .chart-full, .chart-half, .wide-section { grid-column: span 1; height: auto; }
+            .chart-box canvas { min-height: 250px; }
+            
+            .header h1 { font-size: 20px; }
+            .header span { display: block; margin-top: 5px; }
+            
+            .data-table th:nth-child(4), .data-table td:nth-child(4) { display: none; } /* 手机端隐藏详情列 */
+            .controls-bar { flex-direction: column; align-items: stretch; }
+            .search-input { width: 100%; }
+        }
     </style>
 </head>
 <body>
 
+    <!-- 移动端遮罩 -->
+    <div class="sidebar-mask" id="sidebar-mask" onclick="toggleSidebar()"></div>
+
     <!-- 侧边栏 -->
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
         <div class="brand-seal" onclick="location.href='index.html'">冀遗筑梦</div>
         <i class="fa fa-dashboard nav-icon active" title="仪表盘"></i>
-        <i class="fa fa-users nav-icon" title="用户管理" onclick="scrollToSection('user-sec')"></i>
-        <i class="fa fa-cube nav-icon" title="商品管理" onclick="scrollToSection('prod-sec')"></i>
-        <i class="fa fa-cogs nav-icon" title="系统设置" onclick="scrollToSection('sys-sec')"></i>
+        <i class="fa fa-users nav-icon" title="用户管理" onclick="scrollToSection('user-sec');toggleSidebar()"></i>
+        <i class="fa fa-cube nav-icon" title="商品管理" onclick="scrollToSection('prod-sec');toggleSidebar()"></i>
+        <i class="fa fa-cogs nav-icon" title="系统设置" onclick="scrollToSection('sys-sec');toggleSidebar()"></i>
         <div style="flex:1"></div>
         <i class="fa fa-sign-out nav-icon" title="退出" onclick="location.href='index.html'"></i>
     </aside>
 
     <div class="main-content">
         <div class="header">
-            <div>
-                <h1>数据监控中心</h1>
-                <span>ADMINISTRATOR DASHBOARD // V8.2</span>
+            <div class="header-left">
+                <i class="fa fa-bars mobile-menu-btn" onclick="toggleSidebar()"></i>
+                <div>
+                    <h1>数据监控中心</h1>
+                    <span>ADMINISTRATOR DASHBOARD // V8.2</span>
+                </div>
             </div>
-            <div class="status-badge"><div class="status-dot"></div> SYSTEM ONLINE</div>
+            <div class="status-badge"><div class="status-dot"></div> ONLINE</div>
         </div>
 
-        <!-- 关键指标 KPI -->
+        <!-- 关键指标 KPI (数字带动画) -->
         <div class="dashboard-grid">
             <div class="kpi-card">
                 <div class="kpi-title">TOTAL REVENUE / 总营收</div>
-                <div class="kpi-value" id="kpi-revenue">¥0</div>
+                <div class="kpi-value">¥<span class="count-up" id="kpi-revenue" data-target="0">0</span></div>
                 <div class="kpi-trend">↑ 实时入账</div>
             </div>
             <div class="kpi-card">
                 <div class="kpi-title">TOTAL VISITS / 访问量</div>
-                <div class="kpi-value" id="kpi-visits">0</div>
+                <div class="kpi-value count-up" id="kpi-visits" data-target="0">0</div>
                 <div class="kpi-trend">↑ 持续增长</div>
             </div>
             <div class="kpi-card">
                 <div class="kpi-title">ORDERS / 成交订单</div>
-                <div class="kpi-value" id="kpi-orders">0</div>
+                <div class="kpi-value count-up" id="kpi-orders" data-target="0">0</div>
                 <div class="kpi-trend">→ 转化平稳</div>
             </div>
             <div class="kpi-card">
                 <div class="kpi-title">ACTIVE USERS / 活跃用户</div>
-                <div class="kpi-value" id="kpi-users">0</div>
+                <div class="kpi-value count-up" id="kpi-users" data-target="0">0</div>
                 <div class="kpi-trend">↑ 在线侦测</div>
             </div>
 
             <!-- 图表区域 -->
             <div class="chart-box chart-full">
-                <div class="section-title">24小时流量趋势 (Traffic Trend)</div>
+                <div class="section-title">24小时流量趋势 (Traffic)</div>
                 <canvas id="trafficChart"></canvas>
             </div>
             <div class="chart-box chart-half">
-                <div class="section-title">用户行为分布 (Actions)</div>
+                <div class="section-title">用户行为分布 (可点击筛选)</div>
                 <canvas id="actionChart"></canvas>
             </div>
             <div class="chart-box chart-half">
@@ -249,13 +286,13 @@
                 <canvas id="productChart"></canvas>
             </div>
 
-            <!-- 实时日志 -->
+            <!-- 实时日志 (支持真实导出) -->
             <div class="wide-section">
                 <div class="controls-bar">
                     <div class="section-title" style="margin:0; border:none; padding:0;">实时交互日志 (Live Logs)</div>
-                    <div style="display:flex; gap:15px;">
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
                         <input type="text" id="search-input" class="search-input" placeholder="检索用户或行为...">
-                        <button class="btn" onclick="exportData()"><i class="fa fa-download"></i> 导出报表</button>
+                        <button class="btn" onclick="realExportData()"><i class="fa fa-download"></i> 导出 CSV</button>
                         <button class="btn btn-danger" onclick="clearData()"><i class="fa fa-trash"></i> 清空</button>
                     </div>
                 </div>
@@ -303,18 +340,54 @@
         const API_BASE = window.location.hostname.includes('onrender.com') 
             ? 'https://jiyi-zhumeng.onrender.com' : 'http://localhost:3000';
         
-        // Chart.js 全局配置 (适配新风格)
+        // Chart.js 全局配置
         Chart.defaults.font.family = "'Noto Serif SC', serif";
         Chart.defaults.color = '#555';
         Chart.defaults.scale.grid.color = '#E6E2DC';
         
         let trafficChart, actionChart, productChart;
         let updateInterval;
+        let currentLogs = []; // 存储当前日志用于导出和筛选
+
+        // 1. 移动端侧边栏切换
+        function toggleSidebar() {
+            const sb = document.getElementById('sidebar');
+            const mask = document.getElementById('sidebar-mask');
+            sb.classList.toggle('open');
+            mask.style.display = sb.classList.contains('open') ? 'block' : 'none';
+        }
+
+        // 2. 数字滚动动画函数
+        function animateNumber(elementId, endValue) {
+            const el = document.getElementById(elementId);
+            const startValue = parseInt(el.innerText.replace(/,/g, '')) || 0;
+            if (startValue === endValue) return;
+
+            const duration = 1000;
+            const startTime = performance.now();
+
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // easeOutQuart 缓动算法
+                const ease = 1 - Math.pow(1 - progress, 4);
+                
+                const current = Math.floor(startValue + (endValue - startValue) * ease);
+                el.innerText = current.toLocaleString(); // 添加千位分隔符
+
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                } else {
+                    el.innerText = endValue.toLocaleString();
+                }
+            }
+            requestAnimationFrame(update);
+        }
 
         function initCharts() {
-            // 1. 流量图 (线图)
+            // 流量图
             const ctx1 = document.getElementById('trafficChart').getContext('2d');
-            // 创建渐变色
             const gradient = ctx1.createLinearGradient(0, 0, 0, 400);
             gradient.addColorStop(0, 'rgba(47, 72, 66, 0.2)');
             gradient.addColorStop(1, 'rgba(47, 72, 66, 0)');
@@ -326,13 +399,13 @@
                     datasets: [{
                         label: '访问量',
                         data: Array(24).fill(0),
-                        borderColor: '#2F4842', // 青黛色
+                        borderColor: '#2F4842',
                         backgroundColor: gradient,
                         borderWidth: 2,
                         fill: true,
                         tension: 0.4,
                         pointBackgroundColor: '#fff',
-                        pointBorderColor: '#C1A268', // 鎏金色点
+                        pointBorderColor: '#C1A268',
                         pointRadius: 3
                     }]
                 },
@@ -347,7 +420,7 @@
                 }
             });
 
-            // 2. 行为分布 (环形图)
+            // 行为分布 (支持点击交互)
             const ctx2 = document.getElementById('actionChart').getContext('2d');
             actionChart = new Chart(ctx2, {
                 type: 'doughnut',
@@ -364,11 +437,21 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     cutout: '70%',
-                    plugins: { legend: { position: 'bottom', labels: { padding: 20, usePointStyle: true } } }
+                    plugins: { legend: { position: 'bottom', labels: { padding: 20, usePointStyle: true } } },
+                    onClick: (evt, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const label = actionChart.data.labels[index];
+                            filterLogsByAction(label);
+                        } else {
+                            // 点击空白处重置
+                            renderLogs(currentLogs);
+                        }
+                    }
                 }
             });
 
-            // 3. 商品热度 (柱状图)
+            // 商品热度
             const ctx3 = document.getElementById('productChart').getContext('2d');
             productChart = new Chart(ctx3, {
                 type: 'bar',
@@ -377,7 +460,7 @@
                     datasets: [{
                         label: '热度',
                         data: [],
-                        backgroundColor: '#C1A268', // 鎏金色
+                        backgroundColor: '#C1A268',
                         borderRadius: 4,
                         barThickness: 20
                     }]
@@ -392,22 +475,22 @@
             });
         }
 
-        // 核心数据更新逻辑
+        // 3. 核心数据更新逻辑
         async function updateDashboard() {
             try {
                 const res = await fetch(`${API_BASE}/api/admin/stats`);
                 const data = await res.json();
+                
+                // 使用动画更新数字
+                animateNumber('kpi-revenue', data.kpi.revenue);
+                animateNumber('kpi-visits', data.kpi.visits);
+                animateNumber('kpi-orders', data.kpi.orders);
+                animateNumber('kpi-users', data.kpi.activeUsers);
 
-                // 1. 更新 KPI 数字
-                document.getElementById('kpi-revenue').innerText = `¥${data.kpi.revenue}`;
-                document.getElementById('kpi-visits').innerText = data.kpi.visits;
-                document.getElementById('kpi-orders').innerText = data.kpi.orders;
-                document.getElementById('kpi-users').innerText = data.kpi.activeUsers;
-
-                // 2. 更新图表 (仅更新数据，不销毁重建)
+                // 更新图表
                 if (trafficChart) {
                     trafficChart.data.datasets[0].data = data.charts.hourlyTraffic;
-                    trafficChart.update('none'); // 'none' 模式更新更流畅
+                    trafficChart.update('none');
                 }
                 if (actionChart) {
                     actionChart.data.datasets[0].data = data.charts.actionDistribution;
@@ -419,36 +502,83 @@
                     productChart.update('none');
                 }
 
-                // 3. 更新日志表格 (性能优化：使用 DocumentFragment)
-                const tbody = document.getElementById('log-table-body');
-                const fragment = document.createDocumentFragment();
-                
-                // 仅显示最新的 10 条
-                data.logs.slice(0, 10).forEach(log => {
-                    const tr = document.createElement('tr');
-                    
-                    let badgeClass = 'b-view';
-                    if(log.action.includes('支付')) badgeClass = 'b-pay';
-                    if(log.action.includes('加入')) badgeClass = 'b-cart';
-
-                    tr.innerHTML = `
-                        <td style="color:#999; font-family:'Courier New'">${log.time.split(' ')[1]}</td>
-                        <td style="font-weight:bold">${log.username}</td>
-                        <td><span class="badge ${badgeClass}">${log.action}</span></td>
-                        <td>${log.product}</td>
-                    `;
-                    fragment.appendChild(tr);
-                });
-                
-                tbody.innerHTML = '';
-                tbody.appendChild(fragment);
+                // 保存当前日志并渲染
+                currentLogs = data.logs;
+                // 如果搜索框为空，才刷新表格，避免用户搜索时被打断
+                if(document.getElementById('search-input').value === '') {
+                    renderLogs(currentLogs);
+                }
 
             } catch (err) {
                 console.error("Dashboard update failed:", err);
             }
         }
 
-        // 模拟商品数据加载
+        // 渲染日志表格辅助函数
+        function renderLogs(logs) {
+            const tbody = document.getElementById('log-table-body');
+            const fragment = document.createDocumentFragment();
+            
+            // 默认显示前15条
+            logs.slice(0, 15).forEach(log => {
+                const tr = document.createElement('tr');
+                let badgeClass = 'b-view';
+                if(log.action.includes('支付')) badgeClass = 'b-pay';
+                if(log.action.includes('加入')) badgeClass = 'b-cart';
+
+                tr.innerHTML = `
+                    <td style="color:#999; font-family:'Courier New'">${log.time.split(' ')[1]}</td>
+                    <td style="font-weight:bold">${log.username}</td>
+                    <td><span class="badge ${badgeClass}">${log.action}</span></td>
+                    <td>${log.product}</td>
+                `;
+                fragment.appendChild(tr);
+            });
+            
+            tbody.innerHTML = '';
+            tbody.appendChild(fragment);
+        }
+
+        // 图表筛选逻辑
+        function filterLogsByAction(actionType) {
+            const filtered = currentLogs.filter(log => log.action.includes(actionType));
+            renderLogs(filtered);
+            showNotification(`已筛选: ${actionType} (${filtered.length}条)`);
+        }
+
+        // 4. 真实 CSV 导出
+        function realExportData() {
+            if (!currentLogs || currentLogs.length === 0) {
+                showNotification('暂无数据可导出');
+                return;
+            }
+
+            // CSV 表头
+            let csvContent = "\uFEFFTime,User,Action,Product\n"; // 添加 BOM 解决乱码
+            
+            // CSV 内容
+            currentLogs.forEach(row => {
+                csvContent += `${row.time},${row.username},${row.action},${row.product}\n`;
+            });
+
+            // 创建 Blob 并下载
+            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            
+            const timestamp = new Date().toISOString().slice(0,10);
+            link.setAttribute("href", url);
+            link.setAttribute("download", `Jiyi_Report_${timestamp}.csv`);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showNotification('报表下载成功');
+        }
+
+        // 模拟商品刷新
         function refreshProducts() {
             const tbody = document.getElementById('product-table-body');
             tbody.innerHTML = `
@@ -459,7 +589,6 @@
             showNotification('商品列表已刷新');
         }
 
-        // 工具函数
         function scrollToSection(id) {
             document.getElementById(id).scrollIntoView({behavior: 'smooth'});
         }
@@ -469,12 +598,6 @@
             n.innerText = msg;
             n.classList.add('show');
             setTimeout(() => n.classList.remove('show'), 3000);
-        }
-
-        function exportData() {
-            showNotification('正在生成报表 CSV...');
-            // 模拟下载延迟
-            setTimeout(() => showNotification('报表下载完成'), 1500);
         }
 
         function clearData() {
@@ -487,23 +610,24 @@
             }
         }
 
-        // 搜索过滤 (前端过滤)
+        // 搜索过滤
         document.getElementById('search-input').addEventListener('input', function(e) {
             const term = e.target.value.toLowerCase();
-            const rows = document.querySelectorAll('#log-table-body tr');
-            rows.forEach(row => {
-                const text = row.innerText.toLowerCase();
-                row.style.display = text.includes(term) ? '' : 'none';
-            });
+            const filtered = currentLogs.filter(log => 
+                log.username.toLowerCase().includes(term) || 
+                log.action.toLowerCase().includes(term) ||
+                log.product.toLowerCase().includes(term)
+            );
+            renderLogs(filtered);
         });
 
-        // 初始化与性能优化
+        // 初始化
         window.onload = function() {
             initCharts();
             updateDashboard();
             refreshProducts();
 
-            // 轮询机制优化：页面不可见时停止轮询，节省资源
+            // 轮询与页面可见性检测
             startPolling();
             document.addEventListener('visibilitychange', () => {
                 if (document.hidden) stopPolling();
