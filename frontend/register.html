@@ -46,203 +46,174 @@ function updateCartCount() {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>用户注册 - 冀遗筑梦</title>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <style>
-        /* 自定义光标 */
-        body {
-            cursor: none; /* 隐藏默认光标 */
-        }
-        
-        .custom-cursor {
-            position: fixed;
-            width: 20px;
-            height: 20px;
-            border: 1px solid var(--c-primary);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 9999;
-            transform: translate(-50%, -50%);
-            transition: transform 0.1s ease, width 0.3s ease, height 0.3s ease;
-            mix-blend-mode: difference;
-        }
-        
-        .custom-cursor-dot {
-            position: fixed;
-            width: 6px;
-            height: 6px;
-            background-color: var(--c-primary);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 9999;
-            transform: translate(-50%, -50%);
-            transition: transform 0.1s ease, width 0.3s ease, height 0.3s ease;
-        }
-        
-        a:hover ~ .custom-cursor,
-        button:hover ~ .custom-cursor {
-            width: 40px;
-            height: 40px;
-        }
-        
-        a:hover ~ .custom-cursor-dot,
-        button:hover ~ .custom-cursor-dot {
-            width: 12px;
-            height: 12px;
-        }
-    </style>
-    
-    <!-- 引入公共CSS和JS -->
     <link rel="stylesheet" href="./styles.css">
     <script src="./common.js"></script>
-
     <style>
-        /* 注册页面特定样式 */
+        body {
+            background-color: #F5F3EF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Noto Serif SC', serif;
+        }
+        
         .register-container {
+            background: #fff;
+            width: 100%;
             max-width: 400px;
-            margin: 100px auto;
-            padding: 40px;
-            background: white;
-            border: 1px solid var(--c-primary);
-            border-radius: 4px;
+            padding: 60px 40px;
+            border: 2px solid #2F4842;
+            box-shadow: 20px 20px 0 #C1A268;
+            position: relative;
         }
         
-        .register-form input {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid var(--c-grid);
-            font-family: var(--f-serif);
+        .register-container::after {
+            content: "ARCHIVE ID: 8.2V";
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            font-size: 10px;
+            color: #ccc;
+            font-family: monospace;
         }
         
-        .register-btn {
+        .header-title { 
+            text-align: center; 
+            margin-bottom: 45px; 
+        }
+        .header-title h2 { 
+            font-size: 32px; 
+            color: #2F4842; 
+            margin: 0; 
+            letter-spacing: 2px; 
+        }
+        .header-title span { 
+            font-size: 12px; 
+            color: #C1A268; 
+            letter-spacing: 5px; 
+            font-weight: bold; 
+        }
+        
+        .form-group { 
+            position: relative; 
+            margin-bottom: 35px; 
+        }
+        .form-group input {
             width: 100%;
-            padding: 12px;
-            background: var(--c-primary);
-            color: white;
+            padding: 12px 0;
             border: none;
-            font-family: var(--f-mono);
-            letter-spacing: 2px;
+            border-bottom: 1.5px solid #E6E2DC;
+            background: transparent;
+            font-size: 16px;
+            outline: none;
+            transition: 0.3s;
         }
-        
-        .register-btn:hover {
-            background: var(--c-accent);
+        .form-group input:focus { 
+            border-bottom-color: #2F4842; 
         }
-        
-        /* 轻量级自定义光标 */
-        #custom-cursor {
-            position: fixed;
-            width: 12px;
-            height: 12px;
-            border: 2px solid var(--c-primary, #2F4842);
-            border-radius: 50%;
+        .form-group label {
+            position: absolute;
+            left: 0;
+            top: 12px;
+            color: #999;
             pointer-events: none;
-            z-index: 9999;
-            transform: translate(-50%, -50%);
-            transition: transform 0.2s ease, border-color 0.2s ease;
+            transition: 0.3s;
+            font-size: 14px;
+        }
+        .form-group input:focus ~ label,
+        .form-group input:valid ~ label {
+            top: -12px;
+            font-size: 11px;
+            color: #C1A268;
+            font-weight: bold;
         }
         
-        #custom-cursor.hover {
-            transform: translate(-50%, -50%) scale(1.2);
-            border-color: var(--c-accent, #C1A268);
+        .form-button {
+            width: 100%;
+            padding: 18px;
+            background: #2F4842;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            letter-spacing: 4px;
+            transition: 0.4s;
+            font-weight: bold;
+        }
+        .form-button:hover {
+            background: #C1A268;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(193, 162, 104, 0.3);
         }
         
-        /* 隐藏侧边栏 - 符合特定页面非必要元素隐藏规范 */
-        .sidebar {
-            display: none;
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 30px;
+            color: #2F4842;
+            text-decoration: none;
+            font-size: 12px;
+            opacity: 0.6;
+            transition: 0.3s;
+        }
+        .back-link:hover { 
+            opacity: 1; 
+            color: #C1A268; 
+        }
+        
+        .form-footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+        }
+        .form-footer a {
+            color: #2F4842;
+            text-decoration: none;
+            opacity: 0.6;
+            transition: 0.3s;
+        }
+        .form-footer a:hover {
+            opacity: 1;
+            color: #C1A268;
         }
     </style>
 </head>
 <body>
-    <div class="floating-cart" onclick="window.location.href='cart.html'">
-        <i class="fa fa-shopping-cart"></i>
-        <div class="cart-count" id="floatingCartCount">0</div>
-    </div>
-    
-    <!-- 侧边栏已隐藏，符合规范要求 -->
+    <div class="register-container">
+        <div class="header-title">
+            <h2>用户注册</h2>
+            <span>USER REGISTRATION</span>
+        </div>
 
-    <div class="main-wrapper">
-        <header class="top-bar" id="topBar">
-            <div class="search-engine">
-                <i class="fa fa-search"></i>
-                <input type="text" placeholder="SEARCH ARCHIVE..." id="searchInput">
+        <form class="register-form" onsubmit="register(event)">
+            <div class="form-group">
+                <input type="text" id="reg-username" required>
+                <label>用户名 / USERNAME</label>
             </div>
-
-            <div class="cart-trigger" onclick="window.location.href='cart.html'">
-                <i class="fa fa-shopping-bag"></i>
-                <span>BAG</span>
-                <div id="cartBadge">0</div>
-            </div>
-
-            <div class="auth-btn" id="authSection">
-                <!-- JS填充 -->
-            </div>
-        </header>
-        
-        <section style="grid-area: hero; padding: 40px 60px;">
-            <h1 style="font-size: 42px; margin-bottom: 10px;">用户注册</h1>
-            <div style="font-family: var(--f-mono); color: var(--c-accent); font-size: 14px; margin-bottom: 20px;">USER REGISTRATION</div>
-        </section>
-
-        <main class="register-container">
-            <a href="index.html" class="back-link">← 返回首页</a>
             
-            <form class="register-form" onsubmit="register(event)">
-                <h2 class="form-title">创建账户</h2>
-                
-                <div class="form-group">
-                    <label class="form-label" for="reg-username">用户名</label>
-                    <input type="text" id="reg-username" class="form-input" placeholder="请输入用户名" required>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="reg-password">密码</label>
-                    <input type="password" id="reg-password" class="form-input" placeholder="请输入密码" required>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="confirm-password">确认密码</label>
-                    <input type="password" id="confirm-password" class="form-input" placeholder="请再次输入密码" required>
-                </div>
-                
-                <button type="submit" class="form-button">注册</button>
-                
-                <div class="form-footer">
-                    已有账户？ <a href="login.html">立即登录</a>
-                </div>
-            </form>
-        </main>
-    </div>
+            <div class="form-group">
+                <input type="password" id="reg-password" required>
+                <label>密码 / PASSWORD</label>
+            </div>
+            
+            <div class="form-group">
+                <input type="password" id="confirm-password" required>
+                <label>确认密码 / CONFIRM PASSWORD</label>
+            </div>
+            
+            <button type="submit" class="form-button">创建账户 / CREATE ACCOUNT</button>
+        </form>
 
-    <!-- 轻量级自定义光标 -->
-    <div id="custom-cursor"></div>
+        <div class="form-footer">
+            已有账户？ <a href="login.html">立即登录</a>
+        </div>
+
+        <a href="index.html" class="back-link">← 返回首页探索 / BACK HOME</a>
+    </div>
 
     <script>
-        // 页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            syncSession();
-            updateCartCount();
-            
-            // 初始化自定义光标
-            const cursor = document.getElementById('custom-cursor');
-            
-            document.addEventListener('mousemove', function(e) {
-                cursor.style.left = e.clientX + 'px';
-                cursor.style.top = e.clientY + 'px';
-            });
-            
-            // 为链接和按钮添加悬停效果
-            const hoverElements = document.querySelectorAll('a, button, .nav-link, .form-button');
-            
-            hoverElements.forEach(element => {
-                element.addEventListener('mouseenter', () => {
-                    cursor.classList.add('hover');
-                });
-                
-                element.addEventListener('mouseleave', () => {
-                    cursor.classList.remove('hover');
-                });
-            });
-        });
-
         // 注册功能
         async function register(event) {
             event.preventDefault();
