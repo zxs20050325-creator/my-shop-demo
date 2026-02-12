@@ -286,38 +286,33 @@ app.get('/api/admin/stats', async (req, res) => {
         };
         
         // 生成流量数据（基于真实用户日志数据）
-        const generateTrafficData = (dates) => {
+        const generateTrafficData = async (dates) => {
             // 获取所有用户日志用于生成真实的流量数据
-            const allLogs = db.getRecentLogs(10000); // 获取最多10000条日志
+            const allLogs = await db.getRecentLogs(10000); // 获取最多10000条日志
             
-            return allLogs.then(logs => {
-                const trafficData = [];
-                const logMap = new Map();
-                
-                // 按日期统计日志数量
-                logs.forEach(log => {
-                    if (log.created_at) {
-                        const dateStr = log.created_at.split('T')[0];
-                        logMap.set(dateStr, (logMap.get(dateStr) || 0) + 1);
-                    }
-                });
-                
-                // 为每个日期生成流量数据
-                dates.forEach(date => {
-                    const dateStr = date.toISOString().split('T')[0];
-                    const value = logMap.get(dateStr) || 0;
-                    trafficData.push(value);
-                });
-                
-                return trafficData;
+            const trafficData = [];
+            const logMap = new Map();
+            
+            // 按日期统计日志数量
+            allLogs.forEach(log => {
+                if (log.created_at) {
+                    const dateStr = log.created_at.split('T')[0];
+                    logMap.set(dateStr, (logMap.get(dateStr) || 0) + 1);
+                }
             });
+            
+            // 为每个日期生成流量数据
+            dates.forEach(date => {
+                const dateStr = date.toISOString().split('T')[0];
+                const value = logMap.get(dateStr) || 0;
+                trafficData.push(value);
+            });
+            
+            return trafficData;
         };
         
         const dateRange = generateDateRange();
-        const hourlyTrafficPromise = generateTrafficData(dateRange);
-        
-        // 等待流量数据生成完成
-        const hourlyTraffic = await hourlyTrafficPromise;
+        const hourlyTraffic = await generateTrafficData(dateRange);
         
         res.json({
             kpi: {

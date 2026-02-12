@@ -529,40 +529,19 @@
         }
 
         function initCharts() {
-            // 流量图 - 修改为显示每日数据 (1月1日至今)
+            // 流量图 - 初始化空图表，数据将在 updateDashboard 中填充
             const ctx1 = document.getElementById('trafficChart').getContext('2d');
             const gradient = ctx1.createLinearGradient(0, 0, 0, 400);
             gradient.addColorStop(0, 'rgba(47, 72, 66, 0.2)');
             gradient.addColorStop(1, 'rgba(47, 72, 66, 0)');
 
-            // 生成从1月1日到当前日期的每日标签
-            const now = new Date();
-            const startYear = now.getFullYear();
-            const startDate = new Date(startYear, 0, 1); // 1月1日
-            const endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            
-            const dateLabels = [];
-            let currentDate = new Date(startDate);
-            
-            while (currentDate <= endDate) {
-                const month = currentDate.getMonth() + 1;
-                const day = currentDate.getDate();
-                // 每7天显示一次完整日期，其他只显示日
-                if (currentDate.getDate() === 1 || (currentDate.getTime() - startDate.getTime()) % (7 * 24 * 60 * 60 * 1000) === 0) {
-                    dateLabels.push(`${month}/${day}`);
-                } else {
-                    dateLabels.push(`${day}`);
-                }
-                currentDate.setDate(currentDate.getDate() + 1);
-            }
-
             trafficChart = new Chart(ctx1, {
                 type: 'line',
                 data: {
-                    labels: dateLabels,
+                    labels: [],
                     datasets: [{
                         label: '访问量',
-                        data: Array(dateLabels.length).fill(0),
+                        data: [],
                         borderColor: '#2F4842',
                         backgroundColor: gradient,
                         borderWidth: 2,
@@ -570,7 +549,7 @@
                         tension: 0.4,
                         pointBackgroundColor: '#fff',
                         pointBorderColor: '#C1A268',
-                        pointRadius: 2 // 减小点的大小以适应更多数据点
+                        pointRadius: 2
                     }]
                 },
                 options: {
@@ -581,9 +560,7 @@
                         tooltip: {
                             callbacks: {
                                 title: function(context) {
-                                    const index = context[0].dataIndex;
-                                    const fullDate = new Date(startYear, 0, 1 + index);
-                                    return `${startYear}年${fullDate.getMonth() + 1}月${fullDate.getDate()}日`;
+                                    return context[0].label;
                                 }
                             }
                         }
@@ -595,7 +572,7 @@
                             ticks: {
                                 maxRotation: 0,
                                 autoSkip: true,
-                                maxTicksLimit: 20 // 限制显示的标签数量
+                                maxTicksLimit: 20
                             }
                         }
                     }
@@ -671,7 +648,31 @@
 
                 // 更新图表
                 if (trafficChart) {
-                    trafficChart.data.datasets[0].data = data.charts.hourlyTraffic;
+                    // 生成从1月1日到当前日期的标签
+                    const now = new Date();
+                    const startYear = now.getFullYear();
+                    const startDate = new Date(startYear, 0, 1);
+                    const endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    
+                    const dateLabels = [];
+                    let currentDate = new Date(startDate);
+                    
+                    while (currentDate <= endDate) {
+                        const month = currentDate.getMonth() + 1;
+                        const day = currentDate.getDate();
+                        if (currentDate.getDate() === 1) {
+                            dateLabels.push(`${month}月`);
+                        } else {
+                            dateLabels.push(`${day}`);
+                        }
+                        currentDate.setDate(currentDate.getDate() + 1);
+                    }
+                    
+                    // 确保数据长度与标签长度匹配
+                    const trafficData = data.charts.hourlyTraffic || Array(dateLabels.length).fill(0);
+                    
+                    trafficChart.data.labels = dateLabels;
+                    trafficChart.data.datasets[0].data = trafficData;
                     trafficChart.update('none');
                 }
                 if (actionChart) {
