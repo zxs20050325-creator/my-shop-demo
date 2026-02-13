@@ -17,12 +17,18 @@ const db = require('./db');
 
 // 静态商品数据 (用于前台展示)
 const MOCK_PRODUCTS = [
-    { id: 1, name: "广惠寺华塔·微缩模型", price: 198, img: "/images/001.jpg", category: "数字藏品" },
-    { id: 2, name: "赵州桥·石刻镇纸", price: 88, img: "/images/002.jpg", category: "文创周边" },
-    { id: 3, name: "避暑山庄·全景画卷", price: 328, img: "/images/003.jpg", category: "数字画作" },
-    { id: 4, name: "正定古城·隐藏款", price: 999, img: "/images/004.jpg", category: "典藏精品" },
-    { id: 5, name: "蔚县剪纸·窗花", price: 58, img: "/images/005.jpg", category: "非遗手作" },
-    { id: 6, name: "唐山皮影·礼盒", price: 168, img: "/images/006.jpg", category: "非遗手作" }
+    { id: 1, name: "冀筑华塔微藏盒", price: 198, img: "/images/001.jpg", category: "数字藏品" },
+    { id: 2, name: "赵州桥榫卯奇盒", price: 88, img: "/images/002.jpg", category: "文创周边" },
+    { id: 3, name: "承德御苑宸景盒", price: 328, img: "/images/003.jpg", category: "数字画作" },
+    { id: 4, name: "山海关雄关守盒", price: 999, img: "/images/004.jpg", category: "典藏精品" },
+    { id: 5, name: "隆兴寺禅筑臻盒", price: 58, img: "/images/005.jpg", category: "非遗手作" },
+    { id: 6, name: "开元寺塔料敌盒", price: 168, img: "/images/006.jpg", category: "非遗手作" },
+    { id: 7, name: "清西陵宫阙雅盒", price: 258, img: "/images/007.jpg", category: "数字藏品" },
+    { id: 8, name: "娲皇宫悬楼秘盒", price: 128, img: "/images/008.jpg", category: "文创周边" },
+    { id: 9, name: "古莲花池苑趣盒", price: 298, img: "/images/009.jpg", category: "数字画作" },
+    { id: 10, name: "紫荆关燕塞筑盒", price: 888, img: "/images/010.jpg", category: "典藏精品" },
+    { id: 11, name: "广府古城围合盒", price: 78, img: "/images/011.jpg", category: "非遗手作" },
+    { id: 12, name: "外八庙梵筑珍盒", price: 188, img: "/images/012.jpg", category: "非遗手作" }
 ];
 
 // ==========================================
