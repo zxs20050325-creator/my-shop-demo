@@ -109,13 +109,15 @@ app.get('/api/admin/stats', async (req, res) => {
         const kpiStats = await db.getLatestStats();
 
         // --- 第二步：按日期聚合数据 (实现每日流量/日活) ---
-        // 生成从今年1月1日到今天的日期列表
+        // 生成从今年1月1日到今天的日期列表（使用北京时间 UTC+8）
         const now = new Date();
-        const startOfYear = new Date(now.getFullYear(), 0, 1);
+        // 转换为北京时间 (UTC+8)
+        const beijingNow = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+        const startOfYear = new Date(beijingNow.getFullYear(), 0, 1);
         const dateMap = new Map(); // Key: '2023-10-01', Value: { pv: 0, users: Set }
 
         // 初始化每一天的数据为0
-        for (let d = new Date(startOfYear); d <= now; d.setDate(d.getDate() + 1)) {
+        for (let d = new Date(startOfYear); d <= beijingNow; d.setDate(d.getDate() + 1)) {
             const dateStr = d.toISOString().split('T')[0];
             dateMap.set(dateStr, { pv: 0, users: new Set() });
         }
@@ -188,3 +190,27 @@ app.get('/api/admin/stats', async (req, res) => {
                 product: l.product
             }))
         });
+
+    } catch (err) {
+        console.error("Admin stats error:", err);
+        res.status(500).json({error: "Server Error"});
+    }
+});
+
+// 2. 获取所有用户详细数据 (用于用户管理面板)
+app.get('/api/admin/users-data', async (req, res) => {
+    try {
+        const users = await db.getAllUsers();
+        const carts = await db.getAllCarts();
+        const favorites = await db.getAllFavorites();
+        const logs = await db.getRecentLogs(200); // 最近活动取200条
+
+        res.json({ users, carts, favorites, logs });
+    } catch (e) {
+        console.error("Users data error:", e);
+        res.status(500).json({error: "Server Error"});
+    }
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`🚀 Server running: http://localhost:${PORT}`));
