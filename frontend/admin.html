@@ -382,6 +382,23 @@
             });
         }
 
+        // 时区转换函数：将UTC时间转换为北京时间
+        function formatBeijingTime(utcTimeString) {
+            if (!utcTimeString) return '';
+            const utcDate = new Date(utcTimeString);
+            // 转换为北京时间 (UTC+8)
+            const beijingDate = new Date(utcDate.getTime() + 8 * 60 * 60 * 1000);
+            return beijingDate.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            }).replace(/\//g, '-');
+        }
+
         // === 3. 获取数据并更新 ===
         async function updateDashboard() {
             try {
@@ -459,7 +476,7 @@
                 if(log.action.includes('支付')) bc = 'b-pay';
                 if(log.action.includes('加入')) bc = 'b-cart';
                 return `<tr>
-                    <td style="color:#999">${new Date(log.time).toLocaleString()}</td>
+                    <td style="color:#999">${formatBeijingTime(log.time)}</td>
                     <td style="font-weight:bold">${log.username}</td>
                     <td><span class="badge ${bc}">${log.action}</span></td>
                     <td>${log.product || '-'}</td>

@@ -180,6 +180,7 @@ app.get('/api/admin/stats', async (req, res) => {
                 topProducts
             },
             // 只返回最新50条日志给前端列表显示
+            // 时间字段保持UTC时间，由前端进行时区转换
             logs: logs.slice(0, 50).map(l => ({
                 time: l.created_at,
                 username: l.username,
@@ -187,27 +188,3 @@ app.get('/api/admin/stats', async (req, res) => {
                 product: l.product
             }))
         });
-
-    } catch (err) {
-        console.error("Admin stats error:", err);
-        res.status(500).json({error: "Server Error"});
-    }
-});
-
-// 2. 获取所有用户详细数据 (用于用户管理面板)
-app.get('/api/admin/users-data', async (req, res) => {
-    try {
-        const users = await db.getAllUsers();
-        const carts = await db.getAllCarts();
-        const favorites = await db.getAllFavorites();
-        const logs = await db.getRecentLogs(200); // 最近活动取200条
-
-        res.json({ users, carts, favorites, logs });
-    } catch (e) {
-        console.error("Users data error:", e);
-        res.status(500).json({error: "Server Error"});
-    }
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Server running: http://localhost:${PORT}`));
