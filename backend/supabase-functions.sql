@@ -4,11 +4,21 @@ RETURNS TABLE(product_name TEXT, count BIGINT) AS $$
 BEGIN
     RETURN QUERY
     SELECT 
-        product->>'name' as product_name,
+        product as product_name,
         COUNT(*) as count
-    FROM carts 
-    WHERE product->>'name' IS NOT NULL
-    GROUP BY product->>'name'
+    FROM user_logs 
+    WHERE product IS NOT NULL 
+      AND product != ''
+      AND product != '首页'
+      AND product NOT LIKE '%详情页%'
+      AND product NOT LIKE '%登录%'
+      AND product NOT LIKE '%注册%'
+      AND product NOT LIKE '%购物车%'
+      AND product NOT LIKE '%收藏夹%'
+      AND product NOT LIKE '%支付%'
+      AND product NOT LIKE '%admin%'
+      AND product NOT LIKE '%管理%'
+    GROUP BY product
     ORDER BY count DESC
     LIMIT limit_count;
 END;

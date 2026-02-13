@@ -1029,7 +1029,7 @@
             
             // 记录页面浏览行为
             const currentUser = getCurrentUser() || '游客';
-            trackUserAction('浏览主页', '首页');
+            trackUserAction('浏览主页', null);
             
             // 确保购物车按钮跳转正常工作
             const cartTrigger = document.getElementById('cartTrigger');
