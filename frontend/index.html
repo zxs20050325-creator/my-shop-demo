@@ -14,7 +14,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>冀遗筑梦 | 全球首个非遗盲盒平台</title>
+    <title>冀遗筑梦 | 全球首个古建筑载体盲盒平台</title>
     
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;700;900&family=Ma+Shan+Zheng&family=Cinzel:wght@700&family=ZCOOL+QingKe+HuangYou&display=swap" rel="stylesheet">
@@ -394,7 +394,7 @@
             <div class="hero-text-box">
                 <span style="font-family: var(--f-mono); color: var(--c-accent); font-weight: 900; letter-spacing: 6px; display: block; margin-bottom: 25px;">DIGITAL HERITAGE COLLECTION</span>
                 <h1>广惠寺华塔<br>数字化复刻系列</h1>
-                <p>我们将正定古城“举世之孤例”进行毫米级数字化重构。通过数字解构，让沉睡千年的石刻艺术在指尖重现温热。开启盲盒，寻找属于你的历史遗珍。</p>
+                <p>我们以正定古城广惠寺华塔为例，进行毫米级数字化AR重构。通过数字解构，让沉睡千年的石刻艺术在指尖重现温热。开启盲盒，寻找属于你的历史遗珍。</p>
                 <button class="btn-reveal-all hover-target" onclick="document.getElementById('shop').scrollIntoView({behavior:'smooth'})">揭开全系列惊喜</button>
             </div>
         </section>
@@ -433,10 +433,10 @@
     <div class="ink-modal" id="loginModal">
         <div class="modal-box">
             <span class="hover-target" style="position:absolute; top:20px; right:25px; font-size:30px;" onclick="app.toggleLogin()">&times;</span>
-            <h2 style="text-align:center; font-size:28px; margin-bottom:40px;">数字化结缘</h2>
+            <h2 style="text-align:center; font-size:28px; margin-bottom:40px;">绑定您的身份 | Register</h2>
             <input type="text" class="ink-field" id="uName" placeholder="Identity / 名号" maxlength="20">
             <div id="loginError" style="color: var(--c-danger); font-family: var(--f-mono); font-size: 12px; text-align: center; min-height: 20px; margin-bottom: 15px;"></div>
-            <button class="btn-reveal-all hover-target" style="width:100%;" onclick="app.login()">同步数据</button>
+            <button class="btn-reveal-all hover-target" style="width:100%;" onclick="app.login()">同步数据...logging...</button>
         </div>
     </div>
 
@@ -729,7 +729,7 @@
                 const cart = getCartData();
                 this.dom.cartBadge.innerText = cart.length;
                 this.dom.shelf.innerHTML = cart.length === 0 
-                    ? `<p style="opacity:0.2; margin:auto;">博古架尚无遗珍...</p>` 
+                    ? `<p style="opacity:0.2; margin:auto;">您的博古架尚无遗珍...</p>` 
                     : cart.map(p => {
                         // 正确处理购物车中的图片路径
                         let imgSrc = p.img;
@@ -964,7 +964,7 @@
                 authSection.onclick = () => {
                     const currentUser = localStorage.getItem('jiyi_user');
                     if (currentUser) {
-                        if (confirm('确定要登出吗？')) {
+                        if (confirm('确定要登出吗？！？！')) {
                             localStorage.removeItem('jiyi_user');
                             localStorage.removeItem('jiyi_cart');
                             showToast('已登出');
