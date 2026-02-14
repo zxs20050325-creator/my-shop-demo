@@ -80,30 +80,6 @@ app.post('/api/cart/add', async (req, res) => {
     } catch(e) { res.status(500).json({success:false}); }
 });
 
-// 新增：购物车结账接口
-app.post('/api/cart/checkout', async (req, res) => {
-    try {
-        const { username, products } = req.body;
-        if (!username || !products || !Array.isArray(products)) {
-            return res.status(400).json({success: false, message: '缺少必要参数'});
-        }
-        
-        // 这里可以添加实际的支付逻辑
-        // 目前先模拟成功结账
-        
-        // 清空购物车（可选）
-        // await db.clearCart(username);
-        
-        // 更新系统统计
-        await db.updateStats(products.reduce((sum, p) => sum + (p.price || 0), 0), products.length);
-        
-        res.json({success: true, message: '结账成功'});
-    } catch(e) {
-        console.error('Checkout error:', e);
-        res.status(500).json({success: false, message: '结账失败'});
-    }
-});
-
 app.post('/api/favorites/add', async (req, res) => {
     try {
         await db.addToFavorites(req.body.username, req.body.product);
