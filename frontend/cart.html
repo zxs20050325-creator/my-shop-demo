@@ -146,7 +146,7 @@
             if(currentUser) {
                 try {
                     const API_BASE = window.location.hostname.includes('onrender.com') 
-                        ? 'https://jiyi-zhumeng.onrender.com' : '';
+                        ? 'https://ji-yi-zhumeng.onrender.com' : '';
                     
                     fetch(`${API_BASE}/api/cart/remove`, {
                         method: 'POST',
@@ -181,7 +181,7 @@
             
             try {
                 const API_BASE = window.location.hostname.includes('onrender.com') 
-                    ? 'https://jiyi-zhumeng.onrender.com' : '';
+                    ? 'https://ji-yi-zhumeng.onrender.com' : '';
                 
                 const response = await fetch(`${API_BASE}/api/cart/checkout`, {
                     method: 'POST',
