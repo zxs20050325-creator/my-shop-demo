@@ -3,175 +3,412 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>主理人登录 - 冀遗筑梦</title>
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <title>开启盲盒 · 冀遗筑梦</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;700;900&family=Ma+Shan+Zheng&family=Cinzel:wght@700&family=ZCOOL+QingKe+HuangYou&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --qingdai: #2F4842;
+            --qingdai-dark: #223832;
+            --gold: #C1A268;
+            --gold-bright: #E3C98A;
+            --seal-red: #B5443A;
+            --paper: #F5F3EF;
+            --night-top: #0a1220;
+            --night-bottom: #17293a;
+        }
+
+        * { box-sizing: border-box; }
+
         body {
-            background-color: #F5F3EF;
+            margin: 0;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            overflow: hidden;
             font-family: 'Noto Serif SC', serif;
-        }
-
-        /* 艺术水印背景 */
-        .bg-watermark {
-            position: fixed;
-            font-family: 'Ma Shan Zheng', serif;
-            font-size: 25vw;
-            color: #2F4842;
-            opacity: 0.03;
-            z-index: -1;
-            user-select: none;
-        }
-
-        .login-card {
-            background: #fff;
-            width: 100%;
-            max-width: 400px;
-            padding: 60px 40px;
-            border: 2px solid #2F4842;
-            box-shadow: 20px 20px 0 #C1A268; /* 鎏金阴影 */
+            background: linear-gradient(180deg, var(--night-top) 0%, #12233a 55%, var(--night-bottom) 100%);
+            overflow: hidden;
             position: relative;
         }
 
-        .login-card::after {
-            content: "ARCHIVE ID: 8.2V";
+        /* ---------- 星空 ---------- */
+        #stars { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+        .star {
             position: absolute;
-            bottom: 20px;
-            right: 20px;
-            font-size: 10px;
-            color: #ccc;
-            font-family: monospace;
+            background: #fdf6e3;
+            border-radius: 50%;
+            opacity: 0.5;
+            animation: twinkle 3.2s ease-in-out infinite;
+        }
+        @keyframes twinkle { 0%, 100% { opacity: 0.12; } 50% { opacity: 0.9; } }
+
+        /* ---------- 月亮 ---------- */
+        .moon {
+            position: fixed;
+            top: 8%;
+            right: 10%;
+            width: 92px;
+            height: 92px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, #f8f2df, #e9dcb6 60%, #d4c291);
+            box-shadow: 0 0 60px rgba(233, 220, 182, 0.35), 0 0 140px rgba(233, 220, 182, 0.14);
+            z-index: 0;
         }
 
-        .header-title { text-align: center; margin-bottom: 45px; }
-        .header-title h2 { font-size: 32px; color: #2F4842; margin: 0; letter-spacing: 2px; }
-        .header-title span { font-size: 12px; color: #C1A268; letter-spacing: 5px; font-weight: bold; }
-
-        .input-box { position: relative; margin-bottom: 35px; }
-        .input-box input {
+        /* ---------- 古建剪影 ---------- */
+        .silhouette {
+            position: fixed;
+            bottom: 0;
+            left: 0;
             width: 100%;
-            padding: 12px 0;
+            height: 230px;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* ---------- 盲盒场景 ---------- */
+        .scene {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 16px;
+        }
+
+        /* 开盒光爆 */
+        .burst {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300px;
+            height: 300px;
+            margin: -150px 0 0 -150px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(227, 201, 138, 0.55), rgba(227, 201, 138, 0) 70%);
+            opacity: 0;
+            transform: scale(0.4);
+            pointer-events: none;
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+        .scene.is-opening .burst { opacity: 1; transform: scale(2.1); }
+
+        .giftbox { position: relative; width: min(420px, 92vw); }
+
+        /* 盒盖 */
+        .lid {
+            height: 46px;
+            background: linear-gradient(180deg, #41655c, #2F4842);
+            border: 2px solid var(--gold);
+            border-bottom: none;
+            border-radius: 10px 10px 0 0;
+            position: relative;
+            z-index: 3;
+            transform-origin: 50% 90%;
+            transition: transform 0.85s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.85s ease;
+            box-shadow: 0 -6px 24px rgba(193, 162, 104, 0.15);
+        }
+        .lid::before {
+            content: "";
+            position: absolute;
+            top: 8px; left: 50%;
+            transform: translateX(-50%);
+            width: 34px; height: 30px;
+            background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+            border-radius: 4px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+
+        /* 盒身 */
+        .box {
+            background: linear-gradient(180deg, #2F4842, #223832);
+            border: 2px solid var(--gold);
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            padding: 60px 36px 32px;
+            position: relative;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+        }
+        /* 盒身竖向金丝带 */
+        .box::before {
+            content: "";
+            position: absolute;
+            top: 0; bottom: 0; left: 50%;
+            width: 30px;
+            transform: translateX(-50%);
+            background: linear-gradient(180deg, rgba(193,162,104,0.20), rgba(193,162,104,0.05));
+            pointer-events: none;
+        }
+        /* 盒身大水印「?」 */
+        .box-q {
+            position: absolute;
+            right: 6px; bottom: 2px;
+            font-family: 'Cinzel', serif;
+            font-size: 150px;
+            line-height: 1;
+            color: rgba(227, 201, 138, 0.06);
+            pointer-events: none;
+            user-select: none;
+        }
+
+        /* 封条 */
+        .seal {
+            position: absolute;
+            top: -18px; left: -6px; right: -6px;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 8px 0;
+            background: linear-gradient(90deg, #9c3a31, #c0392b, #9c3a31);
+            color: #fbeed6;
+            font-size: 12px;
+            letter-spacing: 3px;
+            transform: rotate(-1.8deg);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        .seal::before {
+            content: "";
+            width: 22px; height: 22px;
+            background: #8e332b;
+            border: 2px solid #fbeed6;
+            border-radius: 50%;
+            box-shadow: inset 0 0 0 2px rgba(0,0,0,0.25);
+        }
+        .giftbox.is-opening .seal { opacity: 0; transform: rotate(-1.8deg) translateY(-14px); }
+
+        /* 盒内文案 */
+        .box-header { text-align: center; margin-bottom: 34px; position: relative; }
+        .box-header h1 {
+            font-family: 'Ma Shan Zheng', serif;
+            font-size: 34px;
+            color: var(--gold-bright);
+            margin: 0;
+            letter-spacing: 4px;
+            font-weight: 400;
+        }
+        .box-header .sub {
+            margin-top: 8px;
+            font-family: 'Cinzel', serif;
+            font-size: 11px;
+            color: var(--gold);
+            letter-spacing: 5px;
+        }
+        .box-header .tag {
+            margin-top: 12px;
+            font-size: 12px;
+            color: rgba(245, 243, 239, 0.5);
+            letter-spacing: 2px;
+        }
+
+        /* 输入框 */
+        .field { position: relative; margin-bottom: 34px; }
+        .field input {
+            width: 100%;
+            padding: 12px 2px;
             border: none;
-            border-bottom: 1.5px solid #E6E2DC;
+            border-bottom: 1.5px solid rgba(193, 162, 104, 0.35);
             background: transparent;
             font-size: 16px;
+            color: var(--paper);
             outline: none;
-            transition: 0.3s;
+            transition: border-color 0.3s;
+            font-family: 'Noto Serif SC', serif;
         }
-        .input-box input:focus { border-bottom-color: #2F4842; }
-        .input-box label {
+        .field input:focus { border-bottom-color: var(--gold-bright); }
+        .field label {
             position: absolute;
-            left: 0;
+            left: 2px;
             top: 12px;
-            color: #999;
+            color: rgba(245, 243, 239, 0.42);
             pointer-events: none;
             transition: 0.3s;
             font-size: 14px;
+            letter-spacing: 1px;
         }
-        .input-box input:focus ~ label,
-        .input-box input:valid ~ label {
+        .field input:focus ~ label,
+        .field input:valid ~ label {
             top: -12px;
             font-size: 11px;
-            color: #C1A268;
-            font-weight: bold;
+            color: var(--gold-bright);
+            letter-spacing: 2px;
         }
 
-        .btn-connect {
+        /* 开启按钮 */
+        .btn-open {
             width: 100%;
-            padding: 18px;
-            background: #2F4842;
-            color: #fff;
+            padding: 16px;
+            margin-top: 6px;
+            background: linear-gradient(135deg, var(--gold-bright), var(--gold));
+            color: #223832;
             border: none;
             cursor: pointer;
-            font-size: 14px;
-            letter-spacing: 4px;
-            transition: 0.4s;
-            font-weight: bold;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 5px;
+            font-family: 'Noto Serif SC', serif;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 8px 22px rgba(193, 162, 104, 0.25);
         }
-        .btn-connect:hover {
-            background: #C1A268;
+        .btn-open:hover {
             transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(193, 162, 104, 0.3);
+            box-shadow: 0 14px 30px rgba(227, 201, 138, 0.4);
         }
+        .btn-open::after {
+            content: "";
+            position: absolute;
+            top: 0; left: -60%;
+            width: 40%; height: 100%;
+            background: linear-gradient(120deg, transparent, rgba(255,255,255,0.5), transparent);
+            animation: shine 3s infinite;
+        }
+        @keyframes shine { 0% { left: -60%; } 60%, 100% { left: 130%; } }
 
-        .back-link {
-            display: block;
-            text-align: center;
-            margin-top: 30px;
-            color: #2F4842;
+        /* 底部链接 */
+        .box-links { display: flex; justify-content: space-between; align-items: center; margin-top: 22px; }
+        .box-links a {
+            color: rgba(245, 243, 239, 0.55);
             text-decoration: none;
             font-size: 12px;
-            opacity: 0.6;
-            transition: 0.3s;
+            letter-spacing: 1px;
+            transition: color 0.3s;
         }
-        .back-link:hover { opacity: 1; color: #C1A268; }
+        .box-links a:hover { color: var(--gold-bright); }
+
+        /* 开盒动画：盒盖掀开 + 盒身微弹 */
+        .giftbox.is-opening .lid {
+            transform: translateY(-130px) rotate(-14deg);
+            opacity: 0;
+        }
+        .giftbox.is-opening .box { animation: box-pop 0.7s ease; }
+        @keyframes box-pop {
+            0% { transform: translateY(0); }
+            40% { transform: translateY(-6px) scale(1.03); }
+            100% { transform: translateY(0); }
+        }
+
+        @media (max-width: 480px) {
+            .moon { width: 64px; height: 64px; }
+            .box-header h1 { font-size: 28px; }
+        }
     </style>
 </head>
 <body>
-    <div class="bg-watermark" style="left: -5%; top: 5%;">筑</div>
-    <div class="bg-watermark" style="right: -5%; bottom: 5%;">梦</div>
+    <div id="stars"></div>
+    <div class="moon"></div>
 
-    <div class="login-card">
-        <div class="header-title">
-            <h2>主理人登录</h2>
-            <span>OWNER LOGIN</span>
-        </div>
+    <svg class="silhouette" viewBox="0 0 1200 230" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <g fill="#0c1727">
+            <!-- 华塔（多层塔） -->
+            <rect x="140" y="140" width="74" height="90"/>
+            <polygon points="126,140 184,140 194,124 116,124"/>
+            <rect x="148" y="106" width="58" height="18"/>
+            <polygon points="136,106 182,106 190,92 128,92"/>
+            <rect x="154" y="78" width="46" height="14"/>
+            <polygon points="143,78 178,78 186,66 135,66"/>
+            <rect x="159" y="52" width="36" height="14"/>
+            <polygon points="149,52 176,52 184,41 141,41"/>
+            <rect x="164" y="28" width="26" height="13"/>
+            <polygon points="155,28 176,28 182,18 149,18"/>
+            <!-- 赵州桥（单孔拱桥） -->
+            <path d="M470,230 L470,150 Q600,74 730,150 L730,230 Z"/>
+            <path d="M500,230 L500,156 Q600,96 700,156 L700,230 Z" fill="#0a1423"/>
+            <!-- 城墙 / 山丘 -->
+            <rect x="820" y="170" width="380" height="60"/>
+            <polygon points="820,170 880,132 940,170"/>
+            <polygon points="940,170 1010,128 1080,170"/>
+            <polygon points="1080,170 1140,140 1200,170"/>
+            <rect x="0" y="180" width="140" height="50"/>
+        </g>
+    </svg>
 
-        <form onsubmit="handleLogin(event)">
-            <div class="input-box">
-                <input type="text" id="username" required>
-                <label>主理人账号 / ACCOUNT ID</label>
+    <div class="scene" id="scene">
+        <div class="burst"></div>
+        <div class="giftbox" id="giftbox">
+            <div class="lid"></div>
+            <div class="seal">冀遗筑梦 · 非遗盲盒</div>
+            <div class="box">
+                <div class="box-q">?</div>
+                <div class="box-header">
+                    <h1>冀遗筑梦</h1>
+                    <div class="sub">OPEN THE BOX</div>
+                    <div class="tag">输入连接密令，开启你的传承盲盒</div>
+                </div>
+
+                <form onsubmit="handleLogin(event)">
+                    <div class="field">
+                        <input type="text" id="username" required>
+                        <label>主理人账号 / ACCOUNT ID</label>
+                    </div>
+                    <div class="field">
+                        <input type="password" id="password" required>
+                        <label>连接密令 / PASSWORD</label>
+                    </div>
+                    <button type="submit" class="btn-open">开启盲盒</button>
+                </form>
+
+                <div class="box-links">
+                    <a href="register.html">还没有账户？立即注册</a>
+                    <a href="index.html">← 返回首页探索</a>
+                </div>
             </div>
-            <div class="input-box">
-                <input type="password" id="password" required>
-                <label>连接密令 / PASSWORD</label>
-            </div>
-            <button type="submit" class="btn-connect">连接空间 / CONNECT</button>
-        </form>
-
-        <div style="text-align: center; margin-top: 20px;">
-            <a href="register.html" style="color: #2F4842; text-decoration: none; font-size: 12px; opacity: 0.6; transition: 0.3s;">还没有账户？立即注册</a>
         </div>
-
-        <a href="index.html" class="back-link">← 返回首页探索 / BACK HOME</a>
     </div>
 
     <script src="common.js"></script>
     <script>
+        // 生成星空
+        (function makeStars() {
+            const wrap = document.getElementById('stars');
+            const n = 90;
+            let html = '';
+            for (let i = 0; i < n; i++) {
+                const size = (Math.random() * 2.2 + 0.6).toFixed(1);
+                const x = (Math.random() * 100).toFixed(2);
+                const y = (Math.random() * 72).toFixed(2);
+                const delay = (Math.random() * 4).toFixed(2);
+                html += '<span class="star" style="left:' + x + '%;top:' + y + '%;width:' + size + 'px;height:' + size + 'px;animation-delay:' + delay + 's"></span>';
+            }
+            wrap.innerHTML = html;
+        })();
+
         async function handleLogin(e) {
             e.preventDefault();
-            const username = document.getElementById('username').value;
+            const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
-            
+
             if (!username || !password) {
                 alert('请输入完整的用户名和密码');
                 return;
             }
-            
+
             try {
                 const apiBase = getApiBase();
                 const response = await fetch(`${apiBase}/api/login`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (result.success) {
                     localStorage.setItem('jiyi_user', username);
-                    alert('主理人身份已确认，正在开启空间...');
-                    window.location.href = 'index.html';
+                    await syncUserDataFromServer(username); // 从服务端同步购物车/收藏
+
+                    // 开盒仪式：盒盖掀开 + 光爆
+                    const scene = document.getElementById('scene');
+                    const giftbox = document.getElementById('giftbox');
+                    scene.classList.add('is-opening');
+                    giftbox.classList.add('is-opening');
+
+                    setTimeout(() => { window.location.href = 'index.html'; }, 1100);
                 } else {
-                    alert(result.message || '登录失败，请检查用户名和密码');
+                    alert(result.message || '密令错误，无法开启盲盒');
                 }
             } catch (error) {
                 console.error('登录请求失败:', error);

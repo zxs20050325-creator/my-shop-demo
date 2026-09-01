@@ -280,6 +280,29 @@ async function syncFavoriteToBackend(product) {
     }
 }
 
+/**
+ * 登录后从服务端同步购物车/收藏到本地（服务端为准，支持多设备同步）
+ * @param {string} username - 用户名
+ */
+async function syncUserDataFromServer(username) {
+    if (!username) return;
+    const apiBase = getApiBase();
+    try {
+        const cartRes = await fetch(`${apiBase}/api/cart?username=${encodeURIComponent(username)}`);
+        const cartData = await cartRes.json();
+        if (cartData.items && cartData.items.length) {
+            localStorage.setItem('jiyi_cart', JSON.stringify(cartData.items));
+        }
+    } catch (e) { console.error('同步购物车失败:', e); }
+    try {
+        const favRes = await fetch(`${apiBase}/api/favorites?username=${encodeURIComponent(username)}`);
+        const favData = await favRes.json();
+        if (favData.items && favData.items.length) {
+            localStorage.setItem('jiyi_favorites', JSON.stringify(favData.items));
+        }
+    } catch (e) { console.error('同步收藏失败:', e); }
+}
+
 // ========================================
 // 4. 购物车相关工具函数
 // ========================================
