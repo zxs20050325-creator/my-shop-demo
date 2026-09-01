@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>主理人登录 - 冀遗筑梦</title>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            background-color: #F5F3EF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Noto Serif SC', serif;
+        }
+
+        /* 艺术水印背景 */
+        .bg-watermark {
+            position: fixed;
+            font-family: 'Ma Shan Zheng', serif;
+            font-size: 25vw;
+            color: #2F4842;
+            opacity: 0.03;
+            z-index: -1;
+            user-select: none;
+        }
+
+        .login-card {
+            background: #fff;
+            width: 100%;
+            max-width: 400px;
+            padding: 60px 40px;
+            border: 2px solid #2F4842;
+            box-shadow: 20px 20px 0 #C1A268; /* 鎏金阴影 */
+            position: relative;
+        }
+
+        .login-card::after {
+            content: "ARCHIVE ID: 8.2V";
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            font-size: 10px;
+            color: #ccc;
+            font-family: monospace;
+        }
+
+        .header-title { text-align: center; margin-bottom: 45px; }
+        .header-title h2 { font-size: 32px; color: #2F4842; margin: 0; letter-spacing: 2px; }
+        .header-title span { font-size: 12px; color: #C1A268; letter-spacing: 5px; font-weight: bold; }
+
+        .input-box { position: relative; margin-bottom: 35px; }
+        .input-box input {
+            width: 100%;
+            padding: 12px 0;
+            border: none;
+            border-bottom: 1.5px solid #E6E2DC;
+            background: transparent;
+            font-size: 16px;
+            outline: none;
+            transition: 0.3s;
+        }
+        .input-box input:focus { border-bottom-color: #2F4842; }
+        .input-box label {
+            position: absolute;
+            left: 0;
+            top: 12px;
+            color: #999;
+            pointer-events: none;
+            transition: 0.3s;
+            font-size: 14px;
+        }
+        .input-box input:focus ~ label,
+        .input-box input:valid ~ label {
+            top: -12px;
+            font-size: 11px;
+            color: #C1A268;
+            font-weight: bold;
+        }
+
+        .btn-connect {
+            width: 100%;
+            padding: 18px;
+            background: #2F4842;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            letter-spacing: 4px;
+            transition: 0.4s;
+            font-weight: bold;
+        }
+        .btn-connect:hover {
+            background: #C1A268;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(193, 162, 104, 0.3);
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 30px;
+            color: #2F4842;
+            text-decoration: none;
+            font-size: 12px;
+            opacity: 0.6;
+            transition: 0.3s;
+        }
+        .back-link:hover { opacity: 1; color: #C1A268; }
+    </style>
+</head>
+<body>
+    <div class="bg-watermark" style="left: -5%; top: 5%;">筑</div>
+    <div class="bg-watermark" style="right: -5%; bottom: 5%;">梦</div>
+
+    <div class="login-card">
+        <div class="header-title">
+            <h2>主理人登录</h2>
+            <span>OWNER LOGIN</span>
+        </div>
+
+        <form onsubmit="handleLogin(event)">
+            <div class="input-box">
+                <input type="text" id="username" required>
+                <label>主理人账号 / ACCOUNT ID</label>
+            </div>
+            <div class="input-box">
+                <input type="password" id="password" required>
+                <label>连接密令 / PASSWORD</label>
+            </div>
+            <button type="submit" class="btn-connect">连接空间 / CONNECT</button>
+        </form>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="register.html" style="color: #2F4842; text-decoration: none; font-size: 12px; opacity: 0.6; transition: 0.3s;">还没有账户？立即注册</a>
+        </div>
+
+        <a href="index.html" class="back-link">← 返回首页探索 / BACK HOME</a>
+    </div>
+
+    <script src="common.js"></script>
+    <script>
+        async function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (!username || !password) {
+                alert('请输入完整的用户名和密码');
+                return;
+            }
+            
+            try {
+                const apiBase = getApiBase();
+                const response = await fetch(`${apiBase}/api/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    localStorage.setItem('jiyi_user', username);
+                    alert('主理人身份已确认，正在开启空间...');
+                    window.location.href = 'index.html';
+                } else {
+                    alert(result.message || '登录失败，请检查用户名和密码');
+                }
+            } catch (error) {
+                console.error('登录请求失败:', error);
+                alert('网络错误，请检查连接后重试');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自定义机械爪光标效果</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf9 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            cursor: none; /* 隐藏默认光标 */
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: #2c3e50;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        
+        .demo-area {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        /* 可交互元素样式 */
+        .interactive-element {
+            padding: 2rem;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .interactive-element:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(31, 38, 135, 0.15);
+        }
+        
+        .interactive-element h3 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+        
+        .interactive-element p {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        /* 自定义光标样式 */
+        .cursor-dot {
+            position: fixed;
+            width: 6px;
+            height: 6px;
+            background: #3498db;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: 
+                transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55),
+                width 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55),
+                height 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55),
+                background-color 0.3s ease;
+        }
+        
+        /* 静止状态 - 三个分离的圆点 */
+        .cursor-dot-1 {
+            transform: translate(var(--mouse-x, 0px), var(--mouse-y, 0px)) translate(-15px, -15px);
+        }
+        
+        .cursor-dot-2 {
+            transform: translate(var(--mouse-x, 0px), var(--mouse-y, 0px)) translate(15px, -15px);
+        }
+        
+        .cursor-dot-3 {
+            transform: translate(var(--mouse-x, 0px), var(--mouse-y, 0px)) translate(0px, 15px);
+        }
+        
+        /* Hover状态 - 向中心收紧 */
+        .cursor-hover .cursor-dot-1 {
+            transform: translate(var(--mouse-x, 0px), var(--mouse-y, 0px)) translate(-5px, -5px);
+        }
+        
+        .cursor-hover .cursor-dot-2 {
+            transform: translate(var(--mouse-x, 0px), var(--mouse-y, 0px)) translate(5px, -5px);
+        }
+        
+        .cursor-hover .cursor-dot-3 {
+            transform: translate(var(--mouse-x, 0px), var(--mouse-y, 0px)) translate(0px, 5px);
+        }
+        
+        /* Click状态 - 合体成大点 */
+        .cursor-click .cursor-dot {
+            width: 24px;
+            height: 24px;
+            background: #e74c3c;
+            transform: translate(var(--mouse-x, 0px), var(--mouse-y, 0px)) !important;
+        }
+        
+        /* 按钮特定样式 */
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .demo-area {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 自定义光标元素 -->
+    <div class="cursor-dot cursor-dot-1"></div>
+    <div class="cursor-dot cursor-dot-2"></div>
+    <div class="cursor-dot cursor-dot-3"></div>
+    
+    <div class="container">
+        <h1>自定义机械爪光标效果</h1>
+        <p style="text-align: center; color: #7f8c8d; margin-bottom: 2rem;">
+            移动鼠标到下方可交互元素上体验抓取效果
+        </p>
+        
+        <div class="demo-area">
+            <div class="interactive-element" data-cursor="grab">
+                <h3>按钮元素</h3>
+                <p>悬停时机械爪收紧，点击时合体抓取</p>
+                <button class="btn">点击我</button>
+            </div>
+            
+            <div class="interactive-element" data-cursor="grab">
+                <h3>卡片区域</h3>
+                <p>整个卡片区域都支持抓取交互</p>
+                <div style="margin-top: 1rem; color: #3498db; font-weight: 600;">可点击区域</div>
+            </div>
+            
+            <div class="interactive-element" data-cursor="grab">
+                <h3>链接元素</h3>
+                <p>模拟链接的交互效果</p>
+                <a href="#" style="display: inline-block; margin-top: 1rem; color: #3498db; text-decoration: none; font-weight: 600;">访问链接</a>
+            </div>
+            
+            <div class="interactive-element" data-cursor="grab">
+                <h3>输入框</h3>
+                <p>表单元素的抓取体验</p>
+                <input type="text" placeholder="输入内容..." style="width: 100%; padding: 8px; margin-top: 1rem; border: 2px solid #3498db; border-radius: 4px; outline: none;">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 自定义光标类
+        class CustomCursor {
+            constructor() {
+                this.cursorDots = document.querySelectorAll('.cursor-dot');
+                this.cursorDot1 = document.querySelector('.cursor-dot-1');
+                this.cursorDot2 = document.querySelector('.cursor-dot-2');
+                this.cursorDot3 = document.querySelector('.cursor-dot-3');
+                this.isHovering = false;
+                this.isClicking = false;
+                this.currentElement = null;
+                
+                this.init();
+            }
+            
+            init() {
+                // 监听鼠标移动
+                document.addEventListener('mousemove', this.handleMouseMove.bind(this));
+                
+                // 监听鼠标进入可交互元素
+                document.querySelectorAll('[data-cursor="grab"], button, a, input, textarea, select').forEach(element => {
+                    element.addEventListener('mouseenter', this.handleMouseEnter.bind(this));
+                    element.addEventListener('mouseleave', this.handleMouseLeave.bind(this));
+                    element.addEventListener('mousedown', this.handleMouseDown.bind(this));
+                    element.addEventListener('mouseup', this.handleMouseUp.bind(this));
+                });
+                
+                // 监听触摸设备（作为后备）
+                document.addEventListener('touchstart', this.handleTouchStart.bind(this));
+                document.addEventListener('touchend', this.handleTouchEnd.bind(this));
+            }
+            
+            handleMouseMove(e) {
+                const x = e.clientX;
+                const y = e.clientY;
+                
+                // 更新CSS变量
+                document.documentElement.style.setProperty('--mouse-x', `${x}px`);
+                document.documentElement.style.setProperty('--mouse-y', `${y}px`);
+                
+                // 如果正在点击，保持合体状态
+                if (this.isClicking) {
+                    this.setCursorClick();
+                } else if (this.isHovering) {
+                    this.setCursorHover();
+                }
+            }
+            
+            handleMouseEnter(e) {
+                this.isHovering = true;
+                this.currentElement = e.target;
+                this.setCursorHover();
+            }
+            
+            handleMouseLeave(e) {
+                this.isHovering = false;
+                this.currentElement = null;
+                this.setCursorDefault();
+            }
+            
+            handleMouseDown(e) {
+                this.isClicking = true;
+                this.setCursorClick();
+                
+                // 添加点击反馈动画
+                setTimeout(() => {
+                    this.isClicking = false;
+                    if (this.isHovering) {
+                        this.setCursorHover();
+                    } else {
+                        this.setCursorDefault();
+                    }
+                }, 150);
+            }
+            
+            handleMouseUp(e) {
+                // 点击释放后恢复状态
+                if (!this.isClicking) {
+                    if (this.isHovering) {
+                        this.setCursorHover();
+                    } else {
+                        this.setCursorDefault();
+                    }
+                }
+            }
+            
+            handleTouchStart(e) {
+                // 触摸设备处理
+                const touch = e.touches[0];
+                document.documentElement.style.setProperty('--mouse-x', `${touch.clientX}px`);
+                document.documentElement.style.setProperty('--mouse-y', `${touch.clientY}px`);
+                this.isClicking = true;
+                this.setCursorClick();
+            }
+            
+            handleTouchEnd(e) {
+                this.isClicking = false;
+                this.setCursorDefault();
+            }
+            
+            setCursorDefault() {
+                document.body.classList.remove('cursor-hover', 'cursor-click');
+            }
+            
+            setCursorHover() {
+                document.body.classList.add('cursor-hover');
+                document.body.classList.remove('cursor-click');
+            }
+            
+            setCursorClick() {
+                document.body.classList.add('cursor-click');
+                document.body.classList.remove('cursor-hover');
+            }
+        }
+        
+        // 初始化自定义光标
+        document.addEventListener('DOMContentLoaded', () => {
+            new CustomCursor();
+        });
+        
+        // 兼容性处理：如果浏览器不支持自定义光标，显示提示
+        if (!window.PointerEvent) {
+            console.warn('当前浏览器可能不完全支持自定义光标效果');
+        }
+    </script>
+</body>
+</html>

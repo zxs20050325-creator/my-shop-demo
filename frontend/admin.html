@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>后台管理 - 冀遗筑梦</title>
+    <!-- 引入字体与图标 -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;700;900&family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    <!-- 引入图表库 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --c-primary: #2F4842;    /* 青黛 */
+            --c-accent: #C1A268;     /* 鎏金 */
+            --c-bg: #F5F3EF;         /* 宣纸白 */
+            --c-grid: #E6E2DC;       /* 网格线 */
+            --c-danger: #B22222;     /* 朱砂红 */
+            --c-text: #1a2b27;
+            --f-serif: 'Noto Serif SC', serif;
+            --f-eng: 'Cinzel', serif;
+            --sidebar-width: 90px;
+            --card-shadow: 10px 10px 0 rgba(193, 162, 104, 0.15);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            background-color: var(--c-bg); 
+            color: var(--c-text); 
+            font-family: var(--f-serif); 
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: #fff;
+            border-right: 1.5px solid var(--c-primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 0;
+            position: fixed;
+            height: 100vh;
+            z-index: 1000;
+        }
+        .brand-seal {
+            background: var(--c-primary);
+            color: #fff;
+            padding: 20px 10px;
+            border-radius: 2px;
+            box-shadow: 4px 4px 0 var(--c-accent);
+            writing-mode: vertical-rl;
+            font-size: 16px;
+            font-weight: 900;
+            letter-spacing: 4px;
+            margin-bottom: 40px;
+            cursor: pointer;
+        }
+        .nav-icon {
+            margin: 15px 0;
+            font-size: 20px;
+            color: var(--c-primary);
+            opacity: 0.4;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .nav-icon:hover, .nav-icon.active { opacity: 1; color: var(--c-accent); transform: scale(1.1); }
+
+        /* 主内容区 */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 40px 60px;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 40px;
+            border-bottom: 2px solid var(--c-primary);
+            padding-bottom: 20px;
+        }
+        .header h1 { font-size: 32px; font-weight: 900; color: var(--c-primary); margin: 0; }
+        .header span { font-family: var(--f-eng); color: var(--c-accent); letter-spacing: 2px; font-size: 14px; font-weight: bold; }
+        
+        .status-badge { 
+            font-family: var(--f-eng); font-size: 12px; color: var(--c-primary); 
+            border: 1px solid var(--c-primary); padding: 5px 15px; border-radius: 20px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .status-dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; }
+
+        /* 布局 */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        /* 卡片 */
+        .kpi-card {
+            background: #fff; padding: 25px; border: 1.5px solid var(--c-grid);
+            box-shadow: var(--card-shadow); position: relative; overflow: hidden;
+        }
+        .kpi-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+            background: var(--c-primary);
+        }
+        .kpi-title { font-size: 12px; color: #999; font-family: var(--f-eng); letter-spacing: 1px; margin-bottom: 10px; }
+        .kpi-value { font-size: 32px; font-weight: 900; color: var(--c-primary); font-family: var(--f-eng); }
+        .kpi-trend { font-size: 12px; margin-top: 10px; color: var(--c-accent); display: flex; align-items: center; gap: 5px; }
+
+        /* 图表盒子 */
+        .chart-box {
+            background: #fff; padding: 25px; border: 1.5px solid var(--c-grid);
+            box-shadow: var(--card-shadow); position: relative;
+        }
+        .chart-half { grid-column: span 2; height: 380px; } /* 关键：改为两个图表并排 */
+        
+        .section-title { font-size: 16px; font-weight: bold; margin-bottom: 20px; border-left: 4px solid var(--c-accent); padding-left: 10px; }
+
+        /* 表格区域 */
+        .wide-section { grid-column: span 4; background: #fff; padding: 30px; border: 1.5px solid var(--c-grid); box-shadow: var(--card-shadow); }
+        
+        .controls-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+        
+        .search-input {
+            border: none; border-bottom: 2px solid var(--c-grid);
+            background: transparent; padding: 8px 0; width: 250px;
+            font-family: var(--f-serif); outline: none;
+        }
+        .btn {
+            background: transparent; border: 1.5px solid var(--c-primary);
+            color: var(--c-primary); padding: 8px 20px; cursor: pointer;
+            font-family: var(--f-serif); font-weight: bold;
+        }
+        .btn:hover { background: var(--c-primary); color: #fff; }
+
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th { text-align: left; padding: 15px; border-bottom: 2px solid var(--c-primary); color: var(--c-primary); font-size: 12px; }
+        .data-table td { padding: 12px 15px; border-bottom: 1px solid #eee; font-size: 14px; color: #555; }
+        
+        .badge { padding: 2px 8px; border-radius: 2px; font-size: 11px; font-weight: bold; border: 1px solid currentColor; }
+        .b-pay { color: #10b981; border-color: #10b981; background: rgba(16, 185, 129, 0.1); }
+        .b-cart { color: #f59e0b; border-color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
+        .b-view { color: #3b82f6; border-color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
+
+        .notification {
+            position: fixed; top: 20px; right: 20px; padding: 15px 25px;
+            background: var(--c-primary); color: #fff; transform: translateX(120%); transition: 0.4s;
+            z-index: 2000; border-left: 4px solid var(--c-accent);
+        }
+        .notification.show { transform: translateX(0); }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; padding: 20px; }
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .chart-half, .wide-section { grid-column: span 1; height: auto; }
+            .chart-box canvas { min-height: 250px; }
+            .data-table th:nth-child(4), .data-table td:nth-child(4) { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 侧边栏 -->
+    <aside class="sidebar">
+        <div class="brand-seal" onclick="location.href='index.html'">冀遗筑梦</div>
+        <i class="fa fa-dashboard nav-icon active" title="仪表盘"></i>
+        <i class="fa fa-users nav-icon" onclick="document.getElementById('users-section').scrollIntoView({behavior:'smooth'})"></i>
+        <i class="fa fa-sign-out nav-icon" onclick="location.href='index.html'"></i>
+    </aside>
+
+    <div class="main-content">
+        <div class="header">
+            <div>
+                <h1>用户数据总览</h1></h1>
+                <span>ADMINISTRATOR DASHBOARD // V8.2</span>
+            </div>
+            <div class="status-badge"><div class="status-dot"></div> ONLINE</div>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- 关键指标 KPI -->
+            <div class="kpi-card">
+                <div class="kpi-title">TOTAL REVENUE / 总营收</div>
+                <div class="kpi-value">¥<span id="kpi-revenue">0</span></div>
+                <div class="kpi-trend">↑ 实时入账</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">TOTAL VISITS / 访问量</div>
+                <div class="kpi-value" id="kpi-visits">0</div>
+                <div class="kpi-trend">↑ 持续增长</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">ORDERS / 成交订单</div>
+                <div class="kpi-value" id="kpi-orders">0</div>
+                <div class="kpi-trend">→ 转化平稳</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">ACTIVE USERS / 活跃用户</div>
+                <div class="kpi-value" id="kpi-users">0</div>
+                <div class="kpi-trend">↑ 在线侦测</div>
+            </div>
+
+            <!-- 第一排图表：每日流量 & 每日活跃用户 -->
+            <div class="chart-box chart-half">
+                <div class="section-title">每日流量趋势PV (Page Views)</div>
+                <canvas id="trafficChart"></canvas>
+            </div>
+            <div class="chart-box chart-half">
+                <div class="section-title">每日活跃用户UV (Active Users)</div>
+                <canvas id="dailyUserChart"></canvas>
+            </div>
+
+            <!-- 第二排图表：行为 & 商品 -->
+            <div class="chart-box chart-half">
+                <div class="section-title">用户行为分布环形表</div>
+                <canvas id="actionChart"></canvas>
+            </div>
+            <div class="chart-box chart-half">
+                <div class="section-title">用户交互事件前五</div>
+                <canvas id="productChart"></canvas>
+            </div>
+
+            <!-- 实时日志 -->
+            <div class="wide-section">
+                <div class="controls-bar">
+                    <div class="section-title" style="margin:0; border:none; padding:0;">实时交互日志 (Live Logs)</div>
+                    <button class="btn" onclick="realExportData()"><i class="fa fa-download"></i> 导出 CSV</button>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th width="20%">TIME / 时间</th>
+                            <th width="20%">USER / 用户</th>
+                            <th width="20%">ACTION / 行为</th>
+                            <th>DETAIL / 详情</th>
+                        </tr>
+                    </thead>
+                    <tbody id="log-table-body">
+                        <!-- 动态填充 -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 所有用户数据 -->
+            <div class="wide-section" id="users-section">
+                <div class="section-title">用户管理 (User Management)</div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>用户名</th>
+                                <th>注册时间</th>
+                                <th>购物车</th>
+                                <th>收藏</th>
+                                <th>最近活动</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body">
+                            <!-- 动态填充 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">操作成功</div>
+
+    <script>
+        // === 1. API 配置 ===
+        const API_BASE = ''; // 相对路径：由后端同一服务托管，部署后自动指向同源后端
+
+        // === 管理员口令 ===
+        let adminKey = sessionStorage.getItem('jiyi_admin_key');
+        function getAdminKey() {
+            if (adminKey) return adminKey;
+            adminKey = prompt('请输入管理员口令 / Admin Key:') || '';
+            if (adminKey) sessionStorage.setItem('jiyi_admin_key', adminKey);
+            return adminKey;
+        }
+        async function adminFetch(url) {
+            const res = await fetch(url, { headers: { 'x-admin-key': getAdminKey() } });
+            if (res.status === 401) {
+                sessionStorage.removeItem('jiyi_admin_key');
+                adminKey = null;
+                alert('管理员口令错误，请刷新后重试');
+                throw new Error('未授权');
+            }
+            return res.json();
+        }
+        
+        // Chart.js 全局字体设置
+        Chart.defaults.font.family = "'Noto Serif SC', serif";
+        Chart.defaults.color = '#555';
+
+        // 全局变量
+        let trafficChart, dailyUserChart, actionChart, productChart;
+        let currentLogs = [];
+
+        // === 2. 初始化图表 ===
+        function initCharts() {
+            // A. 左侧：每日流量
+            const ctx1 = document.getElementById('trafficChart').getContext('2d');
+            trafficChart = new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'PV (访问量)',
+                        data: [],
+                        borderColor: '#2F4842',
+                        backgroundColor: 'rgba(47, 72, 66, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { 
+                        x: { ticks: { maxTicksLimit: 10 } },
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            // B. 右侧：每日活跃用户
+            const ctxUser = document.getElementById('dailyUserChart').getContext('2d');
+            dailyUserChart = new Chart(ctxUser, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'UV (活跃用户)',
+                        data: [],
+                        backgroundColor: '#C1A268',
+                        borderRadius: 4,
+                        barThickness: 'flex',
+                        maxBarThickness: 30
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { 
+                        x: { ticks: { maxTicksLimit: 10 } },
+                        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                    }
+                }
+            });
+
+            // C. 行为分布
+            const ctx2 = document.getElementById('actionChart').getContext('2d');
+            actionChart = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['浏览', '加购', '支付', '其他'],
+                    datasets: [{
+                        data: [0,0,0,0],
+                        backgroundColor: ['#2F4842', '#C1A268', '#10B981', '#E6E2DC'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { 
+                    responsive: true, maintainAspectRatio: false, cutout: '70%',
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+
+            // D. 商品热度
+            const ctx3 = document.getElementById('productChart').getContext('2d');
+            productChart = new Chart(ctx3, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '热度', data: [], backgroundColor: '#C1A268', borderRadius: 4
+                    }]
+                },
+                options: { 
+                    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        // 时区转换函数：将UTC时间转换为北京时间
+        function formatBeijingTime(utcTimeString) {
+            if (!utcTimeString) return '';
+            const utcDate = new Date(utcTimeString);
+            // 转换为北京时间 (UTC+8)
+            const beijingDate = new Date(utcDate.getTime() + 8 * 60 * 60 * 1000);
+            return beijingDate.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            }).replace(/\//g, '-');
+        }
+
+        // === 3. 获取数据并更新 ===
+        async function updateDashboard() {
+            try {
+                // 请求统计数据
+                const data = await adminFetch(`${API_BASE}/api/admin/stats`);
+
+                // 更新 KPI
+                document.getElementById('kpi-revenue').innerText = data.kpi.revenue.toLocaleString();
+                document.getElementById('kpi-visits').innerText = data.kpi.visits.toLocaleString();
+                document.getElementById('kpi-orders').innerText = data.kpi.orders.toLocaleString();
+                document.getElementById('kpi-users').innerText = data.kpi.activeUsers.toLocaleString();
+
+                // 更新 流量图 & 用户图 (共用 dateLabels)
+                if (data.charts.dateLabels) {
+                    trafficChart.data.labels = data.charts.dateLabels;
+                    trafficChart.data.datasets[0].data = data.charts.dailyTraffic;
+                    trafficChart.update();
+
+                    dailyUserChart.data.labels = data.charts.dateLabels;
+                    dailyUserChart.data.datasets[0].data = data.charts.dailyActiveUsers;
+                    dailyUserChart.update();
+                }
+
+                // 更新 行为分布
+                actionChart.data.datasets[0].data = data.charts.actionDistribution;
+                actionChart.update();
+
+                // 更新 热门商品
+                productChart.data.labels = data.charts.topProducts.map(p => p[0].substring(0,8)+'..');
+                productChart.data.datasets[0].data = data.charts.topProducts.map(p => p[1]);
+                productChart.update();
+
+                // 更新 日志表格
+                currentLogs = data.logs;
+                renderLogs(data.logs);
+
+            } catch (error) {
+                console.error("更新失败:", error);
+            }
+        }
+
+        // === 4. 获取用户列表数据 ===
+        async function fetchAllUserData() {
+            try {
+                const data = await adminFetch(`${API_BASE}/api/admin/users-data`);
+                
+                const tbody = document.getElementById('users-table-body');
+                tbody.innerHTML = data.users.map(user => {
+                    const c = data.carts.filter(i => i.username === user.username).length;
+                    const f = data.favorites.filter(i => i.username === user.username).length;
+                    const l = data.logs.filter(i => i.username === user.username);
+                    const last = l.length > 0 ? l[0].action : '无活动';
+                    
+                    return `<tr>
+                        <td style="font-weight:bold">${user.username}</td>
+                        <td>${new Date(user.created_at || Date.now()).toLocaleDateString()}</td>
+                        <td>${c}</td>
+                        <td>${f}</td>
+                        <td style="color:#666">${last}</td>
+                    </tr>`;
+                }).join('');
+            } catch (e) {
+                console.log("用户数据加载失败");
+            }
+        }
+
+        // === 5. 辅助函数 ===
+        function renderLogs(logs) {
+            const tbody = document.getElementById('log-table-body');
+            tbody.innerHTML = logs.slice(0, 15).map(log => {
+                let bc = 'b-view';
+                if(log.action.includes('支付')) bc = 'b-pay';
+                if(log.action.includes('加入')) bc = 'b-cart';
+                return `<tr>
+                    <td style="color:#999">${formatBeijingTime(log.time)}</td>
+                    <td style="font-weight:bold">${log.username}</td>
+                    <td><span class="badge ${bc}">${log.action}</span></td>
+                    <td>${log.product || '-'}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function realExportData() {
+            if(!currentLogs.length) return alert('无数据');
+            let csv = "\uFEFFTime,User,Action,Product\n";
+            currentLogs.forEach(r => csv += `${r.time},${r.username},${r.action},${r.product}\n`);
+            const blob = new Blob([csv], {type: "text/csv;charset=utf-8;"});
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `Report_${Date.now()}.csv`;
+            link.click();
+        }
+
+        // 启动
+        window.onload = function() {
+            initCharts();
+            updateDashboard();
+            fetchAllUserData();
+            setInterval(updateDashboard, 5000); // 每5秒自动刷新
+        };
+    </script>
+</body>
+</html>

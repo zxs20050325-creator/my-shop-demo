@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>选藏清单 - 冀遗筑梦</title>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body { background-color: #F5F3EF; margin: 0; color: #2F4842; font-family: 'Noto Serif SC', serif; }
+        
+        .container { max-width: 1100px; margin: 0 auto; padding: 60px 40px; }
+
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            border-bottom: 2px solid #2F4842;
+            padding-bottom: 30px;
+            margin-bottom: 50px;
+        }
+        .cart-header h1 { font-size: 42px; margin: 0; font-weight: 900; }
+        .cart-header span { font-size: 14px; color: #C1A268; letter-spacing: 4px; font-weight: bold; }
+
+        .item-row {
+            display: grid;
+            grid-template-columns: 140px 1fr 180px 80px;
+            align-items: center;
+            background: #fff;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1.5px solid #E6E2DC;
+            transition: 0.4s;
+        }
+        .item-row:hover {
+            transform: scale(1.01);
+            border-color: #C1A268;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+        .item-row img { width: 120px; height: 120px; object-fit: cover; border: 1px solid #eee; }
+        .item-name { padding: 0 30px; }
+        .item-name h3 { margin: 0 0 10px 0; font-size: 20px; }
+        .item-name p { margin: 0; font-size: 12px; color: #999; font-family: monospace; }
+        
+        .item-price { font-size: 24px; font-weight: 900; color: #B22222; }
+        .btn-remove { 
+            background: none; border: none; color: #ccc; cursor: pointer; font-size: 20px; transition: 0.3s;
+        }
+        .btn-remove:hover { color: #B22222; }
+
+        .checkout-bar {
+            position: sticky;
+            bottom: 40px;
+            background: #2F4842;
+            color: #fff;
+            padding: 30px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 60px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+        }
+        .total-box span { font-size: 11px; opacity: 0.7; letter-spacing: 2px; }
+        .total-price { font-size: 36px; color: #C1A268; font-family: monospace; font-weight: bold; }
+        
+        .btn-take-home {
+            background: #C1A268;
+            color: #2F4842;
+            padding: 18px 45px;
+            border: none;
+            font-size: 15px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-take-home:hover { background: #fff; transform: translateY(-3px); }
+
+        .empty-hint { text-align: center; padding: 100px 0; color: #ccc; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header class="cart-header">
+            <div>
+                <h1>选藏清单</h1>
+                <span>SELECTION ARCHIVE</span>
+            </div>
+            <a href="index.html" style="text-decoration:none; color:#2F4842; font-size:12px; font-weight:bold;">← 继续探索 / CONTINUE</a>
+        </header>
+
+        <div id="selectionList">
+            <!-- 动态渲染 -->
+        </div>
+
+        <div class="checkout-bar" id="checkoutBar">
+            <div class="total-box">
+                <span>选藏总计 / TOTAL AMOUNT</span>
+                <div class="total-price" id="totalDisplay">¥0</div>
+            </div>
+            <button class="btn-take-home" onclick="checkout()">带走它 / TAKE ME HOME</button>
+        </div>
+    </div>
+
+    <script src="common.js"></script>
+    <script>
+        function renderSelection() {
+            const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
+            const listDom = document.getElementById('selectionList');
+            let total = 0;
+
+            if (cart.length === 0) {
+                listDom.innerHTML = `<div class="empty-hint"><i class="fa fa-archive" style="font-size:50px;"></i><br><br>您的选藏清单尚无遗珍...</div>`;
+                document.getElementById('checkoutBar').style.display = 'none';
+                return;
+            }
+
+            listDom.innerHTML = cart.map((item, idx) => {
+                total += parseFloat(item.price);
+                // 确保图片路径逻辑正确
+                const imgSrc = item.img.startsWith('http') ? item.img : `/images/${item.img}`;
+                return `
+                    <div class="item-row">
+                        <img src="${imgSrc}" onerror="this.src='https://placehold.co/200x200?text=IMAGE+LOST'">
+                        <div class="item-name">
+                            <h3>${item.name}</h3>
+                            <p>DIGITAL COLLECTION SERIES / #00${item.id}</p>
+                        </div>
+                        <div class="item-price">¥${item.price}</div>
+                        <button class="btn-remove" onclick="removeItem(${idx})">&times;</button>
+                    </div>
+                `;
+            }).join('');
+            document.getElementById('totalDisplay').innerText = `¥${total}`;
+        }
+
+        function removeItem(idx) {
+            let cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
+            cart.splice(idx, 1);
+            localStorage.setItem('jiyi_cart', JSON.stringify(cart));
+            renderSelection();
+            
+            // 同步到后端（可选）
+            const currentUser = localStorage.getItem('jiyi_user');
+            if(currentUser) {
+                try {
+                    const API_BASE = ''; // 相对路径
+                    
+                    fetch(`${API_BASE}/api/cart/remove`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            username: currentUser,
+                            index: idx
+                        })
+                    });
+                } catch (error) {
+                    console.error('同步移除购物车失败:', error);
+                }
+            }
+        }
+        
+        // 结算功能 - 同步到后端
+        async function checkout() {
+            const currentUser = localStorage.getItem('jiyi_user');
+            if(!currentUser) {
+                alert("请先登录");
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            const cart = JSON.parse(localStorage.getItem('jiyi_cart') || '[]');
+            if(cart.length === 0) {
+                alert('购物车为空');
+                return;
+            }
+            
+            const total = cart.reduce((sum, item) => sum + parseFloat(item.price), 0);
+            
+            try {
+                const API_BASE = ''; // 相对路径
+                
+                const response = await fetch(`${API_BASE}/api/cart/checkout`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: currentUser,
+                        totalPrice: total
+                    })
+                });
+                
+                const result = await response.json();
+                if(result.success) {
+                    // 清空本地购物车
+                    localStorage.removeItem('jiyi_cart');
+                    showToast('结算成功！');
+                    setTimeout(() => {
+                        window.location.href = 'pay.html';
+                    }, 1500);
+                } else {
+                    alert('结算失败，请重试');
+                }
+            } catch (error) {
+                console.error('结算失败:', error);
+                alert('网络错误，请重试');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', renderSelection);
+    </script>
+</body>
+</html>

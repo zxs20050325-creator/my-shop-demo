@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户注册 - 冀遗筑梦</title>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css">
+    <script src="./common.js"></script>
+    <style>
+        body {
+            background-color: #F5F3EF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Noto Serif SC', serif;
+        }
+        
+        .register-container {
+            background: #fff;
+            width: 100%;
+            max-width: 400px;
+            padding: 60px 40px;
+            border: 2px solid #2F4842;
+            box-shadow: 20px 20px 0 #C1A268;
+            position: relative;
+        }
+        
+        .register-container::after {
+            content: "ARCHIVE ID: 8.2V";
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            font-size: 10px;
+            color: #ccc;
+            font-family: monospace;
+        }
+        
+        .header-title { 
+            text-align: center; 
+            margin-bottom: 45px; 
+        }
+        .header-title h2 { 
+            font-size: 32px; 
+            color: #2F4842; 
+            margin: 0; 
+            letter-spacing: 2px; 
+        }
+        .header-title span { 
+            font-size: 12px; 
+            color: #C1A268; 
+            letter-spacing: 5px; 
+            font-weight: bold; 
+        }
+        
+        .form-group { 
+            position: relative; 
+            margin-bottom: 35px; 
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px 0;
+            border: none;
+            border-bottom: 1.5px solid #E6E2DC;
+            background: transparent;
+            font-size: 16px;
+            outline: none;
+            transition: 0.3s;
+        }
+        .form-group input:focus { 
+            border-bottom-color: #2F4842; 
+        }
+        .form-group label {
+            position: absolute;
+            left: 0;
+            top: 12px;
+            color: #999;
+            pointer-events: none;
+            transition: 0.3s;
+            font-size: 14px;
+        }
+        .form-group input:focus ~ label,
+        .form-group input:valid ~ label {
+            top: -12px;
+            font-size: 11px;
+            color: #C1A268;
+            font-weight: bold;
+        }
+        
+        .form-button {
+            width: 100%;
+            padding: 18px;
+            background: #2F4842;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            letter-spacing: 4px;
+            transition: 0.4s;
+            font-weight: bold;
+        }
+        .form-button:hover {
+            background: #C1A268;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(193, 162, 104, 0.3);
+        }
+        
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 30px;
+            color: #2F4842;
+            text-decoration: none;
+            font-size: 12px;
+            opacity: 0.6;
+            transition: 0.3s;
+        }
+        .back-link:hover { 
+            opacity: 1; 
+            color: #C1A268; 
+        }
+        
+        .form-footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+        }
+        .form-footer a {
+            color: #2F4842;
+            text-decoration: none;
+            opacity: 0.6;
+            transition: 0.3s;
+        }
+        .form-footer a:hover {
+            opacity: 1;
+            color: #C1A268;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="header-title">
+            <h2>用户注册</h2>
+            <span>USER REGISTRATION</span>
+        </div>
+
+        <form class="register-form" onsubmit="register(event)">
+            <div class="form-group">
+                <input type="text" id="reg-username" required>
+                <label>用户名 / USERNAME</label>
+            </div>
+            
+            <div class="form-group">
+                <input type="password" id="reg-password" required>
+                <label>密码 / PASSWORD</label>
+            </div>
+            
+            <div class="form-group">
+                <input type="password" id="confirm-password" required>
+                <label>确认密码 / CONFIRM PASSWORD</label>
+            </div>
+            
+            <button type="submit" class="form-button">创建账户 / CREATE ACCOUNT</button>
+        </form>
+
+        <div class="form-footer">
+            已有账户？ <a href="login.html">立即登录</a>
+        </div>
+
+        <a href="index.html" class="back-link">← 返回首页探索 / BACK HOME</a>
+    </div>
+
+    <script>
+        // 注册功能
+        async function register(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('reg-username').value;
+            const password = document.getElementById('reg-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            if (!username || !password) {
+                showToast('请填写完整的用户名和密码');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showToast('两次输入的密码不一致');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${getApiBase()}/api/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('注册成功！正在跳转到登录页面...');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                } else {
+                    showToast(result.message || '注册失败，请重试');
+                }
+            } catch (error) {
+                console.error('注册错误:', error);
+                showToast('网络错误，请检查连接后重试');
+            }
+        }
+    </script>
+</body>
+</html>

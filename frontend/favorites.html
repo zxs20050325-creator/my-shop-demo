@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的收藏 - 冀遗筑梦</title>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 引入公共CSS和JS -->
+    <link rel="stylesheet" href="../styles.css">
+    <script src="./common.js"></script>
+
+    <style>
+        /* 收藏页面特定样式 */
+        .favorites-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+        
+        .empty-favorites {
+            text-align: center;
+            padding: 60px;
+            opacity: 0.4;
+        }
+        
+        .favorites-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 40px;
+        }
+        
+        /* 隐藏侧边栏中的文字内容 - 符合特定页面非必要元素隐藏规范 */
+        .brand-vertical,
+        .node-num,
+        .dynasty-text {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-cart" onclick="window.location.href='cart.html'">
+        <i class="fa fa-shopping-cart"></i>
+        <div class="cart-count" id="floatingCartCount">0</div>
+    </div>
+    
+    <aside class="sidebar">
+        <div class="brand-vertical">冀遗筑梦</div>
+        <nav class="time-ruler">
+            <div class="dynasty-mark active" data-series="01">
+                <span class="node-num">01</span><span class="dynasty-text">正定华塔</span>
+            </div>
+            <div class="dynasty-mark" data-series="02">
+                <span class="node-num">02</span><span class="dynasty-text">避暑山庄</span>
+            </div>
+            <div class="dynasty-mark" data-series="03">
+                <span class="node-num">03</span><span class="dynasty-text">赵州古桥</span>
+            </div>
+            <div class="dynasty-mark" data-series="04">
+                <span class="node-num">04</span><span class="dynasty-text">隐藏典藏</span>
+            </div>
+        </nav>
+        
+        <div class="nav-links">
+            <a href="favorites.html" class="nav-link">
+                <i class="fa fa-heart"></i>
+                <span class="nav-text">收藏夹</span>
+            </a>
+            <a href="cart.html" class="nav-link">
+                <i class="fa fa-shopping-bag"></i>
+                <span class="nav-text">购物车</span>
+            </a>
+        </div>
+        <div class="social-links">
+            <i class="fa fa-weixin" title="AR小程序"></i>
+            <i class="fa fa-weibo"></i>
+        </div>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="top-bar" id="topBar">
+            <div class="search-engine">
+                <i class="fa fa-search"></i>
+                <input type="text" placeholder="SEARCH ARCHIVE..." id="searchInput">
+            </div>
+
+            <div class="cart-trigger" onclick="window.location.href='cart.html'">
+                <i class="fa fa-shopping-bag"></i>
+                <span>BAG</span>
+                <div id="cartBadge">0</div>
+            </div>
+
+            <div class="auth-btn" id="authSection">
+                <!-- JS填充 -->
+            </div>
+        </header>
+        
+        <section style="grid-area: hero; padding: 40px 60px;">
+            <h1 style="font-size: 42px; margin-bottom: 10px;">我的收藏</h1>
+            <div style="font-family: var(--f-mono); color: var(--c-accent); font-size: 14px; margin-bottom: 20px;">MY FAVORITES</div>
+        </section>
+
+        <main class="favorites-container">
+            <a href="index.html" class="back-link">← 返回首页</a>
+            
+            <div class="favorites-header">
+                <h2 class="favorites-title">收藏的商品</h2>
+            </div>
+            
+            <div id="favorites-grid" class="favorites-grid">
+                <!-- 收藏项目将通过JS动态加载 -->
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // 设置API基础URL，以便在部署时调整
+        const API_BASE = ''; // 相对路径（同源部署，无需硬编码）
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            syncSession();
+            updateCartCount();
+            loadFavorites();
+            setupScrollHandler();
+        });
+
+        // 加载收藏商品
+        function loadFavorites() {
+            const favorites = JSON.parse(localStorage.getItem('jiyi_favorites') || '[]');
+            const favoritesGrid = document.getElementById('favorites-grid');
+            
+            if (favorites.length === 0) {
+                favoritesGrid.innerHTML = `
+                    <div class="empty-favorites">
+                        <h2>您的收藏夹是空的</h2>
+                        <p>快去首页发现心仪的商品并添加到收藏吧！</p>
+                        <button class="checkout-btn" onclick="window.location.href='index.html'" style="margin-top: 20px; background: var(--c-primary); color: white; border: none; padding: 15px 30px; font-family: var(--f-eng); letter-spacing: 2px; transition: 0.3s;">去逛逛</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            favorites.forEach((item, index) => {
+                html += `
+                    <div class="product-card">
+                        <div class="p-image-wrap">
+                            <img src="${buildImageUrl(item.img)}" alt="${item.name}" class="p-img">
+                        </div>
+                        <div class="p-info">
+                            <div class="p-name">${item.name}</div>
+                            <div class="p-price">¥${item.price}</div>
+                            <button class="btn-add-cart" onclick="removeFromFavorites(${index})">取消收藏</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            favoritesGrid.innerHTML = html;
+        }
+
+        // 从收藏夹移除商品
+        function removeFromFavorites(index) {
+            const favorites = JSON.parse(localStorage.getItem('jiyi_favorites') || '[]');
+            if (index >= 0 && index < favorites.length) {
+                favorites.splice(index, 1);
+                localStorage.setItem('jiyi_favorites', JSON.stringify(favorites));
+                loadFavorites();
+                showToast('商品已从收藏夹移除');
+            }
+        }
+    </script>
+</body>
+</html>

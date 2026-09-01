@@ -1,0 +1,18 @@
+{
+  "name": "shop-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for冀遗筑梦 E-commerce Platform",
+  "main": "index.html",
+  "scripts": {
+    "start": "serve -s .",
+    "dev": "live-server --port=3000",
+    "build": "echo 'Build completed'"
+  },
+  "keywords": ["shop", "frontend", "e-commerce"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "serve": "^14.2.1",
+    "live-server": "^1.2.2"
+  }
+}

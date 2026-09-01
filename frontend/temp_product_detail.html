@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品详情 - 冀遗筑梦</title>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 引入公共CSS和JS -->
+    <link rel="stylesheet" href="../styles.css">
+    <script src="./common.js"></script>
+
+    <style>
+        /* 临时产品详情页特定样式 */
+        .temp-detail-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+        
+        .temp-image {
+            width: 100%;
+            height: 400px;
+            object-fit: contain;
+            background: #fafafa;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div style="font-size: 22px; font-weight: 700; color: #1a202c;">🏛️ 冀遗筑梦</div>
+        <div class="nav-links" id="auth-section">
+            <!-- JS填充 -->
+        </div>
+    </nav>
+
+    <div class="container">
+        <a href="index.html" class="back-link">← 返回首页</a>
+        
+        <div class="product-detail-container">
+            <div class="product-image">
+                <img id="product-img" src="" alt="">
+            </div>
+            
+            <div class="product-info">
+                <h1 id="product-name" class="product-name"></h1>
+                <div id="product-category" class="product-category"></div>
+                <div id="product-price" class="product-price"></div>
+                <p id="product-desc" class="product-desc"></p>
+                
+                <div class="btn-actions">
+                    <button class="btn-buy" onclick="addToCart()">加入购物车</button>
+                    <button class="btn-favorite" onclick="toggleFavorite()">❤️ 收藏商品</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 设置API基础URL，以便在部署时调整
+        const API_BASE = ''; // 相对路径
+        let currentProduct = null;

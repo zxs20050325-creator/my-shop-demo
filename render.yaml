@@ -1,0 +1,17 @@
+# Render 部署配置（Blueprint）
+# 只部署一个后端 Web 服务，前端由后端同一服务托管（避免跨域）
+services:
+  - type: web
+    name: jiyi-zhumeng
+    runtime: node
+    plan: free
+    repo: https://github.com/你的用户名/my-shop-demo.git  # TODO: 改成你的仓库地址
+    branch: main
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node index.js
+    envVars:
+      - key: ADMIN_PASSWORD
+        value: admin123
+      - key: DB_PATH
+        value: ./jiyi.db
