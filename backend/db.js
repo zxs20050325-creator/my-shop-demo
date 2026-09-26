@@ -1,104 +1,149 @@
 // db.js - 数据访问层（SQLite 版）
-// 使用 better-sqlite3，兼容性更好，支持 Node 18+
+// 使用 sql.js（纯 JavaScript 实现），无需 C++ 编译工具，兼容所有 Node 版本
 require('dotenv').config();
 const path = require('path');
 const crypto = require('crypto');
-const Database = require('better-sqlite3');
+const fs = require('fs');
+const initSqlJs = require('sql.js');
 
-// 数据库文件路径（默认在 backend 目录下，可用环境变量 DB_PATH 覆盖）
+// 数据库文件路径
 const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'jiyi.db');
 
-// 初始化数据库连接
 let db;
-try {
-    db = new Database(DB_PATH);
-    console.log('✅ 数据库连接成功:', DB_PATH);
-} catch (error) {
-    console.error('❌ 数据库连接失败:', error.message);
-    process.exit(1);
+let SQL;
+
+// 异步初始化数据库
+async function initializeDatabase() {
+    try {
+        // 初始化 sql.js
+        SQL = await initSqlJs();
+        
+        // 尝试加载现有数据库文件
+        if (fs.existsSync(DB_PATH)) {
+            const fileBuffer = fs.readFileSync(DB_PATH);
+            db = new SQL.Database(fileBuffer);
+            console.log('✅ 数据库加载成功:', DB_PATH);
+        } else {
+            // 创建新数据库
+            db = new SQL.Database();
+            console.log('✅ 创建新数据库:', DB_PATH);
+        }
+        
+        // 启用 WAL 模式
+        db.run('PRAGMA journal_mode = WAL;');
+        
+        // 建表
+        createTables();
+        
+        // 初始化默认数据
+        await seedData();
+        
+        return true;
+    } catch (error) {
+        console.error('❌ 数据库初始化失败:', error.message);
+        throw error;
+    }
 }
 
-// WAL 模式：提升并发读写性能
-db.pragma('journal_mode = WAL');
+function createTables() {
+    db.run(`
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+        );
 
-// 首次启动自动建表（IF NOT EXISTS，重复执行无副作用）
-db.exec(`
-CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL,
-    created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
-);
+        CREATE TABLE IF NOT EXISTS carts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            product TEXT NOT NULL,
+            created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+        );
 
-CREATE TABLE IF NOT EXISTS carts (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL,
-    product TEXT NOT NULL,
-    created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
-);
+        CREATE TABLE IF NOT EXISTS favorites (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            product TEXT NOT NULL,
+            created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+        );
 
-CREATE TABLE IF NOT EXISTS favorites (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL,
-    product TEXT NOT NULL,
-    created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
-);
+        CREATE TABLE IF NOT EXISTS user_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            action TEXT NOT NULL,
+            product TEXT,
+            created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+        );
 
-CREATE TABLE IF NOT EXISTS user_logs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL,
-    action TEXT NOT NULL,
-    product TEXT,
-    created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
-);
+        CREATE TABLE IF NOT EXISTS orders (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            total REAL NOT NULL DEFAULT 0,
+            created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+        );
 
-CREATE TABLE IF NOT EXISTS orders (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL,
-    total REAL NOT NULL DEFAULT 0,
-    created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
-);
+        CREATE TABLE IF NOT EXISTS products (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            price REAL NOT NULL DEFAULT 0,
+            img TEXT NOT NULL DEFAULT '',
+            category TEXT NOT NULL DEFAULT '非遗手作',
+            active INTEGER NOT NULL DEFAULT 1,
+            created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+        );
 
-CREATE TABLE IF NOT EXISTS products (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    price REAL NOT NULL DEFAULT 0,
-    img TEXT NOT NULL DEFAULT '',
-    category TEXT NOT NULL DEFAULT '非遗手作',
-    active INTEGER NOT NULL DEFAULT 1,
-    created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
-);
-
-CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
-CREATE INDEX IF NOT EXISTS idx_carts_username ON carts(username);
-CREATE INDEX IF NOT EXISTS idx_favorites_username ON favorites(username);
-CREATE INDEX IF NOT EXISTS idx_user_logs_username ON user_logs(username);
-CREATE INDEX IF NOT EXISTS idx_user_logs_created_at ON user_logs(created_at);
-`);
-
-// 首次启动写入默认商品（仅当商品表为空时，避免重复插入）
-const productCount = db.prepare('SELECT COUNT(*) AS c FROM products').get().c;
-if (productCount === 0) {
-    const seedProducts = [
-        { name: '冀筑华塔微藏盒', price: 198, img: '/images/001.jpg', category: '数字藏品' },
-        { name: '赵州桥榫卯奇盒', price: 88, img: '/images/002.jpg', category: '文创周边' },
-        { name: '承德御苑宸景盒', price: 328, img: '/images/003.jpg', category: '数字画作' },
-        { name: '山海关雄关守盒', price: 999, img: '/images/004.jpg', category: '典藏精品' },
-        { name: '隆兴寺禅筑臻盒', price: 58, img: '/images/005.jpg', category: '非遗手作' },
-        { name: '开元寺塔料敌盒', price: 168, img: '/images/006.jpg', category: '非遗手作' },
-        { name: '清西陵宫阙雅盒', price: 258, img: '/images/101.jpg', category: '数字藏品' },
-        { name: '娲皇宫悬楼秘盒', price: 128, img: '/images/102.jpg', category: '文创周边' },
-        { name: '古莲花池苑趣盒', price: 298, img: '/images/103.jpg', category: '数字画作' },
-        { name: '紫荆关燕塞筑盒', price: 888, img: '/images/104.jpg', category: '典藏精品' },
-        { name: '广府古城围合盒', price: 78, img: '/images/105.jpg', category: '非遗手作' },
-        { name: '外八庙梵筑珍盒', price: 188, img: '/images/106.jpg', category: '非遗手作' }
-    ];
-    const insertProduct = db.prepare('INSERT INTO products (name, price, img, category) VALUES (?, ?, ?, ?)');
-    for (const p of seedProducts) insertProduct.run(p.name, p.price, p.img, p.category);
-    console.log('✅ 初始商品数据已写入');
+        CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
+        CREATE INDEX IF NOT EXISTS idx_carts_username ON carts(username);
+        CREATE INDEX IF NOT EXISTS idx_favorites_username ON favorites(username);
+        CREATE INDEX IF NOT EXISTS idx_user_logs_username ON user_logs(username);
+        CREATE INDEX IF NOT EXISTS idx_user_logs_created_at ON user_logs(created_at);
+    `);
+    
+    saveDatabase();
 }
 
-// --- 密码哈希工具（scrypt，Node 内置 crypto，无额外依赖）---
+async function seedData() {
+    const count = db.exec('SELECT COUNT(*) AS c FROM products')[0]?.values[0][0] || 0;
+    
+    if (count === 0) {
+        const seedProducts = [
+            ['冀筑华塔微藏盒', 198, '/images/001.jpg', '数字藏品'],
+            ['赵州桥榫卯奇盒', 88, '/images/002.jpg', '文创周边'],
+            ['承德御苑宸景盒', 328, '/images/003.jpg', '数字画作'],
+            ['山海关雄关守盒', 999, '/images/004.jpg', '典藏精品'],
+            ['隆兴寺禅筑臻盒', 58, '/images/005.jpg', '非遗手作'],
+            ['开元寺塔料敌盒', 168, '/images/006.jpg', '非遗手作'],
+            ['清西陵宫阙雅盒', 258, '/images/101.jpg', '数字藏品'],
+            ['娲皇宫悬楼秘盒', 128, '/images/102.jpg', '文创周边'],
+            ['古莲花池苑趣盒', 298, '/images/103.jpg', '数字画作'],
+            ['紫荆关燕塞筑盒', 888, '/images/104.jpg', '典藏精品'],
+            ['广府古城围合盒', 78, '/images/105.jpg', '非遗手作'],
+            ['外八庙梵筑珍盒', 188, '/images/106.jpg', '非遗手作']
+        ];
+        
+        const stmt = db.prepare('INSERT INTO products (name, price, img, category) VALUES (?, ?, ?, ?)');
+        for (const p of seedProducts) {
+            stmt.run(p);
+        }
+        stmt.free();
+        saveDatabase();
+        console.log('✅ 初始商品数据已写入');
+    }
+}
+
+// 保存数据库到文件
+function saveDatabase() {
+    try {
+        const data = db.export();
+        const buffer = Buffer.from(data);
+        fs.writeFileSync(DB_PATH, buffer);
+    } catch (error) {
+        console.error('❌ 保存数据库失败:', error.message);
+    }
+}
+
+// --- 密码哈希工具 ---
 function hashPassword(plain) {
     const salt = crypto.randomBytes(16).toString('hex');
     const hash = crypto.scryptSync(plain, salt, 64).toString('hex');
@@ -120,15 +165,21 @@ class DatabaseService {
 
     // --- 1. 用户相关 ---
     createUser(username, password) {
-        const result = db.prepare(
-            'INSERT INTO users (username, password) VALUES (?, ?)'
-        ).run(username, hashPassword(password));
-        return { id: result.lastInsertRowid, username };
+        db.run('INSERT INTO users (username, password) VALUES (?, ?)', [username, hashPassword(password)]);
+        saveDatabase();
+        const result = db.exec('SELECT last_insert_rowid() as id')[0];
+        return { id: result.values[0][0], username };
     }
 
     getUserByUsername(username) {
-        const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
-        return user || null;
+        const result = db.exec(`SELECT * FROM users WHERE username = '${username.replace(/'/g, "''")}'`);
+        if (result.length === 0) return null;
+        
+        const columns = result[0].columns;
+        const values = result[0].values[0];
+        const user = {};
+        columns.forEach((col, i) => user[col] = values[i]);
+        return user;
     }
 
     verifyPassword(stored, plain) {
@@ -136,78 +187,117 @@ class DatabaseService {
     }
 
     getAllUsers() {
-        return db.prepare('SELECT * FROM users ORDER BY created_at DESC').all();
+        const result = db.exec('SELECT * FROM users ORDER BY created_at DESC');
+        if (result.length === 0) return [];
+        
+        const columns = result[0].columns;
+        return result[0].values.map(values => {
+            const user = {};
+            columns.forEach((col, i) => user[col] = values[i]);
+            return user;
+        });
     }
 
     // --- 2. 购物车相关 ---
     addToCart(username, product) {
-        const result = db.prepare(
-            'INSERT INTO carts (username, product) VALUES (?, ?)'
-        ).run(username, JSON.stringify(product || {}));
-        return { id: result.lastInsertRowid };
+        db.run('INSERT INTO carts (username, product) VALUES (?, ?)', [username, JSON.stringify(product || {})]);
+        saveDatabase();
+        const result = db.exec('SELECT last_insert_rowid() as id')[0];
+        return { id: result.values[0][0] };
     }
 
     getAllCarts() {
-        return db.prepare('SELECT * FROM carts ORDER BY created_at DESC').all()
-            .map(r => ({ ...r, product: safeParse(r.product) }));
+        const result = db.exec('SELECT * FROM carts ORDER BY created_at DESC');
+        if (result.length === 0) return [];
+        
+        const columns = result[0].columns;
+        return result[0].values.map(values => {
+            const cart = {};
+            columns.forEach((col, i) => cart[col] = values[i]);
+            cart.product = safeParse(cart.product);
+            return cart;
+        });
     }
 
     removeFromCart(username, index) {
-        const rows = db.prepare('SELECT id FROM carts WHERE username = ? ORDER BY id ASC').all(username);
-        if (index >= 0 && index < rows.length) {
-            db.prepare('DELETE FROM carts WHERE id = ?').run(rows[index].id);
+        const rows = db.exec(`SELECT id FROM carts WHERE username = '${username.replace(/'/g, "''")}' ORDER BY id ASC`);
+        if (rows.length === 0) return false;
+        
+        const ids = rows[0].values.map(v => v[0]);
+        if (index >= 0 && index < ids.length) {
+            db.run('DELETE FROM carts WHERE id = ?', [ids[index]]);
+            saveDatabase();
             return true;
         }
         return false;
     }
 
     clearCart(username) {
-        db.prepare('DELETE FROM carts WHERE username = ?').run(username);
+        db.run('DELETE FROM carts WHERE username = ?', [username]);
+        saveDatabase();
     }
 
     // --- 3. 收藏夹相关 ---
     addToFavorites(username, product) {
-        const result = db.prepare(
-            'INSERT INTO favorites (username, product) VALUES (?, ?)'
-        ).run(username, JSON.stringify(product || {}));
-        return { id: result.lastInsertRowid };
+        db.run('INSERT INTO favorites (username, product) VALUES (?, ?)', [username, JSON.stringify(product || {})]);
+        saveDatabase();
+        const result = db.exec('SELECT last_insert_rowid() as id')[0];
+        return { id: result.values[0][0] };
     }
 
     getAllFavorites() {
-        return db.prepare('SELECT * FROM favorites ORDER BY created_at DESC').all()
-            .map(r => ({ ...r, product: safeParse(r.product) }));
+        const result = db.exec('SELECT * FROM favorites ORDER BY created_at DESC');
+        if (result.length === 0) return [];
+        
+        const columns = result[0].columns;
+        return result[0].values.map(values => {
+            const fav = {};
+            columns.forEach((col, i) => fav[col] = values[i]);
+            fav.product = safeParse(fav.product);
+            return fav;
+        });
     }
 
-    // --- 4. 用户行为日志（核心数据源）---
+    // --- 4. 用户行为日志 ---
     addLog(username, action, product = '') {
-        const result = db.prepare(
-            'INSERT INTO user_logs (username, action, product) VALUES (?, ?, ?)'
-        ).run(username, action, product);
-        return { id: result.lastInsertRowid };
+        db.run('INSERT INTO user_logs (username, action, product) VALUES (?, ?, ?)', [username, action, product]);
+        saveDatabase();
+        const result = db.exec('SELECT last_insert_rowid() as id')[0];
+        return { id: result.values[0][0] };
     }
 
     getRecentLogs(limit = 2000) {
-        return db.prepare('SELECT * FROM user_logs ORDER BY created_at DESC LIMIT ?').all(limit);
+        const result = db.exec(`SELECT * FROM user_logs ORDER BY created_at DESC LIMIT ${limit}`);
+        if (result.length === 0) return [];
+        
+        const columns = result[0].columns;
+        return result[0].values.map(values => {
+            const log = {};
+            columns.forEach((col, i) => log[col] = values[i]);
+            return log;
+        });
     }
 
     clearAllLogs() {
-        db.prepare('DELETE FROM user_logs').run();
+        db.run('DELETE FROM user_logs');
+        saveDatabase();
     }
 
     // --- 5. 订单 & 统计 ---
     createOrder(username, total) {
-        const result = db.prepare(
-            'INSERT INTO orders (username, total) VALUES (?, ?)'
-        ).run(username, total || 0);
-        return { id: result.lastInsertRowid };
+        db.run('INSERT INTO orders (username, total) VALUES (?, ?)', [username, total || 0]);
+        saveDatabase();
+        const result = db.exec('SELECT last_insert_rowid() as id')[0];
+        return { id: result.values[0][0] };
     }
 
-    // 营收来自真实订单表，不再用「订单数 * 199」的假数据
     getLatestStats() {
-        const { count } = db.prepare(
-            "SELECT COUNT(*) AS count FROM user_logs WHERE action LIKE '%支付%' OR action LIKE '%结算%'"
-        ).get();
-        const { revenue } = db.prepare('SELECT COALESCE(SUM(total), 0) AS revenue FROM orders').get();
+        const orderResult = db.exec("SELECT COUNT(*) AS count FROM user_logs WHERE action LIKE '%支付%' OR action LIKE '%结算%'");
+        const count = orderResult.length > 0 ? orderResult[0].values[0][0] : 0;
+        
+        const revenueResult = db.exec('SELECT COALESCE(SUM(total), 0) AS revenue FROM orders');
+        const revenue = revenueResult.length > 0 ? revenueResult[0].values[0][0] : 0;
+        
         return { total_orders: count || 0, total_revenue: revenue || 0 };
     }
 
@@ -216,55 +306,124 @@ class DatabaseService {
         const sql = includeInactive
             ? 'SELECT * FROM products ORDER BY id ASC'
             : 'SELECT * FROM products WHERE active = 1 ORDER BY id ASC';
-        return db.prepare(sql).all();
+        
+        const result = db.exec(sql);
+        if (result.length === 0) return [];
+        
+        const columns = result[0].columns;
+        return result[0].values.map(values => {
+            const product = {};
+            columns.forEach((col, i) => product[col] = values[i]);
+            return product;
+        });
     }
 
     getProductById(id) {
-        return db.prepare('SELECT * FROM products WHERE id = ?').get(id) || null;
+        const result = db.exec(`SELECT * FROM products WHERE id = ${id}`);
+        if (result.length === 0) return null;
+        
+        const columns = result[0].columns;
+        const values = result[0].values[0];
+        const product = {};
+        columns.forEach((col, i) => product[col] = values[i]);
+        return product;
     }
 
     createProduct({ name, price, img, category }) {
-        const result = db.prepare(
-            'INSERT INTO products (name, price, img, category) VALUES (?, ?, ?, ?)'
-        ).run(name || '未命名商品', price || 0, img || '', category || '非遗手作');
-        return { id: result.lastInsertRowid };
+        db.run('INSERT INTO products (name, price, img, category) VALUES (?, ?, ?, ?)', 
+            [name || '未命名商品', price || 0, img || '', category || '非遗手作']);
+        saveDatabase();
+        const result = db.exec('SELECT last_insert_rowid() as id')[0];
+        return { id: result.values[0][0] };
     }
 
     updateProduct(id, { name, price, img, category, active }) {
         const existing = this.getProductById(id);
         if (!existing) return false;
+        
         const nextActive = active === undefined ? existing.active : (active ? 1 : 0);
-        db.prepare(
-            'UPDATE products SET name = ?, price = ?, img = ?, category = ?, active = ? WHERE id = ?'
-        ).run(name ?? existing.name, price ?? existing.price, img ?? existing.img, category ?? existing.category, nextActive, id);
+        db.run('UPDATE products SET name = ?, price = ?, img = ?, category = ?, active = ? WHERE id = ?',
+            [name ?? existing.name, price ?? existing.price, img ?? existing.img, category ?? existing.category, nextActive, id]);
+        saveDatabase();
         return true;
     }
 
     setProductActive(id, active) {
-        db.prepare('UPDATE products SET active = ? WHERE id = ?').run(active ? 1 : 0, id);
+        db.run('UPDATE products SET active = ? WHERE id = ?', [active ? 1 : 0, id]);
+        saveDatabase();
         return true;
     }
 
     deleteProduct(id) {
-        db.prepare('DELETE FROM products WHERE id = ?').run(id);
+        db.run('DELETE FROM products WHERE id = ?', [id]);
+        saveDatabase();
         return true;
     }
 
     // --- 7. 订单管理 ---
     getAllOrders() {
-        return db.prepare('SELECT * FROM orders ORDER BY created_at DESC').all();
+        const result = db.exec('SELECT * FROM orders ORDER BY created_at DESC');
+        if (result.length === 0) return [];
+        
+        const columns = result[0].columns;
+        return result[0].values.map(values => {
+            const order = {};
+            columns.forEach((col, i) => order[col] = values[i]);
+            return order;
+        });
     }
 
-    // --- 8. 用户购物车 / 收藏查询（服务端为准） ---
+    // --- 8. 用户购物车 / 收藏查询 ---
     getCartByUsername(username) {
-        return db.prepare('SELECT * FROM carts WHERE username = ? ORDER BY id ASC').all(username)
-            .map(r => safeParse(r.product));
+        const result = db.exec(`SELECT * FROM carts WHERE username = '${username.replace(/'/g, "''")}' ORDER BY id ASC`);
+        if (result.length === 0) return [];
+        
+        const columns = result[0].columns;
+        return result[0].values.map(values => {
+            const cart = {};
+            columns.forEach((col, i) => cart[col] = values[i]);
+            return safeParse(cart.product);
+        });
     }
 
     getFavoritesByUsername(username) {
-        return db.prepare('SELECT * FROM favorites WHERE username = ? ORDER BY id ASC').all(username)
-            .map(r => safeParse(r.product));
+        const result = db.exec(`SELECT * FROM favorites WHERE username = '${username.replace(/'/g, "''")}' ORDER BY id ASC`);
+        if (result.length === 0) return [];
+        
+        const columns = result[0].columns;
+        return result[0].values.map(values => {
+            const fav = {};
+            columns.forEach((col, i) => fav[col] = values[i]);
+            return safeParse(fav.product);
+        });
     }
 }
 
-module.exports = new DatabaseService();
+// 导出异步初始化的数据库服务
+let dbService = null;
+
+async function getDatabaseService() {
+    if (!dbService) {
+        await initializeDatabase();
+        dbService = new DatabaseService();
+    }
+    return dbService;
+}
+
+// 立即初始化并导出
+const initPromise = initializeDatabase().then(() => {
+    dbService = new DatabaseService();
+    module.exports = dbService;
+}).catch(err => {
+    console.error('数据库初始化失败，进程退出:', err);
+    process.exit(1);
+});
+
+module.exports = new Proxy({}, {
+    get(target, prop) {
+        if (!dbService) {
+            throw new Error('数据库尚未初始化完成');
+        }
+        return dbService[prop];
+    }
+});
