@@ -1,37 +1,46 @@
 // db.js - 数据访问层（SQLite 版）
-// 使用 Node 内置的 node:sqlite，无需外部数据库服务、无需云账号
+// 使用 better-sqlite3，兼容性更好，支持 Node 18+
 require('dotenv').config();
 const path = require('path');
 const crypto = require('crypto');
-const { DatabaseSync } = require('node:sqlite');
+const Database = require('better-sqlite3');
 
 // 数据库文件路径（默认在 backend 目录下，可用环境变量 DB_PATH 覆盖）
 const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'jiyi.db');
-const db = new DatabaseSync(DB_PATH);
+
+// 初始化数据库连接
+let db;
+try {
+    db = new Database(DB_PATH);
+    console.log('✅ 数据库连接成功:', DB_PATH);
+} catch (error) {
+    console.error('❌ 数据库连接失败:', error.message);
+    process.exit(1);
+}
 
 // WAL 模式：提升并发读写性能
-db.exec('PRAGMA journal_mode = WAL;');
+db.pragma('journal_mode = WAL');
 
 // 首次启动自动建表（IF NOT EXISTS，重复执行无副作用）
 db.exec(`
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL,              -- 存储 scrypt 哈希，非明文
+    password TEXT NOT NULL,
     created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
 );
 
 CREATE TABLE IF NOT EXISTS carts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL,
-    product TEXT NOT NULL,               -- 商品对象 JSON 字符串
+    product TEXT NOT NULL,
     created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
 );
 
 CREATE TABLE IF NOT EXISTS favorites (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL,
-    product TEXT NOT NULL,               -- 商品对象 JSON 字符串
+    product TEXT NOT NULL,
     created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
 );
 
@@ -56,7 +65,7 @@ CREATE TABLE IF NOT EXISTS products (
     price REAL NOT NULL DEFAULT 0,
     img TEXT NOT NULL DEFAULT '',
     category TEXT NOT NULL DEFAULT '非遗手作',
-    active INTEGER NOT NULL DEFAULT 1,     -- 1=上架 0=下架
+    active INTEGER NOT NULL DEFAULT 1,
     created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
 );
 
@@ -86,6 +95,7 @@ if (productCount === 0) {
     ];
     const insertProduct = db.prepare('INSERT INTO products (name, price, img, category) VALUES (?, ?, ?, ?)');
     for (const p of seedProducts) insertProduct.run(p.name, p.price, p.img, p.category);
+    console.log('✅ 初始商品数据已写入');
 }
 
 // --- 密码哈希工具（scrypt，Node 内置 crypto，无额外依赖）---
@@ -113,7 +123,7 @@ class DatabaseService {
         const result = db.prepare(
             'INSERT INTO users (username, password) VALUES (?, ?)'
         ).run(username, hashPassword(password));
-        return { id: Number(result.lastInsertRowid), username };
+        return { id: result.lastInsertRowid, username };
     }
 
     getUserByUsername(username) {
@@ -134,7 +144,7 @@ class DatabaseService {
         const result = db.prepare(
             'INSERT INTO carts (username, product) VALUES (?, ?)'
         ).run(username, JSON.stringify(product || {}));
-        return { id: Number(result.lastInsertRowid) };
+        return { id: result.lastInsertRowid };
     }
 
     getAllCarts() {
@@ -160,7 +170,7 @@ class DatabaseService {
         const result = db.prepare(
             'INSERT INTO favorites (username, product) VALUES (?, ?)'
         ).run(username, JSON.stringify(product || {}));
-        return { id: Number(result.lastInsertRowid) };
+        return { id: result.lastInsertRowid };
     }
 
     getAllFavorites() {
@@ -173,7 +183,7 @@ class DatabaseService {
         const result = db.prepare(
             'INSERT INTO user_logs (username, action, product) VALUES (?, ?, ?)'
         ).run(username, action, product);
-        return { id: Number(result.lastInsertRowid) };
+        return { id: result.lastInsertRowid };
     }
 
     getRecentLogs(limit = 2000) {
@@ -189,7 +199,7 @@ class DatabaseService {
         const result = db.prepare(
             'INSERT INTO orders (username, total) VALUES (?, ?)'
         ).run(username, total || 0);
-        return { id: Number(result.lastInsertRowid) };
+        return { id: result.lastInsertRowid };
     }
 
     // 营收来自真实订单表，不再用「订单数 * 199」的假数据
@@ -217,7 +227,7 @@ class DatabaseService {
         const result = db.prepare(
             'INSERT INTO products (name, price, img, category) VALUES (?, ?, ?, ?)'
         ).run(name || '未命名商品', price || 0, img || '', category || '非遗手作');
-        return { id: Number(result.lastInsertRowid) };
+        return { id: result.lastInsertRowid };
     }
 
     updateProduct(id, { name, price, img, category, active }) {

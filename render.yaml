@@ -5,13 +5,17 @@ services:
     name: jiyi-zhumeng
     runtime: node
     plan: free
-    repo: https://github.com/你的用户名/my-shop-demo.git  # TODO: 改成你的仓库地址
+    nodeVersion: 18.18.0
+    repo: https://github.com/zxs20050325-creator/my-shop-demo.git
     branch: main
     rootDir: backend
     buildCommand: npm install
     startCommand: node index.js
+    healthCheckPath: /health
     envVars:
       - key: ADMIN_PASSWORD
         value: admin123
       - key: DB_PATH
         value: ./jiyi.db
+      - key: NODE_ENV
+        value: production

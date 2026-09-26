@@ -301,8 +301,43 @@ app.get('/api/admin/orders', requireAdmin, (req, res) => {
     res.json({ orders: db.getAllOrders() });
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+// 健康检查端点（Render 需要）
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// 全局错误处理中间件
+app.use((err, req, res, next) => {
+    console.error('❌ 服务器错误:', err.stack);
+    res.status(500).json({ error: '服务器内部错误', message: err.message });
+});
+
+// 404 处理
+app.use((req, res) => {
+    res.status(404).json({ error: '接口不存在' });
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 服务器启动成功: http://localhost:${PORT}`);
+    console.log(`📊 健康检查: http://localhost:${PORT}/health`);
+}).on('error', (err) => {
+    console.error('❌ 服务器启动失败:', err);
+    process.exit(1);
+});
+>>>>>>> 3a50359 (修复：迁移到better-sqlite3，降低 Node 版本要求到 18+，添加健康检查端点)
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 服务器启动成功：http://localhost:${PORT}`);
+    console.log(`📊 健康检查：http://localhost:${PORT}/health`);
+}).on('error', (err) => {
+    console.error('❌ 服务器启动失败:', err);
+    process.exit(1);
+});
+=======
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 服务器启动成功: http://localhost:${PORT}`);
+    console.log(`📊 健康检查: http://localhost:${PORT}/health`);
+}).on('error', (err) => {
+    console.error('❌ 服务器启动失败:', err);
+    process.exit(1);
+});
