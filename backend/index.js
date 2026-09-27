@@ -19,7 +19,7 @@ app.get('/', (req, res) => res.redirect('/frontend/index.html'));
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, '..', 'frontend', 'admin.html')));
 
 // 引入数据库模块
-const db = require('./db');
+const { ready: dbReady, service: db } = require('./db');
 
 // 管理员鉴权：所有 /api/admin/* 接口需在请求头携带正确的 x-admin-key
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
@@ -317,14 +317,20 @@ app.use((req, res) => {
     res.status(404).json({ error: '接口不存在' });
 });
 
+// 等待数据库就绪后启动服务器
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 服务器启动成功: http://localhost:${PORT}`);
-    console.log(`📊 健康检查: http://localhost:${PORT}/health`);
-}).on('error', (err) => {
-    console.error('❌ 服务器启动失败:', err);
+
+dbReady.then(() => {
+    console.log('✅ 数据库已就绪，启动服务器...');
+    
+    app.listen(PORT, '0.0.0.0', () => {
+        console.log(`🚀 服务器启动成功：http://localhost:${PORT}`);
+        console.log(`📊 健康检查：http://localhost:${PORT}/health`);
+    }).on('error', (err) => {
+        console.error(' 服务器启动失败:', err);
+        process.exit(1);
+    });
+}).catch(err => {
+    console.error('❌ 数据库初始化失败，无法启动服务器:', err);
     process.exit(1);
 });
-```
-
-```

@@ -423,6 +423,24 @@ class DatabaseService {
     }
 }
 
+// 数据库服务实例和初始化Promise
+const dbService = new DatabaseService();
+const dbReadyPromise = initializeDatabase()
+    .then(() => {
+        console.log('✅ 数据库初始化完成');
+        return dbService;
+    })
+    .catch(err => {
+        console.error('❌ 数据库初始化失败:', err);
+        process.exit(1);
+    });
+
+// 导出Promise和服务对象
+module.exports = {
+    ready: dbReadyPromise,
+    service: dbService
+};
+
 // 使用 IIFE 立即执行函数进行同步阻塞初始化（兼容 Render 平台）
 (function() {
     // 创建数据库服务实例
