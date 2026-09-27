@@ -1,173 +1,95 @@
-// db.js - 数据访问层（SQLite 版）
-// 使用 sql.js（纯 JavaScript 实现），无需 C++ 编译工具，兼容所有 Node 版本
+// db.js - 数据访问层（Supabase 版）
+//
+// 契约：对外暴露的方法名与返回数据形状，与旧 SQLite 版完全一致，
+//       只是全部变成了 async。{ data, error } 在本文件内部拆掉，
+//       error 一律抛出，因此 index.js 现有的 try/catch 和全局错误中间件继续生效。
+//
+// 唯一的同步方法：verifyPassword —— 详见其定义处的注释，禁止改成 async。
 require('dotenv').config();
-const path = require('path');
 const crypto = require('crypto');
-const fs = require('fs');
-const initSqlJs = require('sql.js');
+const { createClient } = require('@supabase/supabase-js');
 
-// 数据库文件路径
-const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'jiyi.db');
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_KEY;
 
-let db;
-let SQL;
+// Supabase 托管实例的 PostgREST db-max-rows 硬上限。
+// 服务端会把 .limit() 静默压到 1000，超出部分不会报错、直接不返回，
+// 所以超过 1000 行的读取必须用 .range() 分页（见 selectLimited）。
+const PG_MAX_ROWS = 1000;
 
-// 异步初始化数据库
-async function initializeDatabase() {
-    try {
-        // 初始化 sql.js
-        SQL = await initSqlJs();
-        
-        // 尝试加载现有数据库文件
-        if (fs.existsSync(DB_PATH)) {
-            const fileBuffer = fs.readFileSync(DB_PATH);
-            db = new SQL.Database(fileBuffer);
-            console.log('✅ 数据库加载成功:', DB_PATH);
-        } else {
-            // 创建新数据库
-            db = new SQL.Database();
-            console.log('✅ 创建新数据库:', DB_PATH);
+let supabase = null;
+
+function getClient() {
+    if (!supabase) throw new Error('[db] Supabase 客户端尚未初始化');
+    return supabase;
+}
+
+// 把 PostgREST 的 error 转成异常抛出
+function fail(error, ctx) {
+    const e = new Error(`[db] ${ctx} 失败: ${error.message}`);
+    e.code = error.code;
+    e.details = error.details;
+    e.hint = error.hint;
+    throw e;
+}
+
+// 拆 { data, error }，出错则抛出
+async function unwrap(query, ctx) {
+    const { data, error } = await query;
+    if (error) fail(error, ctx);
+    return data;
+}
+
+// 金额字段用 DOUBLE PRECISION，PostgREST 会序列化成 JSON number；
+// 这里兜底兼容历史数据或字符串输入。
+function toNumber(v) {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+}
+
+// 读 JSONB：正常情况下拿到的已经是对象。
+// 这里只为兼容历史脏数据（被双重编码成 JSON 文本的标量）。
+function asJson(v) {
+    if (typeof v !== 'string') return v ?? null;
+    const s = v.trim();
+    if (s.startsWith('{') || s.startsWith('[')) {
+        try { return JSON.parse(s); } catch (e) { /* 落回原字符串 */ }
+    }
+    return v;
+}
+
+// 写 JSONB：直接把对象交给 supabase-js，不要 JSON.stringify，
+// 否则会存成一个被双重编码的 JSONB 字符串标量，读出来是字符串而不是对象。
+function toJson(v) {
+    if (v === null || v === undefined) return {};
+    if (typeof v === 'string') {
+        const s = v.trim();
+        if (s.startsWith('{') || s.startsWith('[')) {
+            try { return JSON.parse(s); } catch (e) { /* 落回原值 */ }
         }
-        
-        // 启用 WAL 模式
-        db.run('PRAGMA journal_mode = WAL;');
-        
-        // 建表
-        createTables();
-        
-        // 初始化默认数据
-        await seedData();
-        
-        return true;
-    } catch (error) {
-        console.error('❌ 数据库初始化失败:', error.message);
-        throw error;
     }
+    return v;
 }
 
-// 同步初始化数据库（用于模块加载时立即执行）
-function initializeDatabaseSync() {
-    try {
-        // 注意：sql.js 需要异步加载 WASM 文件，这里使用同步方式会失败
-        // 因此我们改用另一种策略：先导出占位对象，然后在首次使用时初始化
-        
-        // 创建占位符，标记尚未初始化
-        db = null;
-        SQL = null;
-        
-        console.log('⏳ 数据库将在首次请求时初始化...');
-    } catch (error) {
-        console.error('❌ 数据库初始化准备失败:', error.message);
-        throw error;
+// 分页读取，绕过 PostgREST 的 1000 行上限。
+// buildQuery 必须是 thunk，每轮返回一个全新的 query builder（builder 不可复用）。
+// 注意排序必须带唯一列（如 id）兜底，否则 created_at 有并列时分页会重复或漏行。
+async function selectLimited(buildQuery, limit, ctx) {
+    const out = [];
+    let from = 0;
+    while (out.length < limit) {
+        const size = Math.min(PG_MAX_ROWS, limit - out.length);
+        const { data, error } = await buildQuery().range(from, from + size - 1);
+        if (error) fail(error, ctx);
+        if (!data || data.length === 0) break;
+        out.push(...data);
+        if (data.length < size) break;   // 已到末尾
+        from += data.length;
     }
+    return out;
 }
 
-// 确保数据库已初始化的辅助函数
-async function ensureDbInitialized() {
-    if (!db || !SQL) {
-        await initializeDatabase();
-    }
-}
-
-function createTables() {
-    db.run(`
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL,
-            created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
-        );
-
-        CREATE TABLE IF NOT EXISTS carts (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL,
-            product TEXT NOT NULL,
-            created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
-        );
-
-        CREATE TABLE IF NOT EXISTS favorites (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL,
-            product TEXT NOT NULL,
-            created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
-        );
-
-        CREATE TABLE IF NOT EXISTS user_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL,
-            action TEXT NOT NULL,
-            product TEXT,
-            created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
-        );
-
-        CREATE TABLE IF NOT EXISTS orders (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL,
-            total REAL NOT NULL DEFAULT 0,
-            created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
-        );
-
-        CREATE TABLE IF NOT EXISTS products (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            price REAL NOT NULL DEFAULT 0,
-            img TEXT NOT NULL DEFAULT '',
-            category TEXT NOT NULL DEFAULT '非遗手作',
-            active INTEGER NOT NULL DEFAULT 1,
-            created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
-        );
-
-        CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
-        CREATE INDEX IF NOT EXISTS idx_carts_username ON carts(username);
-        CREATE INDEX IF NOT EXISTS idx_favorites_username ON favorites(username);
-        CREATE INDEX IF NOT EXISTS idx_user_logs_username ON user_logs(username);
-        CREATE INDEX IF NOT EXISTS idx_user_logs_created_at ON user_logs(created_at);
-    `);
-    
-    saveDatabase();
-}
-
-async function seedData() {
-    const count = db.exec('SELECT COUNT(*) AS c FROM products')[0]?.values[0][0] || 0;
-    
-    if (count === 0) {
-        const seedProducts = [
-            ['冀筑华塔微藏盒', 198, '/images/001.jpg', '数字藏品'],
-            ['赵州桥榫卯奇盒', 88, '/images/002.jpg', '文创周边'],
-            ['承德御苑宸景盒', 328, '/images/003.jpg', '数字画作'],
-            ['山海关雄关守盒', 999, '/images/004.jpg', '典藏精品'],
-            ['隆兴寺禅筑臻盒', 58, '/images/005.jpg', '非遗手作'],
-            ['开元寺塔料敌盒', 168, '/images/006.jpg', '非遗手作'],
-            ['清西陵宫阙雅盒', 258, '/images/101.jpg', '数字藏品'],
-            ['娲皇宫悬楼秘盒', 128, '/images/102.jpg', '文创周边'],
-            ['古莲花池苑趣盒', 298, '/images/103.jpg', '数字画作'],
-            ['紫荆关燕塞筑盒', 888, '/images/104.jpg', '典藏精品'],
-            ['广府古城围合盒', 78, '/images/105.jpg', '非遗手作'],
-            ['外八庙梵筑珍盒', 188, '/images/106.jpg', '非遗手作']
-        ];
-        
-        const stmt = db.prepare('INSERT INTO products (name, price, img, category) VALUES (?, ?, ?, ?)');
-        for (const p of seedProducts) {
-            stmt.run(p);
-        }
-        stmt.free();
-        saveDatabase();
-        console.log('✅ 初始商品数据已写入');
-    }
-}
-
-// 保存数据库到文件
-function saveDatabase() {
-    try {
-        const data = db.export();
-        const buffer = Buffer.from(data);
-        fs.writeFileSync(DB_PATH, buffer);
-    } catch (error) {
-        console.error('❌ 保存数据库失败:', error.message);
-    }
-}
-
-// --- 密码哈希工具 ---
+// --- 密码哈希工具（纯计算，无 I/O，保持同步）---
 function hashPassword(plain) {
     const salt = crypto.randomBytes(16).toString('hex');
     const hash = crypto.scryptSync(plain, salt, 64).toString('hex');
@@ -181,268 +103,325 @@ function verifyPassword(stored, plain) {
     return test === hash;
 }
 
-function safeParse(str) {
-    try { return str ? JSON.parse(str) : null; } catch (e) { return null; }
+// --- 种子商品（与旧 SQLite 版逐字一致）---
+const SEED_PRODUCTS = [
+    ['冀筑华塔微藏盒', 198, '/images/001.jpg', '数字藏品'],
+    ['赵州桥榫卯奇盒', 88, '/images/002.jpg', '文创周边'],
+    ['承德御苑宸景盒', 328, '/images/003.jpg', '数字画作'],
+    ['山海关雄关守盒', 999, '/images/004.jpg', '典藏精品'],
+    ['隆兴寺禅筑臻盒', 58, '/images/005.jpg', '非遗手作'],
+    ['开元寺塔料敌盒', 168, '/images/006.jpg', '非遗手作'],
+    ['清西陵宫阙雅盒', 258, '/images/101.jpg', '数字藏品'],
+    ['娲皇宫悬楼秘盒', 128, '/images/102.jpg', '文创周边'],
+    ['古莲花池苑趣盒', 298, '/images/103.jpg', '数字画作'],
+    ['紫荆关燕塞筑盒', 888, '/images/104.jpg', '典藏精品'],
+    ['广府古城围合盒', 78, '/images/105.jpg', '非遗手作'],
+    ['外八庙梵筑珍盒', 188, '/images/106.jpg', '非遗手作']
+];
+
+// 数据库为空时写入初始商品，行为与旧版 seedData() 一致
+async function seedData() {
+    const { count, error } = await getClient()
+        .from('products')
+        .select('id', { head: true, count: 'exact' });
+    if (error) fail(error, 'seedData 计数');
+
+    if (!count) {
+        const rows = SEED_PRODUCTS.map(([name, price, img, category]) =>
+            ({ name, price, img, category }));
+        const { error: insErr } = await getClient().from('products').insert(rows);
+        if (insErr) fail(insErr, 'seedData 插入');
+        console.log('✅ 初始商品数据已写入');
+    }
+}
+
+// 初始化：建客户端 + 连通性探测 + 种子数据
+async function initializeDatabase() {
+    if (!SUPABASE_URL) throw new Error('缺少环境变量 SUPABASE_URL');
+    if (!SUPABASE_KEY) throw new Error('缺少环境变量 SUPABASE_SERVICE_KEY');
+
+    supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+        // Node 服务端没有用户会话，关掉可避免多余的后台定时刷新
+        auth: { persistSession: false, autoRefreshToken: false },
+        db: { schema: 'public' }
+    });
+
+    // 连通性 + 迁移检查：表不存在会返回 42P01，这里 fail-fast 并给出可操作提示。
+    // head: true 只取计数，不传输任何行。
+    const { error } = await supabase
+        .from('products')
+        .select('id', { head: true, count: 'exact' });
+
+    if (error) {
+        throw new Error(
+            `Supabase 连接或表检查失败：${error.message}。` +
+            `请确认已在 Supabase SQL Editor 执行 backend/supabase-migration.sql`
+        );
+    }
+
+    await seedData();
+    return true;
 }
 
 class DatabaseService {
 
     // --- 1. 用户相关 ---
-    createUser(username, password) {
-        db.run('INSERT INTO users (username, password) VALUES (?, ?)', [username, hashPassword(password)]);
-        saveDatabase();
-        const result = db.exec('SELECT last_insert_rowid() as id')[0];
-        return { id: result.values[0][0], username };
+    async createUser(username, password) {
+        return unwrap(
+            getClient().from('users')
+                .insert({ username, password: hashPassword(password) })
+                .select('id, username')
+                .single(),
+            'createUser'
+        );
     }
 
-    getUserByUsername(username) {
-        const result = db.exec(`SELECT * FROM users WHERE username = '${username.replace(/'/g, "''")}'`);
-        if (result.length === 0) return null;
-        
-        const columns = result[0].columns;
-        const values = result[0].values[0];
-        const user = {};
-        columns.forEach((col, i) => user[col] = values[i]);
-        return user;
+    async getUserByUsername(username) {
+        return unwrap(
+            getClient().from('users').select('*').eq('username', username).maybeSingle(),
+            'getUserByUsername'
+        );
     }
 
+    // 同步方法！只做 scrypt 哈希比对，不碰数据库。
+    // 调用方是 `if (user && db.verifyPassword(...))`，
+    // 若改成 async 而漏写 await，返回的 Promise 永远 truthy，
+    // 等于「任何密码都能登录任意用户」——一个静默的认证绕过漏洞。
     verifyPassword(stored, plain) {
         return verifyPassword(stored, plain);
     }
 
-    getAllUsers() {
-        const result = db.exec('SELECT * FROM users ORDER BY created_at DESC');
-        if (result.length === 0) return [];
-        
-        const columns = result[0].columns;
-        return result[0].values.map(values => {
-            const user = {};
-            columns.forEach((col, i) => user[col] = values[i]);
-            return user;
-        });
+    async getAllUsers() {
+        return unwrap(
+            getClient().from('users').select('*')
+                .order('created_at', { ascending: false })
+                .order('id', { ascending: false }),
+            'getAllUsers'
+        );
     }
 
     // --- 2. 购物车相关 ---
-    addToCart(username, product) {
-        db.run('INSERT INTO carts (username, product) VALUES (?, ?)', [username, JSON.stringify(product || {})]);
-        saveDatabase();
-        const result = db.exec('SELECT last_insert_rowid() as id')[0];
-        return { id: result.values[0][0] };
+    async addToCart(username, product) {
+        return unwrap(
+            getClient().from('carts')
+                .insert({ username, product: toJson(product) })
+                .select('id')
+                .single(),
+            'addToCart'
+        );
     }
 
-    getAllCarts() {
-        const result = db.exec('SELECT * FROM carts ORDER BY created_at DESC');
-        if (result.length === 0) return [];
-        
-        const columns = result[0].columns;
-        return result[0].values.map(values => {
-            const cart = {};
-            columns.forEach((col, i) => cart[col] = values[i]);
-            cart.product = safeParse(cart.product);
-            return cart;
-        });
+    async getAllCarts() {
+        const rows = await unwrap(
+            getClient().from('carts').select('*')
+                .order('created_at', { ascending: false })
+                .order('id', { ascending: false }),
+            'getAllCarts'
+        );
+        return rows.map(r => ({ ...r, product: asJson(r.product) }));
     }
 
-    removeFromCart(username, index) {
-        const rows = db.exec(`SELECT id FROM carts WHERE username = '${username.replace(/'/g, "''")}' ORDER BY id ASC`);
-        if (rows.length === 0) return false;
-        
-        const ids = rows[0].values.map(v => v[0]);
-        if (index >= 0 && index < ids.length) {
-            db.run('DELETE FROM carts WHERE id = ?', [ids[index]]);
-            saveDatabase();
-            return true;
-        }
-        return false;
+    async removeFromCart(username, index) {
+        const rows = await unwrap(
+            getClient().from('carts').select('id')
+                .eq('username', username)
+                .order('id', { ascending: true }),
+            'removeFromCart'
+        );
+        if (!rows.length) return false;
+
+        const i = Number(index);
+        if (!Number.isInteger(i) || i < 0 || i >= rows.length) return false;
+
+        const { error } = await getClient().from('carts').delete().eq('id', rows[i].id);
+        if (error) fail(error, 'removeFromCart');
+        return true;
     }
 
-    clearCart(username) {
-        db.run('DELETE FROM carts WHERE username = ?', [username]);
-        saveDatabase();
+    async clearCart(username) {
+        const { error } = await getClient().from('carts').delete().eq('username', username);
+        if (error) fail(error, 'clearCart');
     }
 
     // --- 3. 收藏夹相关 ---
-    addToFavorites(username, product) {
-        db.run('INSERT INTO favorites (username, product) VALUES (?, ?)', [username, JSON.stringify(product || {})]);
-        saveDatabase();
-        const result = db.exec('SELECT last_insert_rowid() as id')[0];
-        return { id: result.values[0][0] };
+    async addToFavorites(username, product) {
+        return unwrap(
+            getClient().from('favorites')
+                .insert({ username, product: toJson(product) })
+                .select('id')
+                .single(),
+            'addToFavorites'
+        );
     }
 
-    getAllFavorites() {
-        const result = db.exec('SELECT * FROM favorites ORDER BY created_at DESC');
-        if (result.length === 0) return [];
-        
-        const columns = result[0].columns;
-        return result[0].values.map(values => {
-            const fav = {};
-            columns.forEach((col, i) => fav[col] = values[i]);
-            fav.product = safeParse(fav.product);
-            return fav;
-        });
+    async getAllFavorites() {
+        const rows = await unwrap(
+            getClient().from('favorites').select('*')
+                .order('created_at', { ascending: false })
+                .order('id', { ascending: false }),
+            'getAllFavorites'
+        );
+        return rows.map(r => ({ ...r, product: asJson(r.product) }));
     }
 
     // --- 4. 用户行为日志 ---
-    addLog(username, action, product = '') {
-        db.run('INSERT INTO user_logs (username, action, product) VALUES (?, ?, ?)', [username, action, product]);
-        saveDatabase();
-        const result = db.exec('SELECT last_insert_rowid() as id')[0];
-        return { id: result.values[0][0] };
+    async addLog(username, action, product = '') {
+        return unwrap(
+            getClient().from('user_logs')
+                .insert({ username, action, product })
+                .select('id')
+                .single(),
+            'addLog'
+        );
     }
 
-    getRecentLogs(limit = 2000) {
-        const result = db.exec(`SELECT * FROM user_logs ORDER BY created_at DESC LIMIT ${limit}`);
-        if (result.length === 0) return [];
-        
-        const columns = result[0].columns;
-        return result[0].values.map(values => {
-            const log = {};
-            columns.forEach((col, i) => log[col] = values[i]);
-            return log;
-        });
+    // 分页读取：index.js 会请求 5000 条，超过 PostgREST 的 1000 行上限
+    async getRecentLogs(limit = 2000) {
+        return selectLimited(
+            () => getClient().from('user_logs').select('*')
+                .order('created_at', { ascending: false })
+                .order('id', { ascending: false }),
+            limit,
+            'getRecentLogs'
+        );
     }
 
-    clearAllLogs() {
-        db.run('DELETE FROM user_logs');
-        saveDatabase();
+    // PostgREST 拒绝对没有 WHERE 的 DELETE（code 21000），必须给一个恒真条件。
+    // user_logs.id 是 BIGINT IDENTITY，最小值为 1，故 gte 0 覆盖全表。
+    async clearAllLogs() {
+        const { error } = await getClient().from('user_logs').delete().gte('id', 0);
+        if (error) fail(error, 'clearAllLogs');
     }
 
     // --- 5. 订单 & 统计 ---
-    createOrder(username, total) {
-        db.run('INSERT INTO orders (username, total) VALUES (?, ?)', [username, total || 0]);
-        saveDatabase();
-        const result = db.exec('SELECT last_insert_rowid() as id')[0];
-        return { id: result.values[0][0] };
+    async createOrder(username, total) {
+        return unwrap(
+            getClient().from('orders')
+                .insert({ username, total: toNumber(total) })
+                .select('id')
+                .single(),
+            'createOrder'
+        );
     }
 
-    getLatestStats() {
-        const orderResult = db.exec("SELECT COUNT(*) AS count FROM user_logs WHERE action LIKE '%支付%' OR action LIKE '%结算%'");
-        const count = orderResult.length > 0 ? orderResult[0].values[0][0] : 0;
-        
-        const revenueResult = db.exec('SELECT COALESCE(SUM(total), 0) AS revenue FROM orders');
-        const revenue = revenueResult.length > 0 ? revenueResult[0].values[0][0] : 0;
-        
-        return { total_orders: count || 0, total_revenue: revenue || 0 };
+    // 走 RPC：hosted Supabase 把 PostgREST 的聚合功能锁死为关闭，
+    // .select('total.sum()') 会返回 PGRST123，只能由数据库函数完成聚合。
+    async getLatestStats() {
+        const data = await unwrap(getClient().rpc('get_latest_stats'), 'getLatestStats');
+        const row = Array.isArray(data) ? data[0] : data;
+        return {
+            total_orders: toNumber(row?.total_orders),
+            total_revenue: toNumber(row?.total_revenue)
+        };
     }
 
     // --- 6. 商品管理 ---
-    getAllProducts(includeInactive = false) {
-        const sql = includeInactive
-            ? 'SELECT * FROM products ORDER BY id ASC'
-            : 'SELECT * FROM products WHERE active = 1 ORDER BY id ASC';
-        
-        const result = db.exec(sql);
-        if (result.length === 0) return [];
-        
-        const columns = result[0].columns;
-        return result[0].values.map(values => {
-            const product = {};
-            columns.forEach((col, i) => product[col] = values[i]);
-            return product;
-        });
+    async getAllProducts(includeInactive = false) {
+        let q = getClient().from('products').select('*').order('id', { ascending: true });
+        if (!includeInactive) q = q.eq('active', 1);
+        return unwrap(q, 'getAllProducts');
     }
 
-    getProductById(id) {
-        const result = db.exec(`SELECT * FROM products WHERE id = ${id}`);
-        if (result.length === 0) return null;
-        
-        const columns = result[0].columns;
-        const values = result[0].values[0];
-        const product = {};
-        columns.forEach((col, i) => product[col] = values[i]);
-        return product;
+    async getProductById(id) {
+        const n = Number(id);
+        if (!Number.isFinite(n)) return null;   // 旧版 WHERE id = NaN 静默返回空；
+                                                // 直接 .eq('id', NaN) 会让 PostgREST 报 400
+        return unwrap(
+            getClient().from('products').select('*').eq('id', n).maybeSingle(),
+            'getProductById'
+        );
     }
 
-    createProduct({ name, price, img, category }) {
-        db.run('INSERT INTO products (name, price, img, category) VALUES (?, ?, ?, ?)', 
-            [name || '未命名商品', price || 0, img || '', category || '非遗手作']);
-        saveDatabase();
-        const result = db.exec('SELECT last_insert_rowid() as id')[0];
-        return { id: result.values[0][0] };
+    async createProduct({ name, price, img, category } = {}) {
+        return unwrap(
+            getClient().from('products')
+                .insert({
+                    name: name || '未命名商品',
+                    price: toNumber(price),
+                    img: img || '',
+                    category: category || '非遗手作'
+                })
+                .select('id')
+                .single(),
+            'createProduct'
+        );
     }
 
-    updateProduct(id, { name, price, img, category, active }) {
-        const existing = this.getProductById(id);
+    async updateProduct(id, { name, price, img, category, active } = {}) {
+        const existing = await this.getProductById(id);
         if (!existing) return false;
-        
+
+        // active 必须始终是整数 1/0：index.js 里有 `p.active === 1` 的严格比较
         const nextActive = active === undefined ? existing.active : (active ? 1 : 0);
-        db.run('UPDATE products SET name = ?, price = ?, img = ?, category = ?, active = ? WHERE id = ?',
-            [name ?? existing.name, price ?? existing.price, img ?? existing.img, category ?? existing.category, nextActive, id]);
-        saveDatabase();
+
+        const { error } = await getClient().from('products').update({
+            name: name ?? existing.name,
+            price: (price === undefined || price === null) ? existing.price : toNumber(price),
+            img: img ?? existing.img,
+            category: category ?? existing.category,
+            active: nextActive
+        }).eq('id', id);
+        if (error) fail(error, 'updateProduct');
         return true;
     }
 
-    setProductActive(id, active) {
-        db.run('UPDATE products SET active = ? WHERE id = ?', [active ? 1 : 0, id]);
-        saveDatabase();
+    async setProductActive(id, active) {
+        const { error } = await getClient().from('products')
+            .update({ active: active ? 1 : 0 }).eq('id', id);
+        if (error) fail(error, 'setProductActive');
         return true;
     }
 
-    deleteProduct(id) {
-        db.run('DELETE FROM products WHERE id = ?', [id]);
-        saveDatabase();
+    async deleteProduct(id) {
+        const { error } = await getClient().from('products').delete().eq('id', id);
+        if (error) fail(error, 'deleteProduct');
         return true;
     }
 
     // --- 7. 订单管理 ---
-    getAllOrders() {
-        const result = db.exec('SELECT * FROM orders ORDER BY created_at DESC');
-        if (result.length === 0) return [];
-        
-        const columns = result[0].columns;
-        return result[0].values.map(values => {
-            const order = {};
-            columns.forEach((col, i) => order[col] = values[i]);
-            return order;
-        });
+    async getAllOrders() {
+        return unwrap(
+            getClient().from('orders').select('*')
+                .order('created_at', { ascending: false })
+                .order('id', { ascending: false }),
+            'getAllOrders'
+        );
     }
 
     // --- 8. 用户购物车 / 收藏查询 ---
-    getCartByUsername(username) {
-        const result = db.exec(`SELECT * FROM carts WHERE username = '${username.replace(/'/g, "''")}' ORDER BY id ASC`);
-        if (result.length === 0) return [];
-        
-        const columns = result[0].columns;
-        return result[0].values.map(values => {
-            const cart = {};
-            columns.forEach((col, i) => cart[col] = values[i]);
-            return safeParse(cart.product);
-        });
+    // 注意：返回的是「商品对象」组成的数组，不是行对象数组。
+    async getCartByUsername(username) {
+        const rows = await unwrap(
+            getClient().from('carts').select('product')
+                .eq('username', username)
+                .order('id', { ascending: true }),
+            'getCartByUsername'
+        );
+        return rows.map(r => asJson(r.product));
     }
 
-    getFavoritesByUsername(username) {
-        const result = db.exec(`SELECT * FROM favorites WHERE username = '${username.replace(/'/g, "''")}' ORDER BY id ASC`);
-        if (result.length === 0) return [];
-        
-        const columns = result[0].columns;
-        return result[0].values.map(values => {
-            const fav = {};
-            columns.forEach((col, i) => fav[col] = values[i]);
-            return safeParse(fav.product);
-        });
+    async getFavoritesByUsername(username) {
+        const rows = await unwrap(
+            getClient().from('favorites').select('product')
+                .eq('username', username)
+                .order('id', { ascending: true }),
+            'getFavoritesByUsername'
+        );
+        return rows.map(r => asJson(r.product));
     }
 }
 
-// 数据库服务实例和初始化Promise
+// 数据库服务实例和初始化 Promise
 const dbService = new DatabaseService();
-const dbReadyPromise = initializeDatabase()
-    .then(() => {
-        console.log('✅ 数据库初始化完成');
-        return dbService;
-    })
-    .catch(err => {
-        console.error('❌ 数据库初始化失败:', err);
-        process.exit(1);
-    });
 
-// 导出Promise和服务对象
+// 刻意不在这里 catch：统一由 index.js 的 .catch 负责打日志并 process.exit(1)，
+// 避免出现两个退出点导致日志顺序混乱、掩盖真正原因。
+const dbReadyPromise = initializeDatabase().then(() => {
+    console.log('✅ Supabase 数据库就绪');
+    return dbService;
+});
+
 module.exports = {
     ready: dbReadyPromise,
     service: dbService
 };
-
-// 【已删除】此处原有一段「IIFE + while 忙等待」的同步阻塞初始化代码。
-// 它会堵死 Node 事件循环，导致 initializeDatabase() 的 .then 回调永远无法执行，
-// initialized 永远为 false，10 秒后必然打印「❌ 数据库初始化超时」并 process.exit(1)，
-// 表现为 Render 上「Build successful 🎉」之后立刻「Exited with status 1」并反复重启。
-// 数据库初始化统一走上面的 dbReady promise，由 index.js 在 app.listen 之前 await。

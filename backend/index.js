@@ -40,15 +40,27 @@ app.post('/api/admin/login', (req, res) => {
 // ==========================================
 
 // 1. 获取商品（数据来自数据库，可在后台增删改/上下架）
-app.get('/api/products', (req, res) => {
-    const items = db.getAllProducts(false); // 只返回已上架商品
-    res.json({ items });
+app.get('/api/products', async (req, res) => {
+    try {
+        const items = await db.getAllProducts(false); // 只返回已上架商品
+        res.json({ items });
+    } catch (e) {
+        // 返回与成功时相同的空形状：前端 index.html 判断 `if (data.items)`，
+        // 若返回 { error } 会让首屏卡在骨架屏
+        console.error('获取商品列表失败:', e);
+        res.json({ items: [] });
+    }
 });
 
-app.get('/api/products/:id', (req, res) => {
-    const p = db.getProductById(Number(req.params.id));
-    if (p && p.active === 1) return res.json(p);
-    res.status(404).json({ error: 'Not found' });
+app.get('/api/products/:id', async (req, res) => {
+    try {
+        const p = await db.getProductById(Number(req.params.id));
+        if (p && p.active === 1) return res.json(p);
+        res.status(404).json({ error: 'Not found' });
+    } catch (e) {
+        console.error('获取商品详情失败:', e);
+        res.status(404).json({ error: 'Not found' });
+    }
 });
 
 // 2. 注册
@@ -67,6 +79,7 @@ app.post('/api/login', async (req, res) => {
     try {
         const { username, password } = req.body;
         const user = await db.getUserByUsername(username);
+        // 注意：verifyPassword 是同步方法，切勿改成 async/await
         if(user && db.verifyPassword(user.password, password)) res.json({success:true});
         else res.status(401).json({success:false, message:'用户名或密码错误'});
     } catch(e) { res.status(500).json({success:false}); }
@@ -97,16 +110,26 @@ app.post('/api/favorites/add', async (req, res) => {
 });
 
 // 获取购物车 / 收藏（服务端为准，登录后前端拉取）
-app.get('/api/cart', (req, res) => {
+app.get('/api/cart', async (req, res) => {
     const username = req.query.username;
     if (!username) return res.json({ items: [] });
-    res.json({ items: db.getCartByUsername(username) });
+    try {
+        res.json({ items: await db.getCartByUsername(username) });
+    } catch (e) {
+        console.error('获取购物车失败:', e);
+        res.json({ items: [] });
+    }
 });
 
-app.get('/api/favorites', (req, res) => {
+app.get('/api/favorites', async (req, res) => {
     const username = req.query.username;
     if (!username) return res.json({ items: [] });
-    res.json({ items: db.getFavoritesByUsername(username) });
+    try {
+        res.json({ items: await db.getFavoritesByUsername(username) });
+    } catch (e) {
+        console.error('获取收藏失败:', e);
+        res.json({ items: [] });
+    }
 });
 
 // 6. 从购物车移除（前端 cart.html 调用）
@@ -259,46 +282,56 @@ app.get('/api/admin/users-data', requireAdmin, async (req, res) => {
 // ==========================================
 
 // 商品列表（含下架商品）
-app.get('/api/admin/products', requireAdmin, (req, res) => {
-    res.json({ items: db.getAllProducts(true) });
+app.get('/api/admin/products', requireAdmin, async (req, res) => {
+    try {
+        res.json({ items: await db.getAllProducts(true) });
+    } catch (e) {
+        console.error('加载商品列表失败:', e);
+        res.json({ items: [] });
+    }
 });
 
 // 新增商品
-app.post('/api/admin/products', requireAdmin, (req, res) => {
+app.post('/api/admin/products', requireAdmin, async (req, res) => {
     try {
         const { name, price, img, category } = req.body;
-        const result = db.createProduct({ name, price, img, category });
+        const result = await db.createProduct({ name, price, img, category });
         res.json({ success: true, id: result.id });
     } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 });
 
 // 编辑商品
-app.put('/api/admin/products/:id', requireAdmin, (req, res) => {
+app.put('/api/admin/products/:id', requireAdmin, async (req, res) => {
     try {
-        const ok = db.updateProduct(Number(req.params.id), req.body);
+        const ok = await db.updateProduct(Number(req.params.id), req.body);
         ok ? res.json({ success: true }) : res.status(404).json({ success: false, message: '商品不存在' });
     } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 });
 
 // 上下架
-app.post('/api/admin/products/:id/toggle', requireAdmin, (req, res) => {
+app.post('/api/admin/products/:id/toggle', requireAdmin, async (req, res) => {
     try {
-        db.setProductActive(Number(req.params.id), req.body.active);
+        await db.setProductActive(Number(req.params.id), req.body.active);
         res.json({ success: true });
     } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 });
 
 // 删除商品
-app.delete('/api/admin/products/:id', requireAdmin, (req, res) => {
+app.delete('/api/admin/products/:id', requireAdmin, async (req, res) => {
     try {
-        db.deleteProduct(Number(req.params.id));
+        await db.deleteProduct(Number(req.params.id));
         res.json({ success: true });
     } catch (e) { res.status(500).json({ success: false, message: e.message }); }
 });
 
 // 订单列表
-app.get('/api/admin/orders', requireAdmin, (req, res) => {
-    res.json({ orders: db.getAllOrders() });
+app.get('/api/admin/orders', requireAdmin, async (req, res) => {
+    try {
+        res.json({ orders: await db.getAllOrders() });
+    } catch (e) {
+        console.error('加载订单失败:', e);
+        res.json({ orders: [] });
+    }
 });
 
 // 健康检查端点（Render 需要）

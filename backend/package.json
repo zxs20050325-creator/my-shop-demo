@@ -12,13 +12,13 @@
   "license": "ISC",
   "type": "commonjs",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22.0.0"
   },
   "dependencies": {
-    "sql.js": "^1.9.0",
+    "@supabase/supabase-js": "^2.117.2",
     "cors": "^2.8.5",
-    "express": "^4.21.1",
-    "dotenv": "^16.3.1"
+    "dotenv": "^16.3.1",
+    "express": "^4.21.1"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"

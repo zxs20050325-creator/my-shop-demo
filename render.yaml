@@ -5,7 +5,6 @@ services:
     name: jiyi-zhumeng
     runtime: node
     plan: free
-    nodeVersion: 18.18.0
     repo: https://github.com/zxs20050325-creator/my-shop-demo.git
     branch: main
     rootDir: backend
@@ -13,9 +12,19 @@ services:
     startCommand: node index.js
     healthCheckPath: /health
     envVars:
-      - key: ADMIN_PASSWORD
-        value: admin123
-      - key: DB_PATH
-        value: ./jiyi.db
+      # Node 版本。原配置里的 nodeVersion 字段不是 Render blueprint 的合法字段，
+      # 一直被静默忽略（所以线上实际跑的是 Node 18），必须用 NODE_VERSION 环境变量。
+      # @supabase/supabase-js 2.117 要求 Node >= 22。
+      - key: NODE_VERSION
+        value: 24.11.0
       - key: NODE_ENV
         value: production
+      - key: ADMIN_PASSWORD
+        value: admin123
+      # Supabase 项目 URL（非密钥，可以明文写在这里）
+      - key: SUPABASE_URL
+        value: https://ofkoxfpsdpbfreysgjtw.supabase.co
+      # service_role 密钥。sync: false 表示不从这个文件读取，
+      # 必须去 Render 后台 Environment 里手动填写，保证密钥绝不进入 git。
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
