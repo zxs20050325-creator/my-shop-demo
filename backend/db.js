@@ -7,6 +7,7 @@
 // 唯一的同步方法：verifyPassword —— 详见其定义处的注释，禁止改成 async。
 require('dotenv').config();
 const crypto = require('crypto');
+const dns = require('dns').promises;
 const { createClient } = require('@supabase/supabase-js');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -135,6 +136,62 @@ async function seedData() {
     }
 }
 
+// 只报「密钥属于哪一类」，绝不回显密钥本身。
+// supabase 有两种名字极像的密钥，搞混是最常见的事故：
+//   sb_secret_*      服务端密钥，后端必须用这个
+//   sb_publishable_* 公开密钥，设计上就要发给浏览器，绕过不了 RLS
+function describeKey(k) {
+    if (!k) return '未设置 ❌';
+    if (k.startsWith('sb_secret_')) return 'sb_secret_*（服务端密钥 ✅）';
+    if (k.startsWith('sb_publishable_')) return 'sb_publishable_*（公开密钥 ❌ 后端必须用 sb_secret_ 开头的）';
+    if (k.startsWith('eyJ')) return 'JWT 格式（旧版密钥，需确认是 service_role 而非 anon）';
+    return `未知格式（长度 ${k.length}）`;
+}
+
+// undici 只抛一句 "fetch failed"，真正的原因（ENOTFOUND / ECONNRESET / 证书错误）
+// 藏在 error.cause 链里。不扒出来，线上报错就等于什么都没说。
+function causeChain(e) {
+    const out = [];
+    for (let c = e, i = 0; c && i < 5; c = c.cause, i++) {
+        out.push([c.message, c.code].filter(Boolean).join(' / '));
+    }
+    return out.join('  ←  ');
+}
+
+// 连接失败时跑一遍分层探测，把「到底哪一层断了」定位到具体一步
+async function diagnoseConnection() {
+    const lines = [
+        `SUPABASE_URL         = ${SUPABASE_URL}`,
+        `SUPABASE_SERVICE_KEY = ${describeKey(SUPABASE_KEY)}`
+    ];
+
+    let host = null;
+    try { host = new URL(SUPABASE_URL).host; } catch (e) { /* 下面会报 */ }
+    lines.push(`主机名               = ${host || '❌ SUPABASE_URL 不是合法 URL'}`);
+
+    if (host) {
+        try {
+            const { address } = await dns.lookup(host);
+            lines.push(`DNS 解析             = ${address} ✅`);
+        } catch (e) {
+            lines.push(`DNS 解析             = ❌ ${causeChain(e)}`);
+        }
+    }
+
+    try {
+        const r = await fetch(`${SUPABASE_URL}/rest/v1/products?select=id&limit=1`, {
+            headers: { apikey: SUPABASE_KEY },
+            signal: AbortSignal.timeout(15000)
+        });
+        lines.push(`HTTPS 探测           = HTTP ${r.status}` +
+            (r.status === 401 ? '（能连上，是密钥不对）' : ' ✅'));
+    } catch (e) {
+        lines.push(`HTTPS 探测           = ❌ ${causeChain(e)}`);
+    }
+
+    return '\n     ' + lines.join('\n     ');
+}
+
 // 初始化：建客户端 + 连通性探测 + 种子数据
 async function initializeDatabase() {
     if (!SUPABASE_URL) throw new Error('缺少环境变量 SUPABASE_URL');
@@ -153,9 +210,16 @@ async function initializeDatabase() {
         .select('id', { head: true, count: 'exact' });
 
     if (error) {
+        const report = await diagnoseConnection();
         throw new Error(
-            `Supabase 连接或表检查失败：${error.message}。` +
-            `请确认已在 Supabase SQL Editor 执行 backend/supabase-migration.sql`
+            `Supabase 连接或表检查失败：${error.message}\n\n` +
+            `  诊断：${report}\n\n` +
+            `  怎么读这份诊断：\n` +
+            `   · DNS 解析失败      → SUPABASE_URL 的域名写错了\n` +
+            `   · HTTPS 探测 401    → 密钥用错了（看上面的密钥类型那一行）\n` +
+            `   · HTTPS 探测超时/重置 → 这台机器的出网被拦\n` +
+            `   · HTTPS 探测 200 却仍报错 → 表不存在，去 Supabase SQL Editor\n` +
+            `                        执行 backend/supabase-migration.sql`
         );
     }
 
