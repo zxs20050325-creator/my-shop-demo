@@ -1,5 +1,3 @@
-# Render 部署配置（Blueprint）
-# 只部署一个后端 Web 服务，前端由后端同一服务托管（避免跨域）
 services:
   - type: web
     name: jiyi-zhumeng
@@ -8,35 +6,19 @@ services:
     repo: https://github.com/zxs20050325-creator/my-shop-demo.git
     branch: main
     rootDir: backend
-    # 前端已改为 Vue + Vite：构建产物 frontend/dist 由后端同一服务托管
-    # （backend/index.js 里的 DIST_DIR），所以构建阶段要先把前端编出来。
-    # rootDir 是 backend，因此要 cd ../frontend 回到仓库根再进前端目录。
-    #
-    # ⚠️ `--include=dev` 不能省。下面 envVars 里的 NODE_ENV=production 会让
-    #    `npm install` 跳过 devDependencies，而 vite 和 @vitejs/plugin-vue
-    #    正好都在 frontend/package.json 的 devDependencies 里 —— 省掉它的后果是
-    #    `vite: not found`，dist 根本不生成，线上首页变成 {"error":"接口不存在"}，
-    #    而后端日志、健康检查一切正常，排查方向被彻底带偏（已经踩过一次）。
-    #
-    # 末尾的 `ls -l dist/index.html` 是保险：产物没生成就让构建阶段直接失败，
-    # 而不是让一个"没有前端"的服务安静地起来。
-    buildCommand: cd ../frontend && npm install --include=dev && npm run build && ls -l dist/index.html
-    startCommand: node index.js
+    buildCommand: npm ci --include=dev && cd ../frontend && npm ci --include=dev && npm run build && test -f dist/index.html
+    startCommand: npm start
     healthCheckPath: /health
     envVars:
-      # Node 版本。原配置里的 nodeVersion 字段不是 Render blueprint 的合法字段，
-      # 一直被静默忽略（所以线上实际跑的是 Node 18），必须用 NODE_VERSION 环境变量。
-      # @supabase/supabase-js 2.117 要求 Node >= 22。
       - key: NODE_VERSION
         value: 24.11.0
       - key: NODE_ENV
         value: production
-      - key: ADMIN_PASSWORD
-        value: admin123
-      # Supabase 项目 URL（非密钥，可以明文写在这里）
-      - key: SUPABASE_URL
-        value: https://ofkoxfpsdpbfreysgjtw.supabase.co
-      # service_role 密钥。sync: false 表示不从这个文件读取，
-      # 必须去 Render 后台 Environment 里手动填写，保证密钥绝不进入 git。
-      - key: SUPABASE_SERVICE_KEY
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: COOKIE_SECURE
+        value: true
+      - key: CORS_ORIGIN
         sync: false

@@ -1,43 +1,60 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { api, imageUrl } from '../api'
-import { useUserStore } from '../stores/user'
+import { useToastStore } from '../stores/toast'
 
-// 旧版根本没有「我的订单」这个入口 —— 用户下完单就再也看不到自己买过什么。
-// 后端在此之前也只有管理员能查订单（/api/admin/orders）。
-
-const user = useUserStore()
-
+const toast = useToastStore()
 const orders = ref([])
 const loading = ref(true)
 const error = ref('')
 
-const STATUS_CLASS = {
-    待发货: 'tag-pending',
+const statusClass = (status) => ({
+    待付款: 'tag-pending',
+    待发货: 'tag-shipped',
     已发货: 'tag-shipped',
     已完成: 'tag-done',
     已取消: 'tag-cancel'
-}
-const statusClass = (s) => STATUS_CLASS[s] || 'tag-pending'
+}[status] || 'tag-pending')
 
-onMounted(async () => {
+async function load() {
+    loading.value = true
+    error.value = ''
     try {
-        orders.value = await api.listOrders(user.username)
+        const result = await api.orders.list({ pageSize: 50 })
+        orders.value = result.items || []
     } catch (e) {
-        error.value = e.message || '订单加载失败'
+        error.value = e.message
     } finally {
         loading.value = false
     }
-})
-
-function fmtTime(t) {
-    if (!t) return '—'
-    // 后端返回 ISO 字符串，转成本地可读格式
-    const d = new Date(t)
-    if (isNaN(d)) return String(t).slice(0, 19).replace('T', ' ')
-    const p = (n) => String(n).padStart(2, '0')
-    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`
 }
+
+async function pay(order) {
+    try {
+        await api.orders.pay(order.id, order.paymentMethod || 'wechat')
+        toast.ok('演示支付成功')
+        await load()
+    } catch (e) {
+        toast.error(e.message)
+    }
+}
+
+async function cancel(order) {
+    if (!window.confirm('确定取消这笔待付款订单？')) return
+    try {
+        await api.orders.cancel(order.id)
+        toast.ok('订单已取消')
+        await load()
+    } catch (e) {
+        toast.error(e.message)
+    }
+}
+
+function fmtTime(value) {
+    return new Date(value).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })
+}
+
+onMounted(load)
 </script>
 
 <template>
@@ -49,55 +66,41 @@ function fmtTime(t) {
         </div>
 
         <div v-if="loading" class="loading-line">正在调取订单簿…</div>
-
         <div v-else-if="error" class="empty-state">
-            <i class="fa fa-exclamation-triangle"></i>
-            <h3>订单加载失败</h3>
             <p>{{ error }}</p>
+            <button class="btn-reveal-all" @click="load">重试</button>
         </div>
-
         <div v-else-if="!orders.length" class="empty-state">
-            <i class="fa fa-file-text-o"></i>
             <h3>还没有结缘记录</h3>
-            <p>去首页揭开一个盲盒，结缘后订单会出现在这里</p>
             <RouterLink to="/"><button class="btn-reveal-all">去逛逛</button></RouterLink>
         </div>
 
         <div v-else class="order-list">
-            <article v-for="o in orders" :key="o.id" class="order-card">
+            <article v-for="order in orders" :key="order.id" class="order-card">
                 <header class="order-head">
-                    <div class="order-no">
+                    <div>
                         <span class="mono-label">订单号 / NO.</span>
-                        <strong>{{ o.order_no || ('#' + String(o.id).padStart(6, '0')) }}</strong>
+                        <strong>{{ order.orderNo }}</strong>
                     </div>
-                    <div class="order-time">
+                    <div>
                         <span class="mono-label">下单时间 / TIME</span>
-                        <strong>{{ fmtTime(o.created_at) }}</strong>
+                        <strong>{{ fmtTime(order.createdAt) }}</strong>
                     </div>
-                    <span class="tag" :class="statusClass(o.status)">{{ o.status || '待发货' }}</span>
+                    <span class="tag" :class="statusClass(order.status)">{{ order.status }}</span>
                 </header>
 
                 <div class="order-thumbs">
-                    <img v-for="(it, i) in (o.items || []).slice(0, 5)" :key="it.id ?? i"
-                         :src="imageUrl(it.img)" :alt="it.name" :title="it.name"
-                         @error="(e) => { e.target.src = imageUrl('') }">
-                    <span v-if="(o.items || []).length > 5" class="more-thumb">
-                        +{{ o.items.length - 5 }}
-                    </span>
-                    <span v-if="!(o.items || []).length" class="no-items">
-                        该订单无明细记录（早期数据）
-                    </span>
+                    <img v-for="item in order.items.slice(0, 5)" :key="item.id"
+                         :src="imageUrl(item.img)" :alt="item.name">
                 </div>
 
                 <footer class="order-foot">
-                    <span class="order-count">
-                        共 {{ (o.items || []).reduce((s, it) => s + (Number(it.quantity) || 1), 0) }} 件藏品
-                    </span>
+                    <span>共 {{ order.items.reduce((sum, item) => sum + item.quantity, 0) }} 件藏品</span>
                     <div class="order-right">
-                        <span class="order-total">¥ {{ Number(o.total).toFixed(2) }}</span>
-                        <RouterLink :to="`/orders/${o.id}`">
-                            <button class="btn-outline btn-sm">查看详情</button>
-                        </RouterLink>
+                        <strong class="order-total">¥ {{ order.amount.toFixed(2) }}</strong>
+                        <button v-if="order.actions.canPay" class="btn-reveal-all btn-sm" @click="pay(order)">演示支付</button>
+                        <button v-if="order.actions.canCancel" class="btn-danger-outline btn-sm" @click="cancel(order)">取消订单</button>
+                        <RouterLink :to="`/orders/${order.id}`"><button class="btn-outline btn-sm">查看详情</button></RouterLink>
                     </div>
                 </footer>
             </article>
@@ -106,30 +109,16 @@ function fmtTime(t) {
 </template>
 
 <style scoped>
-.loading-line { padding: 80px 0; text-align: center; font-family: var(--f-mono); font-size: 13px; opacity: 0.5; }
-
-.order-list { display: flex; flex-direction: column; gap: 22px; }
-.order-card {
-    background: #fff; border: 1.5px solid var(--c-grid); padding: 26px 28px;
-    transition: 0.25s;
-}
-.order-card:hover { border-color: var(--c-primary); box-shadow: 10px 10px 0 rgba(193, 162, 104, 0.16); }
-
-.order-head { display: flex; align-items: center; gap: 34px; padding-bottom: 20px; border-bottom: 1px dashed var(--c-grid); flex-wrap: wrap; }
-.mono-label { font-family: var(--f-mono); font-size: 10px; letter-spacing: 2px; color: var(--c-ink-soft); display: block; margin-bottom: 5px; }
-.order-no strong, .order-time strong { font-family: var(--f-mono); font-size: 14px; }
+.loading-line { padding: 70px 0; text-align: center; color: var(--c-ink-soft); }
+.order-list { display: flex; flex-direction: column; gap: 20px; }
+.order-card { background: #fff; border: 1.5px solid var(--c-grid); padding: 24px; }
+.order-head { display: flex; align-items: center; gap: 34px; padding-bottom: 18px; border-bottom: 1px dashed var(--c-grid); }
 .order-head .tag { margin-left: auto; }
-
-.order-thumbs { display: flex; align-items: center; gap: 12px; padding: 22px 0; flex-wrap: wrap; }
+.mono-label { display: block; color: var(--c-ink-soft); font-size: 10px; margin-bottom: 5px; }
+.order-thumbs { display: flex; gap: 12px; padding: 20px 0; }
 .order-thumbs img { width: 62px; height: 62px; object-fit: cover; border: 1px solid var(--c-grid); }
-.more-thumb {
-    width: 62px; height: 62px; display: flex; align-items: center; justify-content: center;
-    border: 1px dashed var(--c-grid); font-family: var(--f-mono); font-size: 11px; color: var(--c-ink-soft);
-}
-.no-items { font-family: var(--f-mono); font-size: 11px; color: var(--c-ink-soft); opacity: 0.7; }
-
-.order-foot { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
-.order-count { font-family: var(--f-mono); font-size: 11px; color: var(--c-ink-soft); letter-spacing: 1px; }
-.order-right { display: flex; align-items: center; gap: 22px; }
-.order-total { font-family: var(--f-mono); font-size: 22px; font-weight: 900; color: var(--c-danger); }
+.order-foot { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.order-right { display: flex; align-items: center; gap: 12px; }
+.order-total { color: var(--c-danger); font-size: 22px; }
+@media (max-width: 760px) { .order-foot, .order-head { align-items: flex-start; flex-direction: column; } }
 </style>

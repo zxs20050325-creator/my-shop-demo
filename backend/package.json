@@ -1,11 +1,16 @@
 {
   "name": "jiyi-zhumeng-backend",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "冀遗筑梦非遗电商平台后端",
-  "main": "index.js",
+  "main": "src/server.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js"
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "vitest run --config vitest.config.mjs --configLoader runner",
+    "create-admin": "node scripts/create-admin.js",
+    "migrate": "node scripts/run-migrations.js",
+    "verify-migrations": "node scripts/verify-migrations.js",
+    "seed-demo": "node scripts/seed-demo-data.js"
   },
   "keywords": [],
   "author": "",
@@ -15,12 +20,19 @@
     "node": ">=22.0.0"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.117.2",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
-    "express": "^4.21.1"
+    "express": "^4.21.1",
+    "express-rate-limit": "^8.7.0",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.23.0",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "nodemon": "^3.0.1",
+    "supertest": "^7.3.0",
+    "vitest": "^5.0.2"
   }
 }

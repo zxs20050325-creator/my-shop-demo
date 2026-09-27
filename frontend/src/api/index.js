@@ -1,103 +1,190 @@
-// 全站唯一的 HTTP 出口。
-//
-// 旧版 common.js 的问题是：加购、收藏、埋点全是「先写 localStorage，
-// 再 fire-and-forget POST」——不 await、不看返回值、失败无感知，
-// 于是本地和服务端必然分叉，多标签页/多设备一定不一致。
-// 现在所有请求都从这里走，错误一律抛出，由调用方决定怎么提示。
+const BASE = '';
 
-const BASE = ''   // 同源。开发时由 Vite 的 server.proxy 转发到后端。
+export class ApiError extends Error {
+    constructor(message, status, code, details) {
+        super(message);
+        this.name = 'ApiError';
+        this.status = status;
+        this.code = code;
+        this.details = details;
+    }
+}
 
-async function request(path, { method = 'GET', body, headers = {} } = {}) {
+async function request(path, { method = 'GET', body, headers = {} } = {}, allowRefresh = true) {
     const res = await fetch(BASE + path, {
         method,
+        credentials: 'include',
         headers: body ? { 'Content-Type': 'application/json', ...headers } : headers,
         body: body ? JSON.stringify(body) : undefined
-    })
+    });
 
-    const text = await res.text()
-    let data
-    try { data = text ? JSON.parse(text) : null } catch { data = text }
+    const text = await res.text();
+    let payload = null;
+    try {
+        payload = text ? JSON.parse(text) : null;
+    } catch {
+        payload = text;
+    }
 
     if (!res.ok) {
-        const err = new Error((data && data.message) || `请求失败（HTTP ${res.status}）`)
-        err.status = res.status
-        err.data = data
-        throw err
+        const refreshExcluded = [
+            '/auth/login',
+            '/auth/register',
+            '/auth/refresh',
+            '/auth/logout'
+        ].some(item => path.includes(item));
+        if (res.status === 401 && allowRefresh && !refreshExcluded) {
+            const refreshed = await fetch('/api/auth/refresh', {
+                method: 'POST',
+                credentials: 'include'
+            });
+            if (refreshed.ok) {
+                return request(path, { method, body, headers }, false);
+            }
+        }
+        const error = new ApiError(
+            payload?.error?.message || `请求失败（HTTP ${res.status}）`,
+            res.status,
+            payload?.error?.code || 'HTTP_ERROR',
+            payload?.error?.details
+        );
+        if (res.status === 401 && !path.includes('/auth/login')) {
+            window.dispatchEvent(new CustomEvent('auth:expired'));
+        }
+        throw error;
     }
-    return data
+
+    return payload?.data ?? payload;
 }
 
 const qs = (obj) => {
-    const p = new URLSearchParams()
-    Object.entries(obj).forEach(([k, v]) => {
-        if (v !== undefined && v !== null && v !== '') p.append(k, v)
-    })
-    const s = p.toString()
-    return s ? `?${s}` : ''
-}
+    const params = new URLSearchParams();
+    Object.entries(obj || {}).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+            params.append(key, value);
+        }
+    });
+    const query = params.toString();
+    return query ? `?${query}` : '';
+};
 
 export const api = {
-    // ---- 商品 ----
-    // params: { q, category, sort, page, pageSize }
-    listProducts: (params = {}) => request('/api/products' + qs(params)),
+    auth: {
+        register: async (payload) =>
+            (await request('/api/auth/register', { method: 'POST', body: payload })).user,
+        login: async (payload) =>
+            (await request('/api/auth/login', { method: 'POST', body: payload })).user,
+        refresh: async () =>
+            (await request('/api/auth/refresh', { method: 'POST' })).user,
+        logout: () => request('/api/auth/logout', { method: 'POST' }),
+        me: async () => (await request('/api/auth/me')).user
+    },
+
+    listProducts: async (params = {}) => {
+        const res = await fetch('/api/products' + qs(params), { credentials: 'include' });
+        const payload = await res.json();
+        if (!res.ok) throw new ApiError(payload?.error?.message, res.status, payload?.error?.code);
+        return {
+            items: payload.data?.items || [],
+            total: payload.meta?.total || 0,
+            page: payload.meta?.page || 1,
+            pageSize: payload.meta?.pageSize || 12
+        };
+    },
     getProduct: (id) => request('/api/products/' + encodeURIComponent(id)),
     listCategories: () => request('/api/categories'),
+    getPublicUser: (username) =>
+        request('/api/users/' + encodeURIComponent(username) + '/public'),
+    track: (action, product = '') =>
+        request('/api/track', { method: 'POST', body: { action, product } }).catch(() => null),
 
-    // ---- 账号 ----
-    register: (username, password) => request('/api/register', { method: 'POST', body: { username, password } }),
-    login: (username, password) => request('/api/login', { method: 'POST', body: { username, password } }),
-    profile: (username) => request('/api/user/profile' + qs({ username })),
-    changePassword: (username, oldPassword, newPassword) =>
-        request('/api/user/change-password', { method: 'POST', body: { username, oldPassword, newPassword } }),
+    cart: {
+        list: () => request('/api/cart'),
+        add: (skuId, quantity = 1) =>
+            request('/api/cart/items', { method: 'POST', body: { skuId, quantity } }),
+        update: (itemId, patch) =>
+            request('/api/cart/items/' + itemId, { method: 'PATCH', body: patch }),
+        remove: (itemId) =>
+            request('/api/cart/items/' + itemId, { method: 'DELETE' }),
+        clear: () => request('/api/cart', { method: 'DELETE' })
+    },
 
-    // ---- 购物车 ----
-    getCart: (username) => request('/api/cart' + qs({ username })),
-    addToCart: (username, product, quantity = 1) =>
-        request('/api/cart/add', { method: 'POST', body: { username, product, quantity } }),
-    removeFromCart: (username, index) =>
-        request('/api/cart/remove', { method: 'POST', body: { username, index } }),
-    setCartQuantity: (username, index, quantity) =>
-        request('/api/cart/quantity', { method: 'POST', body: { username, index, quantity } }),
+    favorites: {
+        list: () => request('/api/favorites'),
+        add: (productId) =>
+            request('/api/favorites', { method: 'POST', body: { productId } }),
+        remove: (productId) =>
+            request('/api/favorites/' + productId, { method: 'DELETE' })
+    },
 
-    // ---- 收藏 ----
-    getFavorites: (username) => request('/api/favorites' + qs({ username })),
-    addToFavorites: (username, product) =>
-        request('/api/favorites/add', { method: 'POST', body: { username, product } }),
-    removeFromFavorites: (username, productId) =>
-        request('/api/favorites/remove', { method: 'POST', body: { username, productId } }),
+    users: {
+        updateProfile: (payload) => request('/api/users/me', { method: 'PATCH', body: payload }),
+        changePassword: (oldPassword, newPassword) =>
+            request('/api/users/me/password', {
+                method: 'POST',
+                body: { oldPassword, newPassword }
+            }),
+        listAddresses: () => request('/api/users/me/addresses'),
+        createAddress: (payload) =>
+            request('/api/users/me/addresses', { method: 'POST', body: payload }),
+        updateAddress: (id, payload) =>
+            request('/api/users/me/addresses/' + id, { method: 'PUT', body: payload }),
+        setDefaultAddress: (id) =>
+            request(`/api/users/me/addresses/${id}/default`, { method: 'POST' }),
+        deleteAddress: (id) =>
+            request('/api/users/me/addresses/' + id, { method: 'DELETE' })
+    },
 
-    // ---- 订单 ----
-    checkout: (username, payload = {}) =>
-        request('/api/cart/checkout', { method: 'POST', body: { username, ...payload } }),
-    listOrders: (username) => request('/api/orders' + qs({ username })),
-    getOrder: (id) => request('/api/orders/' + encodeURIComponent(id)),
+    orders: {
+        create: (payload) => request('/api/orders', { method: 'POST', body: payload }),
+        list: (params = {}) => request('/api/orders' + qs(params)),
+        get: (id) => request('/api/orders/' + encodeURIComponent(id)),
+        pay: (id, method = 'wechat') =>
+            request(`/api/orders/${id}/demo-pay`, { method: 'POST', body: { method } }),
+        cancel: (id, reason = '用户取消') =>
+            request(`/api/orders/${id}/cancel`, { method: 'POST', body: { reason } }),
+        requestRefund: (id, reason) =>
+            request(`/api/orders/${id}/refunds`, { method: 'POST', body: { reason } }),
+        listRefunds: (params = {}) => request('/api/orders/refunds' + qs(params))
+    },
 
-    // ---- 埋点 ----
-    // 埋点失败不该打断用户操作，所以调用方通常 .catch(() => {}) 忽略
-    track: (username, action, product = '') =>
-        request('/api/track', { method: 'POST', body: { username, action, product } }),
+    admin: {
+        dashboard: () => request('/api/admin/dashboard'),
+        products: (params = {}) => request('/api/admin/products' + qs(params)),
+        createProduct: (payload) =>
+            request('/api/admin/products', { method: 'POST', body: payload }),
+        updateProduct: (id, payload) =>
+            request('/api/admin/products/' + id, { method: 'PUT', body: payload }),
+        createSku: (productId, payload) =>
+            request(`/api/admin/products/${productId}/skus`, { method: 'POST', body: payload }),
+        updateSku: (id, payload) =>
+            request('/api/admin/skus/' + id, { method: 'PUT', body: payload }),
+        adjustStock: (id, stock, reason = '管理员调整库存') =>
+            request(`/api/admin/skus/${id}/stock`, {
+                method: 'POST',
+                body: { stock, reason }
+            }),
+        orders: (params = {}) => request('/api/admin/orders' + qs(params)),
+        order: (id) => request('/api/admin/orders/' + id),
+        updateOrderStatus: (id, status, remark = '') =>
+            request(`/api/admin/orders/${id}/status`, {
+                method: 'PATCH',
+                body: { status, remark }
+            }),
+        refunds: (params = {}) => request('/api/admin/refunds' + qs(params)),
+        handleRefund: (id, approve, note = '') =>
+            request('/api/admin/refunds/' + id, {
+                method: 'PATCH',
+                body: { approve, note }
+            }),
+        users: () => request('/api/admin/users'),
+        logs: (limit = 200) => request('/api/admin/logs' + qs({ limit })),
+        clearLogs: () => request('/api/admin/logs', { method: 'DELETE' })
+    }
+};
 
-    // ---- 后台 ----
-    adminLogin: (password) => request('/api/admin/login', { method: 'POST', body: { password } }),
-    adminStats: (key) => request('/api/admin/stats', { headers: { 'x-admin-key': key } }),
-    adminUsersData: (key) => request('/api/admin/users-data', { headers: { 'x-admin-key': key } }),
-    adminProducts: (key) => request('/api/admin/products', { headers: { 'x-admin-key': key } }),
-    adminCreateProduct: (key, product) =>
-        request('/api/admin/products', { method: 'POST', body: product, headers: { 'x-admin-key': key } }),
-    adminUpdateProduct: (key, id, product) =>
-        request('/api/admin/products/' + id, { method: 'PUT', body: product, headers: { 'x-admin-key': key } }),
-    adminToggleProduct: (key, id, active) =>
-        request(`/api/admin/products/${id}/toggle`, { method: 'POST', body: { active }, headers: { 'x-admin-key': key } }),
-    adminDeleteProduct: (key, id) =>
-        request('/api/admin/products/' + id, { method: 'DELETE', headers: { 'x-admin-key': key } }),
-    adminOrders: (key) => request('/api/admin/orders', { headers: { 'x-admin-key': key } }),
-    adminClearLogs: (key) => request('/api/admin/clear', { method: 'POST', body: {}, headers: { 'x-admin-key': key } })
-}
-
-// 按路径拼商品图。后端存的 img 已经是 /images/xxx.jpg，
-// 旧版 product-detail.html 会再拼一次前缀变成 /images//images/xxx.jpg 直接挂图。
 export function imageUrl(path) {
-    if (!path) return 'https://placehold.co/600x800?text=JIYI'
-    if (/^https?:\/\//.test(path)) return path
-    return path.startsWith('/') ? path : '/images/' + path
+    if (!path) return '/images/001.jpg';
+    if (/^https?:\/\//.test(path)) return path;
+    return path.startsWith('/') ? path : '/images/' + path;
 }

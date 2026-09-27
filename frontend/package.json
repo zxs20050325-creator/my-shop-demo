@@ -1,15 +1,17 @@
 {
   "name": "jiyi-zhumeng-frontend",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "private": true,
   "type": "module",
   "description": "冀遗筑梦 · 数字化非遗盲盒平台（前端）",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "dev": "vite --configLoader runner",
+    "build": "vite build --configLoader runner",
+    "preview": "vite preview --configLoader runner",
+    "test": "vitest run --configLoader runner"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^7.3.1",
     "chart.js": "^4.4.7",
     "pinia": "^3.0.1",
     "vue": "^3.5.13",
@@ -17,6 +19,9 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.1",
-    "vite": "^6.0.7"
+    "@vue/test-utils": "^2.5.1",
+    "jsdom": "^29.1.1",
+    "vite": "^6.0.7",
+    "vitest": "^5.0.2"
   }
 }

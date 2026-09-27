@@ -11,6 +11,8 @@ const props = defineProps({
     q: { type: String, default: '' },
     category: { type: String, default: '' },
     sort: { type: String, default: 'default' },
+    viewMode: { type: String, default: 'comfortable' },
+    minPages: { type: Number, default: 0 },
     pageSize: { type: Number, default: 12 },
     emptyText: { type: String, default: '这里还没有藏品' }
 })
@@ -32,8 +34,24 @@ async function load() {
             page: page.value,
             pageSize: props.pageSize
         })
-        items.value = res.items || []
-        total.value = Number(res.total) || 0
+        const realItems = res.items || []
+        if (props.minPages > 0) {
+            const placeholders = Array.from(
+                { length: Math.max(0, props.pageSize - realItems.length) },
+                (_, index) => ({
+                    id: `placeholder-${page.value}-${index}`,
+                    placeholder: true,
+                    code: `JY-${String((page.value - 1) * props.pageSize + index + 1).padStart(4, '0')}`,
+                    name: `待编目藏品 ${String((page.value - 1) * props.pageSize + index + 1).padStart(3, '0')}`,
+                    category: '待编目'
+                })
+            )
+            items.value = [...realItems, ...placeholders]
+            total.value = Math.max(Number(res.total) || 0, props.minPages * props.pageSize)
+        } else {
+            items.value = realItems
+            total.value = Number(res.total) || 0
+        }
     } catch (e) {
         // 后端接口出错时返回 HTTP 500，api 层会抛出来 —— 走这个分支，
         // 页面显示「藏品加载失败」。绝不能把失败当成「没有商品」，
@@ -64,7 +82,7 @@ defineExpose({ reload: load })
 </script>
 
 <template>
-    <div class="product-grid">
+    <div class="product-grid" :class="`view-${viewMode}`">
         <template v-if="loading">
             <div v-for="i in pageSize" :key="'sk' + i" class="skeleton-card">
                 <div class="sk-img"></div>

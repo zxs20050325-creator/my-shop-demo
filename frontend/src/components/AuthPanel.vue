@@ -5,11 +5,8 @@ import { useCartStore } from '../stores/cart'
 import { useFavoritesStore } from '../stores/favorites'
 import { useToastStore } from '../stores/toast'
 
-// 全站唯一的登录/注册表单实现。
-// 旧版有三份互不一致的副本：首页的内嵌模态框、login.html、register.html。
-// 现在 LoginView / RegisterView / AuthModal 都复用这一个组件。
 const props = defineProps({
-    mode: { type: String, default: 'login' }   // 'login' | 'register'
+    mode: { type: String, default: 'login' }
 })
 const emit = defineEmits(['success', 'switch'])
 
@@ -21,41 +18,52 @@ const toast = useToastStore()
 const username = ref('')
 const password = ref('')
 const confirm = ref('')
+const nickname = ref('')
 const error = ref('')
 const busy = ref(false)
 
-const isRegister = () => props.mode === 'register'
-
-watch(() => props.mode, () => { error.value = ''; password.value = ''; confirm.value = '' })
+watch(() => props.mode, () => {
+    error.value = ''
+    password.value = ''
+    confirm.value = ''
+})
 
 async function submit() {
     error.value = ''
-
-    const u = username.value.trim()
-    const p = password.value
-
-    if (!u || !p) { error.value = '用户名和密码都要填'; return }
-    if (isRegister()) {
-        if (p.length < 6) { error.value = '密码至少 6 位'; return }
-        if (p !== confirm.value) { error.value = '两次输入的密码不一致'; return }
+    const name = username.value.trim()
+    if (!name || !password.value) {
+        error.value = '请填写用户名和密码'
+        return
+    }
+    if (name.length < 3) {
+        error.value = '用户名至少需要 3 个字符'
+        return
+    }
+    if (!/^[a-zA-Z0-9_\u4e00-\u9fa5-]+$/.test(name)) {
+        error.value = '用户名只能包含中文、字母、数字、下划线或横线'
+        return
+    }
+    if (password.value.length < 6) {
+        error.value = '密码至少需要 6 位'
+        return
+    }
+    if (props.mode === 'register' && password.value !== confirm.value) {
+        error.value = '两次输入的密码不一致'
+        return
     }
 
     busy.value = true
     try {
-        if (isRegister()) {
-            await user.register(u, p)
-            toast.ok(`欢迎，${u}`)
+        if (props.mode === 'register') {
+            await user.register({ username: name, password: password.value, nickname: nickname.value })
         } else {
-            await user.login(u, p)
-            toast.ok(`欢迎回来，${u}`)
+            await user.login({ username: name, password: password.value })
         }
-        // 登录后把服务端的购物车/收藏拉下来，覆盖本地这面镜子
         await Promise.all([cart.load(), favorites.load()])
-        emit('success', u)
+        toast.ok(props.mode === 'register' ? '账号已创建' : '欢迎回来')
+        emit('success')
     } catch (e) {
-        error.value = e.status === 401 ? '用户名或密码错误'
-            : e.status === 409 ? '该用户名已被占用'
-            : (e.message || '操作失败，请稍后再试')
+        error.value = e.message || '操作失败'
     } finally {
         busy.value = false
     }
@@ -64,56 +72,41 @@ async function submit() {
 
 <template>
     <form class="auth-panel" @submit.prevent="submit">
-        <h3>{{ isRegister() ? '创建账户' : '开启盲盒' }}</h3>
-        <span class="sub">{{ isRegister() ? 'CREATE ACCOUNT' : 'CONNECT THE CIPHER' }}</span>
+        <label class="ink-label" for="auth-user">用户名 / USERNAME</label>
+        <input id="auth-user" v-model="username" class="ink-field" autocomplete="username" maxlength="32">
 
-        <label class="ink-label" for="auth-username">用户名 / USERNAME</label>
-        <input
-            id="auth-username"
-            v-model="username"
-            class="ink-field"
-            type="text"
-            autocomplete="username"
-            placeholder="请输入用户名"
-        >
+        <template v-if="mode === 'register'">
+            <label class="ink-label" for="auth-nickname">昵称 / NICKNAME</label>
+            <input id="auth-nickname" v-model="nickname" class="ink-field" maxlength="32">
+        </template>
 
-        <label class="ink-label" for="auth-password">密码 / PASSWORD</label>
-        <input
-            id="auth-password"
-            v-model="password"
-            class="ink-field"
-            type="password"
-            :autocomplete="isRegister() ? 'new-password' : 'current-password'"
-            placeholder="请输入密码"
-        >
+        <label class="ink-label" for="auth-pass">密码 / PASSWORD</label>
+        <input id="auth-pass" v-model="password" class="ink-field" type="password"
+               :autocomplete="mode === 'login' ? 'current-password' : 'new-password'">
 
-        <template v-if="isRegister()">
+        <template v-if="mode === 'register'">
             <label class="ink-label" for="auth-confirm">确认密码 / CONFIRM</label>
-            <input
-                id="auth-confirm"
-                v-model="confirm"
-                class="ink-field"
-                type="password"
-                autocomplete="new-password"
-                placeholder="请再输入一次"
-            >
+            <input id="auth-confirm" v-model="confirm" class="ink-field" type="password"
+                   autocomplete="new-password">
         </template>
 
         <div class="form-error">{{ error }}</div>
-
-        <button class="btn-reveal-all" type="submit" :disabled="busy" style="width:100%">
-            {{ busy ? '处理中…' : (isRegister() ? '创建账户' : '开启盲盒') }}
+        <button class="btn-reveal-all" type="submit" :disabled="busy">
+            {{ busy ? '处理中…' : (mode === 'register' ? '创建账号' : '登录') }}
         </button>
 
-        <p class="modal-switch">
-            {{ isRegister() ? '已经有账户了？' : '还没有账户？' }}
-            <button type="button" @click="emit('switch', isRegister() ? 'login' : 'register')">
-                {{ isRegister() ? '去登录' : '去注册' }}
-            </button>
-        </p>
+        <button class="auth-switch" type="button"
+                @click="emit('switch', mode === 'login' ? 'register' : 'login')">
+            {{ mode === 'login' ? '还没有账号？去注册' : '已有账号？去登录' }}
+        </button>
     </form>
 </template>
 
 <style scoped>
-.auth-panel { width: 100%; }
+.auth-panel { display: flex; flex-direction: column; gap: 4px; }
+.auth-panel .ink-field { margin-bottom: 12px; }
+.auth-switch {
+    margin-top: 14px; background: none; border: 0; color: var(--c-ink-soft);
+    font-size: 12px; cursor: pointer;
+}
 </style>
