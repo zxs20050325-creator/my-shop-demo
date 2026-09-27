@@ -11,8 +11,16 @@ services:
     # 前端已改为 Vue + Vite：构建产物 frontend/dist 由后端同一服务托管
     # （backend/index.js 里的 DIST_DIR），所以构建阶段要先把前端编出来。
     # rootDir 是 backend，因此要 cd ../frontend 回到仓库根再进前端目录。
-    # 若前端构建失败，后端仍会启动，只是 /api 可用而页面 404 —— 见 index.js 的 HAS_DIST 判断。
-    buildCommand: cd ../frontend && npm install && npm run build
+    #
+    # ⚠️ `--include=dev` 不能省。下面 envVars 里的 NODE_ENV=production 会让
+    #    `npm install` 跳过 devDependencies，而 vite 和 @vitejs/plugin-vue
+    #    正好都在 frontend/package.json 的 devDependencies 里 —— 省掉它的后果是
+    #    `vite: not found`，dist 根本不生成，线上首页变成 {"error":"接口不存在"}，
+    #    而后端日志、健康检查一切正常，排查方向被彻底带偏（已经踩过一次）。
+    #
+    # 末尾的 `ls -l dist/index.html` 是保险：产物没生成就让构建阶段直接失败，
+    # 而不是让一个"没有前端"的服务安静地起来。
+    buildCommand: cd ../frontend && npm install --include=dev && npm run build && ls -l dist/index.html
     startCommand: node index.js
     healthCheckPath: /health
     envVars:

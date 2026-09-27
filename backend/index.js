@@ -24,6 +24,7 @@ if (HAS_DIST) {
     console.log('📦 已托管前端构建产物 frontend/dist');
 } else {
     console.warn('⚠️  未找到 frontend/dist —— 前端请在 frontend/ 下用 `npm run dev` 启动（Vite dev server）');
+    console.warn('    若这是线上环境，说明构建阶段没生成 dist，页面将全部 404（见文件末尾的处理）');
 }
 
 // 后台管理入口：保留 /admin 这个手敲 URL 的习惯，重定向到前端路由
@@ -494,11 +495,26 @@ app.get('/health', (req, res) => {
 });
 
 // SPA 回退：非 /api 的 GET 一律交给前端（刷新页面、直接输网址都要能用）。
-// 必须放在所有 API 路由之后，否则会把接口请求也吞掉。
+// 必须放在所有 API 路由之后，否则会把接口请求也吞掉（/health 就在上面，别提前注册）。
 // 用负向前瞻排除 /api，比「靠注册顺序」更稳——日后有人在下面加接口也不会踩坑。
+//
+// 没有 dist 时的分支同样重要：那时所有非 /api 的 GET 都会掉进最后一个兜底中间件，
+// 返回 {"error":"接口不存在"}。首页打不开却告诉你"接口不存在"，排查方向会被整个带偏——
+// 真实原因是构建阶段没生成 dist（踩过的坑：NODE_ENV=production 让 npm install 跳过
+// devDependencies，vite 没装上）。所以这里显式接管，把故障原样喊出来。
 if (HAS_DIST) {
     app.get(/^\/(?!api\/).*/, (req, res) => {
         res.sendFile(path.join(DIST_DIR, 'index.html'));
+    });
+} else {
+    app.get(/^\/(?!api\/).*/, (req, res) => {
+        res.status(503).type('text/plain; charset=utf-8').send(
+            '前端构建产物缺失：' + path.join(DIST_DIR, 'index.html') + ' 不存在。\n\n' +
+            '后端与 /api 接口是正常的，只是页面没被构建出来。检查部署的构建阶段：\n' +
+            '  1. 构建命令里有没有跑 `npm run build`（frontend 目录）；\n' +
+            '  2. frontend 的依赖安装有没有带 --include=dev ——\n' +
+            '     NODE_ENV=production 会让 npm 跳过 devDependencies，而 vite 就在里面。\n'
+        );
     });
 }
 
