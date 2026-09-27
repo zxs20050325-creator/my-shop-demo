@@ -1,18 +1,173 @@
 // db.js - 数据访问层（SQLite 版）
-// 使用 sql.js（纯JavaScript实现），无需C++编译工具，兼容所有Node版本
+// 使用 sql.js（纯 JavaScript 实现），无需 C++ 编译工具，兼容所有 Node 版本
 require('dotenv').config();
 const path = require('path');
 const crypto = require('crypto');
 const fs = require('fs');
+const initSqlJs = require('sql.js');
 
 // 数据库文件路径
 const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'jiyi.db');
 
 let db;
 let SQL;
-let initialized = false;
 
-// 密码哈希工具
+// 异步初始化数据库
+async function initializeDatabase() {
+    try {
+        // 初始化 sql.js
+        SQL = await initSqlJs();
+        
+        // 尝试加载现有数据库文件
+        if (fs.existsSync(DB_PATH)) {
+            const fileBuffer = fs.readFileSync(DB_PATH);
+            db = new SQL.Database(fileBuffer);
+            console.log('✅ 数据库加载成功:', DB_PATH);
+        } else {
+            // 创建新数据库
+            db = new SQL.Database();
+            console.log('✅ 创建新数据库:', DB_PATH);
+        }
+        
+        // 启用 WAL 模式
+        db.run('PRAGMA journal_mode = WAL;');
+        
+        // 建表
+        createTables();
+        
+        // 初始化默认数据
+        await seedData();
+        
+        return true;
+    } catch (error) {
+        console.error('❌ 数据库初始化失败:', error.message);
+        throw error;
+    }
+}
+
+// 同步初始化数据库（用于模块加载时立即执行）
+function initializeDatabaseSync() {
+    try {
+        // 注意：sql.js 需要异步加载 WASM 文件，这里使用同步方式会失败
+        // 因此我们改用另一种策略：先导出占位对象，然后在首次使用时初始化
+        
+        // 创建占位符，标记尚未初始化
+        db = null;
+        SQL = null;
+        
+        console.log('⏳ 数据库将在首次请求时初始化...');
+    } catch (error) {
+        console.error('❌ 数据库初始化准备失败:', error.message);
+        throw error;
+    }
+}
+
+// 确保数据库已初始化的辅助函数
+async function ensureDbInitialized() {
+    if (!db || !SQL) {
+        await initializeDatabase();
+    }
+}
+
+function createTables() {
+    db.run(`
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+        );
+
+        CREATE TABLE IF NOT EXISTS carts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            product TEXT NOT NULL,
+            created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+        );
+
+        CREATE TABLE IF NOT EXISTS favorites (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            product TEXT NOT NULL,
+            created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+        );
+
+        CREATE TABLE IF NOT EXISTS user_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            action TEXT NOT NULL,
+            product TEXT,
+            created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+        );
+
+        CREATE TABLE IF NOT EXISTS orders (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            total REAL NOT NULL DEFAULT 0,
+            created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+        );
+
+        CREATE TABLE IF NOT EXISTS products (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            price REAL NOT NULL DEFAULT 0,
+            img TEXT NOT NULL DEFAULT '',
+            category TEXT NOT NULL DEFAULT '非遗手作',
+            active INTEGER NOT NULL DEFAULT 1,
+            created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
+        CREATE INDEX IF NOT EXISTS idx_carts_username ON carts(username);
+        CREATE INDEX IF NOT EXISTS idx_favorites_username ON favorites(username);
+        CREATE INDEX IF NOT EXISTS idx_user_logs_username ON user_logs(username);
+        CREATE INDEX IF NOT EXISTS idx_user_logs_created_at ON user_logs(created_at);
+    `);
+    
+    saveDatabase();
+}
+
+async function seedData() {
+    const count = db.exec('SELECT COUNT(*) AS c FROM products')[0]?.values[0][0] || 0;
+    
+    if (count === 0) {
+        const seedProducts = [
+            ['冀筑华塔微藏盒', 198, '/images/001.jpg', '数字藏品'],
+            ['赵州桥榫卯奇盒', 88, '/images/002.jpg', '文创周边'],
+            ['承德御苑宸景盒', 328, '/images/003.jpg', '数字画作'],
+            ['山海关雄关守盒', 999, '/images/004.jpg', '典藏精品'],
+            ['隆兴寺禅筑臻盒', 58, '/images/005.jpg', '非遗手作'],
+            ['开元寺塔料敌盒', 168, '/images/006.jpg', '非遗手作'],
+            ['清西陵宫阙雅盒', 258, '/images/101.jpg', '数字藏品'],
+            ['娲皇宫悬楼秘盒', 128, '/images/102.jpg', '文创周边'],
+            ['古莲花池苑趣盒', 298, '/images/103.jpg', '数字画作'],
+            ['紫荆关燕塞筑盒', 888, '/images/104.jpg', '典藏精品'],
+            ['广府古城围合盒', 78, '/images/105.jpg', '非遗手作'],
+            ['外八庙梵筑珍盒', 188, '/images/106.jpg', '非遗手作']
+        ];
+        
+        const stmt = db.prepare('INSERT INTO products (name, price, img, category) VALUES (?, ?, ?, ?)');
+        for (const p of seedProducts) {
+            stmt.run(p);
+        }
+        stmt.free();
+        saveDatabase();
+        console.log('✅ 初始商品数据已写入');
+    }
+}
+
+// 保存数据库到文件
+function saveDatabase() {
+    try {
+        const data = db.export();
+        const buffer = Buffer.from(data);
+        fs.writeFileSync(DB_PATH, buffer);
+    } catch (error) {
+        console.error('❌ 保存数据库失败:', error.message);
+    }
+}
+
+// --- 密码哈希工具 ---
 function hashPassword(plain) {
     const salt = crypto.randomBytes(16).toString('hex');
     const hash = crypto.scryptSync(plain, salt, 64).toString('hex');
@@ -31,6 +186,7 @@ function safeParse(str) {
 }
 
 class DatabaseService {
+
     // --- 1. 用户相关 ---
     createUser(username, password) {
         db.run('INSERT INTO users (username, password) VALUES (?, ?)', [username, hashPassword(password)]);
@@ -267,148 +423,45 @@ class DatabaseService {
     }
 }
 
-// 保存数据库到文件
-function saveDatabase() {
-    try {
-        const data = db.export();
-        const buffer = Buffer.from(data);
-        fs.writeFileSync(DB_PATH, buffer);
-    } catch (error) {
-        console.error('❌ 保存数据库失败:', error.message);
-    }
-}
-
-function createTables() {
-    db.run(`
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL,
-            created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
-        );
-
-        CREATE TABLE IF NOT EXISTS carts (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL,
-            product TEXT NOT NULL,
-            created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
-        );
-
-        CREATE TABLE IF NOT EXISTS favorites (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL,
-            product TEXT NOT NULL,
-            created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
-        );
-
-        CREATE TABLE IF NOT EXISTS user_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL,
-            action TEXT NOT NULL,
-            product TEXT,
-            created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
-        );
-
-        CREATE TABLE IF NOT EXISTS orders (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL,
-            total REAL NOT NULL DEFAULT 0,
-            created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
-        );
-
-        CREATE TABLE IF NOT EXISTS products (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            price REAL NOT NULL DEFAULT 0,
-            img TEXT NOT NULL DEFAULT '',
-            category TEXT NOT NULL DEFAULT '非遗手作',
-            active INTEGER NOT NULL DEFAULT 1,
-            created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
-        );
-
-        CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
-        CREATE INDEX IF NOT EXISTS idx_carts_username ON carts(username);
-        CREATE INDEX IF NOT EXISTS idx_favorites_username ON favorites(username);
-        CREATE INDEX IF NOT EXISTS idx_user_logs_username ON user_logs(username);
-        CREATE INDEX IF NOT EXISTS idx_user_logs_created_at ON user_logs(created_at);
-    `);
+// 使用 IIFE 立即执行函数进行初始化（兼容 Render 平台）
+(function() {
+    // 标记数据库是否正在初始化
+    let isInitializing = false;
+    let initPromise = null;
     
-    saveDatabase();
-}
-
-async function seedData() {
-    const count = db.exec('SELECT COUNT(*) AS c FROM products')[0]?.values[0][0] || 0;
+    // 创建数据库服务实例
+    const dbService = new DatabaseService();
     
-    if (count === 0) {
-        const seedProducts = [
-            ['冀筑华塔微藏盒', 198, '/images/001.jpg', '数字藏品'],
-            ['赵州桥榫卯奇盒', 88, '/images/002.jpg', '文创周边'],
-            ['承德御苑宸景盒', 328, '/images/003.jpg', '数字画作'],
-            ['山海关雄关守盒', 999, '/images/004.jpg', '典藏精品'],
-            ['隆兴寺禅筑臻盒', 58, '/images/005.jpg', '非遗手作'],
-            ['开元寺塔料敌盒', 168, '/images/006.jpg', '非遗手作'],
-            ['清西陵宫阙雅盒', 258, '/images/101.jpg', '数字藏品'],
-            ['娲皇宫悬楼秘盒', 128, '/images/102.jpg', '文创周边'],
-            ['古莲花池苑趣盒', 298, '/images/103.jpg', '数字画作'],
-            ['紫荆关燕塞筑盒', 888, '/images/104.jpg', '典藏精品'],
-            ['广府古城围合盒', 78, '/images/105.jpg', '非遗手作'],
-            ['外八庙梵筑珍盒', 188, '/images/106.jpg', '非遗手作']
-        ];
-        
-        const stmt = db.prepare('INSERT INTO products (name, price, img, category) VALUES (?, ?, ?, ?)');
-        for (const p of seedProducts) {
-            stmt.run(p);
-        }
-        stmt.free();
-        saveDatabase();
-        console.log('✅ 初始商品数据已写入');
-    }
-}
-
-// 初始化数据库并导出服务
-(async () => {
-    try {
-        const initSqlJs = require('sql.js');
-        SQL = await initSqlJs();
-        
-        // 尝试加载现有数据库文件
-        if (fs.existsSync(DB_PATH)) {
-            const fileBuffer = fs.readFileSync(DB_PATH);
-            db = new SQL.Database(fileBuffer);
-            console.log('✅ 数据库加载成功:', DB_PATH);
-        } else {
-            // 创建新数据库
-            db = new SQL.Database();
-            console.log('✅ 创建新数据库:', DB_PATH);
-        }
-        
-        // 启用 WAL 模式
-        db.run('PRAGMA journal_mode = WAL;');
-        
-        // 建表
-        createTables();
-        
-        // 初始化默认数据
-        await seedData();
-        
-        // 导出服务实例
-        module.exports = new DatabaseService();
-        initialized = true;
-        console.log('✅ 数据库服务初始化完成');
-    } catch (error) {
-        console.error('❌ 数据库初始化失败:', error.message);
-        process.exit(1);
-    }
-})();
-
-// 在初始化完成前导出一个占位对象
-if (!initialized) {
-    module.exports = new Proxy({}, {
-        get(target, prop) {
-            if (!initialized) {
-                throw new Error('数据库尚未初始化完成');
-            }
-            return module.exports[prop];
+    // 包装所有方法，确保在调用前数据库已初始化
+    const wrappedService = {};
+    
+    // 获取所有可枚举的方法名
+    const methodNames = Object.getOwnPropertyNames(Object.getPrototypeOf(dbService));
+    
+    // 为每个方法创建包装函数
+    methodNames.forEach(methodName => {
+        if (typeof dbService[methodName] === 'function' && methodName !== 'constructor') {
+            wrappedService[methodName] = async function(...args) {
+                // 如果数据库尚未初始化，先初始化
+                if (!db || !SQL) {
+                    if (!initPromise) {
+                        isInitializing = true;
+                        initPromise = initializeDatabase().catch(err => {
+                            console.error('❌ 数据库初始化失败:', err);
+                            process.exit(1);
+                        });
+                    }
+                    await initPromise;
+                }
+                
+                // 执行实际方法
+                return dbService[methodName].apply(dbService, args);
+            };
         }
     });
-}
+    
+    // 导出包装后的服务对象
+    module.exports = wrappedService;
+    
+    console.log('✅ 数据库服务已准备就绪（将在首次请求时初始化）');
+})();
