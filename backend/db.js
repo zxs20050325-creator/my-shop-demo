@@ -265,14 +265,64 @@ class DatabaseService {
     }
 
     // --- 2. 购物车相关 ---
-    async addToCart(username, product) {
+
+    // 加购。同一用户同一商品累加数量，不再插入重复行。
+    // 旧行为是「重复加购 = 插一行」+ 前端按下标删除，结果是同一商品在
+    // 购物车里出现多次、且合计完全忽略数量（详见旧 common.js 的死函数
+    // updateCartItemQuantity —— 它写好了但从没被调用过）。
+    async addToCart(username, product, quantity = 1) {
+        const n = Math.max(1, Math.floor(toNumber(quantity) || 1));
+        const pid = product && product.id != null ? String(product.id) : null;
+
+        // 已有同款则累加。走 product->>id 过滤：PostgREST 支持 JSONB 路径取值。
+        if (pid !== null) {
+            const existing = await unwrap(
+                getClient().from('carts')
+                    .select('id, quantity')
+                    .eq('username', username)
+                    .eq('product->>id', pid)
+                    .order('id', { ascending: true })
+                    .limit(1),
+                'addToCart 查询已有'
+            );
+            if (existing.length) {
+                const row = existing[0];
+                const { error } = await getClient().from('carts')
+                    .update({ quantity: toNumber(row.quantity) + n })
+                    .eq('id', row.id);
+                if (error) fail(error, 'addToCart 累加');
+                return { id: row.id };
+            }
+        }
+
         return unwrap(
             getClient().from('carts')
-                .insert({ username, product: toJson(product) })
+                .insert({ username, product: toJson(product), quantity: n })
                 .select('id')
                 .single(),
             'addToCart'
         );
+    }
+
+    // 改数量。数量降到 0 由调用方走 removeFromCart，这里最小为 1。
+    async setCartQuantity(username, index, quantity) {
+        const i = Number(index);
+        const n = Math.floor(toNumber(quantity));
+        if (!Number.isInteger(i) || i < 0 || n < 1) return false;
+
+        const rows = await unwrap(
+            getClient().from('carts').select('id')
+                .eq('username', username)
+                .order('id', { ascending: true }),
+            'setCartQuantity 定位'
+        );
+        if (i >= rows.length) return false;
+
+        const { error } = await getClient().from('carts')
+            .update({ quantity: Math.min(n, 99) })
+            .eq('id', rows[i].id);
+        if (error) fail(error, 'setCartQuantity');
+        return true;
     }
 
     async getAllCarts() {
@@ -358,14 +408,32 @@ class DatabaseService {
     }
 
     // --- 5. 订单 & 统计 ---
-    async createOrder(username, total) {
-        return unwrap(
-            getClient().from('orders')
-                .insert({ username, total: toNumber(total) })
-                .select('id')
-                .single(),
+
+    // 下单：走 RPC，订单与明细在同一个事务里写完（详见 supabase-migration-v2.sql）。
+    // items 是购物车商品对象数组，这里只挑订单需要留存的字段——
+    // 存的是「下单当时的快照」，不是对 products 的引用，商品日后改价/删除都不影响历史订单。
+    async createOrder(username, total, { address = '', phone = '', items = [] } = {}) {
+        const payload = (Array.isArray(items) ? items : []).map(it => ({
+            product_id: it && it.id != null ? it.id : null,
+            name: (it && it.name) || '未知商品',
+            price: toNumber(it && it.price),
+            quantity: Math.max(1, Math.floor(toNumber(it && it.quantity) || 1)),
+            img: (it && it.img) || ''
+        }));
+
+        const data = await unwrap(
+            getClient().rpc('create_order', {
+                p_username: username,
+                p_total: toNumber(total),
+                p_address: address || '',
+                p_phone: phone || '',
+                p_items: payload
+            }),
             'createOrder'
         );
+
+        // 函数返回 BIGINT 标量，supabase-js 可能给 number 也可能给 string，统一转一下
+        return { id: Number(data) };
     }
 
     // 走 RPC：hosted Supabase 把 PostgREST 的聚合功能锁死为关闭，
@@ -443,25 +511,29 @@ class DatabaseService {
     }
 
     // --- 7. 订单管理 ---
+    // 带上 items：后台订单表展开后能看到这单买了什么。
+    // 老订单 items 为空数组属预期——它们下单时明细功能还不存在。
     async getAllOrders() {
-        return unwrap(
+        const orders = await unwrap(
             getClient().from('orders').select('*')
                 .order('created_at', { ascending: false })
                 .order('id', { ascending: false }),
             'getAllOrders'
         );
+        return this.#attachItems(orders);
     }
 
     // --- 8. 用户购物车 / 收藏查询 ---
     // 注意：返回的是「商品对象」组成的数组，不是行对象数组。
+    // 购物车元素 = 商品全部字段 + quantity（数量是购物车行的属性，不属于商品本身）。
     async getCartByUsername(username) {
         const rows = await unwrap(
-            getClient().from('carts').select('product')
+            getClient().from('carts').select('product, quantity')
                 .eq('username', username)
                 .order('id', { ascending: true }),
             'getCartByUsername'
         );
-        return rows.map(r => asJson(r.product));
+        return rows.map(r => ({ ...asJson(r.product), quantity: toNumber(r.quantity) || 1 }));
     }
 
     async getFavoritesByUsername(username) {
@@ -472,6 +544,105 @@ class DatabaseService {
             'getFavoritesByUsername'
         );
         return rows.map(r => asJson(r.product));
+    }
+
+    // 取消收藏。旧版后端压根没有这个接口，前端 favorites.html 只改本地
+    // localStorage，于是刷新/换设备后收藏会「复活」。
+    async removeFromFavorites(username, productId) {
+        const pid = String(productId);
+        const { error } = await getClient().from('favorites').delete()
+            .eq('username', username)
+            .eq('product->>id', pid);
+        if (error) fail(error, 'removeFromFavorites');
+        return true;
+    }
+
+    // 改密码。哈希是同步纯计算（scrypt），与 verifyPassword 同源，不引入异步陷阱。
+    async changePassword(username, newPassword) {
+        const rows = await unwrap(
+            getClient().from('users')
+                .update({ password: hashPassword(newPassword) })
+                .eq('username', username)
+                .select('id'),
+            'changePassword'
+        );
+        return rows.length > 0;
+    }
+
+    // --- 9. 搜索 / 分类 / 用户订单 ---
+
+    // 走 RPC 而非 .ilike()：见 supabase-migration-v2.sql 里的说明，
+    // supabase-js 不转义 pattern，中文关键词会被边缘节点拒（Cloudflare 1101）。
+    async searchProducts({ q = '', category = '', sort = 'default', page = 1, pageSize = 12, includeInactive = false } = {}) {
+        const p = Math.max(1, Math.floor(toNumber(page) || 1));
+        const size = Math.min(60, Math.max(1, Math.floor(toNumber(pageSize) || 12)));
+
+        const data = await unwrap(
+            getClient().rpc('search_products', {
+                p_q: String(q || ''),
+                p_category: String(category || ''),
+                p_sort: String(sort || 'default'),
+                p_page: p,
+                p_size: size,
+                p_include_inactive: !!includeInactive
+            }),
+            'searchProducts'
+        );
+
+        const row = Array.isArray(data) ? data[0] : data;
+        return {
+            items: (row && row.items) || [],
+            total: toNumber(row && row.total),
+            page: p,
+            pageSize: size
+        };
+    }
+
+    async getCategories() {
+        const data = await unwrap(getClient().rpc('get_categories'), 'getCategories');
+        return (data || []).map(r => ({ category: r.category, count: toNumber(r.cnt) }));
+    }
+
+    // 「我的订单」：只查当前用户的。旧版没有任何用户侧订单接口，
+    // 唯一的 /api/admin/orders 带 requireAdmin，普通用户下单后完全查不到自己买了什么。
+    async getOrdersByUsername(username) {
+        const orders = await unwrap(
+            getClient().from('orders').select('*')
+                .eq('username', username)
+                .order('created_at', { ascending: false })
+                .order('id', { ascending: false }),
+            'getOrdersByUsername'
+        );
+        return this.#attachItems(orders);
+    }
+
+    async getOrderById(id) {
+        const n = Number(id);
+        if (!Number.isFinite(n)) return null;   // getProductById 同款防御：避免 .eq('id', NaN) 报 400
+        const order = await unwrap(
+            getClient().from('orders').select('*').eq('id', n).maybeSingle(),
+            'getOrderById'
+        );
+        if (!order) return null;
+        const [full] = await this.#attachItems([order]);
+        return full;
+    }
+
+    // 给订单批量挂上明细。一次 IN 查询搞定，不要在循环里逐单查（N+1）。
+    async #attachItems(orders) {
+        if (!orders.length) return [];
+        const items = await unwrap(
+            getClient().from('order_items').select('*')
+                .in('order_id', orders.map(o => o.id))
+                .order('id', { ascending: true }),
+            'attachItems'
+        );
+        const byOrder = new Map();
+        for (const it of items) {
+            if (!byOrder.has(it.order_id)) byOrder.set(it.order_id, []);
+            byOrder.get(it.order_id).push({ ...it, price: toNumber(it.price) });
+        }
+        return orders.map(o => ({ ...o, total: toNumber(o.total), items: byOrder.get(o.id) || [] }));
     }
 }
 

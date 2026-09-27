@@ -1,18 +1,22 @@
 {
-  "name": "shop-frontend",
-  "version": "1.0.0",
-  "description": "Frontend for冀遗筑梦 E-commerce Platform",
-  "main": "index.html",
+  "name": "jiyi-zhumeng-frontend",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "冀遗筑梦 · 数字化非遗盲盒平台（前端）",
   "scripts": {
-    "start": "serve -s .",
-    "dev": "live-server --port=3000",
-    "build": "echo 'Build completed'"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
-  "keywords": ["shop", "frontend", "e-commerce"],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "serve": "^14.2.1",
-    "live-server": "^1.2.2"
+    "chart.js": "^4.4.7",
+    "pinia": "^3.0.1",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "vite": "^6.0.7"
   }
 }

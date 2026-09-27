@@ -2,21 +2,33 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-// 静态文件服务
+// 静态文件服务：商品图片
 app.use('/images', express.static(path.join(__dirname, 'public', 'images')));
-app.use('/frontend', express.static(path.join(__dirname, '..', 'frontend')));
 
-// 根路径重定向到前台首页（部署后可直接访问根域名）
-app.get('/', (req, res) => res.redirect('/frontend/index.html'));
+// 前端构建产物（Vite 输出到 frontend/dist）
+// 开发时前端跑在 Vite dev server，由它把 /api 代理到这里，dist 不存在也不影响后端启动。
+// 这也是为什么这里要 existsSync 判断而不是直接 static —— 否则本地开发时后端会因为
+// 挂载一个不存在的目录而在每次请求上浪费时间，日志也容易误导。
+const DIST_DIR = path.join(__dirname, '..', 'frontend', 'dist');
+const HAS_DIST = fs.existsSync(path.join(DIST_DIR, 'index.html'));
 
-// 后台管理入口（与前台分离的独立路径，便于区分前后台）
-app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, '..', 'frontend', 'admin.html')));
+if (HAS_DIST) {
+    app.use(express.static(DIST_DIR));
+    console.log('📦 已托管前端构建产物 frontend/dist');
+} else {
+    console.warn('⚠️  未找到 frontend/dist —— 前端请在 frontend/ 下用 `npm run dev` 启动（Vite dev server）');
+}
+
+// 后台管理入口：保留 /admin 这个手敲 URL 的习惯，重定向到前端路由
+// （Vue 用 hash 模式，所以后台真实地址是 /#/admin）
+app.get('/admin', (req, res) => res.redirect('/#/admin'));
 
 // 引入数据库模块
 const { ready: dbReady, service: db } = require('./db');
@@ -40,14 +52,34 @@ app.post('/api/admin/login', (req, res) => {
 // ==========================================
 
 // 1. 获取商品（数据来自数据库，可在后台增删改/上下架）
+// 支持 ?q= 关键词、?category= 分类、?sort= 排序、?page= & ?pageSize= 分页。
+//
+// 旧版这里忽略一切查询参数、一次返回全部商品，而前端把页码写死成 [1,2]。
+// 后果：管理员新增第 13 个商品后，它在前台永远不出现——静默的数据丢失。
+//
+// 响应在 items 之外补了 total/page/pageSize，是「加字段」不是「改形状」，
+// 老调用方（后台 admin.html）不受影响。
 app.get('/api/products', async (req, res) => {
     try {
-        const items = await db.getAllProducts(false); // 只返回已上架商品
-        res.json({ items });
+        const { q, category, sort, page, pageSize } = req.query;
+        res.json(await db.searchProducts({ q, category, sort, page, pageSize }));
     } catch (e) {
-        // 返回与成功时相同的空形状：前端 index.html 判断 `if (data.items)`，
-        // 若返回 { error } 会让首屏卡在骨架屏
+        // 曾经这里返回空形状（items: []），理由是「前端判断 data.items，
+        // 返回 { error } 会让首屏卡在骨架屏」—— 那是旧前端的写法，已经过时。
+        // 现在 ProductExplorer 有独立的失败分支，HTTP 非 2xx 会被 api 层抛出，
+        // 页面显示「藏品加载失败」；而返回 200 空数组会让首页平静地告诉你
+        // 「还没有上架的藏品」—— 12 件商品明明在库里。故障必须长得像故障。
         console.error('获取商品列表失败:', e);
+        res.status(500).json({ error: '商品加载失败', message: e.message });
+    }
+});
+
+// 1b. 分类清单（给「分类浏览」页用）
+app.get('/api/categories', async (req, res) => {
+    try {
+        res.json({ items: await db.getCategories() });
+    } catch (e) {
+        console.error('获取分类失败:', e);
         res.json({ items: [] });
     }
 });
@@ -110,6 +142,11 @@ app.post('/api/favorites/add', async (req, res) => {
 });
 
 // 获取购物车 / 收藏（服务端为准，登录后前端拉取）
+// 注意这里和 /api/products 的兜底策略**故意不同**：
+// 商品列表拿不到时返回空形状，是为了别让首屏卡在骨架屏（前端只判断 data.items）；
+// 但购物车/收藏/订单拿不到时必须报错。把数据库故障伪装成「空的」，
+// 用户看到的是「我的购物车怎么空了」「我的订单丢了」，
+// 排查方向会被彻底带偏——真实原因（缺列、缺表、连接失败）反而被藏起来了。
 app.get('/api/cart', async (req, res) => {
     const username = req.query.username;
     if (!username) return res.json({ items: [] });
@@ -117,7 +154,7 @@ app.get('/api/cart', async (req, res) => {
         res.json({ items: await db.getCartByUsername(username) });
     } catch (e) {
         console.error('获取购物车失败:', e);
-        res.json({ items: [] });
+        res.status(500).json({ error: '购物车加载失败', message: e.message });
     }
 });
 
@@ -128,7 +165,7 @@ app.get('/api/favorites', async (req, res) => {
         res.json({ items: await db.getFavoritesByUsername(username) });
     } catch (e) {
         console.error('获取收藏失败:', e);
-        res.json({ items: [] });
+        res.status(500).json({ error: '收藏加载失败', message: e.message });
     }
 });
 
@@ -141,15 +178,132 @@ app.post('/api/cart/remove', async (req, res) => {
     } catch(e) { res.status(500).json({success:false}); }
 });
 
-// 7. 结算（前端 cart.html 调用）：记录订单 + 清空购物车 + 记录支付行为
+// 6b. 改购物车数量（index 是购物车里的下标，按 id 升序定位）
+app.post('/api/cart/quantity', async (req, res) => {
+    try {
+        const { username, index, quantity } = req.body;
+        if (!username) return res.status(400).json({ success: false, message: '缺少用户名' });
+        const ok = await db.setCartQuantity(username, index, quantity);
+        ok
+            ? res.json({ success: true })
+            : res.status(400).json({ success: false, message: '定位失败或数量非法（最小为 1，减到 0 请用移除）' });
+    } catch(e) {
+        console.error('修改购物车数量失败:', e);
+        res.status(500).json({success:false});
+    }
+});
+
+// 6c. 取消收藏。旧版后端没有这个接口，前端只改本地 localStorage，
+//     于是刷新或换设备后收藏会「复活」。
+app.post('/api/favorites/remove', async (req, res) => {
+    try {
+        const { username, productId } = req.body;
+        if (!username || productId === undefined || productId === null) {
+            return res.status(400).json({ success: false, message: '缺少参数' });
+        }
+        await db.removeFromFavorites(username, productId);
+        res.json({success:true});
+    } catch(e) {
+        console.error('取消收藏失败:', e);
+        res.status(500).json({success:false});
+    }
+});
+
+// 7. 结算：写订单 + 写明细 + 清空购物车 + 记录支付行为
+//
+// 两个关键点：
+//  ① 明细（买了什么）来自服务端购物车，不是前端传的。旧版 orders 表根本没有明细字段，
+//     结算时购物车内容被直接丢弃——用户付了钱却查不到自己买了什么。
+//  ② 金额优先按服务端购物车重算。前端传来的 totalPrice 只作为购物车为空时的兜底，
+//     否则改一下请求体就能伪造任意金额的订单，而后台「总营收」正是 SUM(orders.total)。
+//     （注意：本轮仍未加登录态，username 依然由前端明文提供，见计划里「明确不做」一节。）
 app.post('/api/cart/checkout', async (req, res) => {
     try {
-        const { username, totalPrice } = req.body;
-        await db.createOrder(username, totalPrice);
+        const { username, totalPrice, address, phone } = req.body;
+        if (!username) return res.status(400).json({ success: false, message: '缺少用户名' });
+
+        const items = await db.getCartByUsername(username);   // 已含 quantity
+        const computed = items.reduce(
+            (sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 1), 0
+        );
+        const total = items.length ? computed : (Number(totalPrice) || 0);
+
+        const order = await db.createOrder(username, total, { address, phone, items });
         await db.clearCart(username);
         await db.addLog(username, '支付', '订单结算');
-        res.json({success:true});
-    } catch(e) { res.status(500).json({success:false}); }
+
+        res.json({ success: true, orderId: order.id, total, count: items.length });
+    } catch(e) {
+        console.error('结算失败:', e);
+        res.status(500).json({success:false, message: e.message});
+    }
+});
+
+// 8. 用户查自己的订单（旧版只有 requireAdmin 的 /api/admin/orders，普通用户看不到自己的单）
+// ⚠️ username 由前端明文提供、服务端不核验，与购物车/收藏是同一套信任模型。
+//    演示够用，但这不是能上线的鉴权——见计划里「明确不做」一节。
+app.get('/api/orders', async (req, res) => {
+    const username = req.query.username;
+    if (!username) return res.json({ orders: [] });
+    try {
+        res.json({ orders: await db.getOrdersByUsername(username) });
+    } catch (e) {
+        console.error('获取用户订单失败:', e);
+        res.status(500).json({ error: '订单加载失败', message: e.message });
+    }
+});
+
+app.get('/api/orders/:id', async (req, res) => {
+    try {
+        const order = await db.getOrderById(Number(req.params.id));
+        // 404 只用于「确实没有这笔订单」；数据库故障必须报 500，
+        // 否则前端会告诉你「订单不存在」，而真正坏掉的是 order_items 表。
+        if (!order) return res.status(404).json({ error: 'Not found' });
+        res.json(order);
+    } catch (e) {
+        console.error('获取订单详情失败:', e);
+        res.status(500).json({ error: '订单加载失败', message: e.message });
+    }
+});
+
+// 9. 用户资料（给「个人中心」用）
+// 只回用户名和注册时间 —— 绝不能带上 password 字段。
+// 对比 /api/admin/users-data：那个接口会把全部用户的 scrypt 哈希返回给浏览器，是个待修的隐患。
+app.get('/api/user/profile', async (req, res) => {
+    const username = req.query.username;
+    if (!username) return res.status(400).json({ error: '缺少用户名' });
+    try {
+        const user = await db.getUserByUsername(username);
+        if (!user) return res.status(404).json({ error: 'Not found' });
+        res.json({ username: user.username, created_at: user.created_at });
+    } catch (e) {
+        res.status(404).json({ error: 'Not found' });
+    }
+});
+
+// 10. 改密码
+app.post('/api/user/change-password', async (req, res) => {
+    try {
+        const { username, oldPassword, newPassword } = req.body;
+        if (!username || !oldPassword || !newPassword) {
+            return res.status(400).json({ success: false, message: '参数不全' });
+        }
+        if (String(newPassword).length < 6) {
+            return res.status(400).json({ success: false, message: '新密码至少 6 位' });
+        }
+
+        const user = await db.getUserByUsername(username);
+        // verifyPassword 是同步方法，切勿加 await（返回 Promise 永远 truthy = 任意密码通过）
+        if (!user || !db.verifyPassword(user.password, oldPassword)) {
+            return res.status(401).json({ success: false, message: '原密码错误' });
+        }
+
+        await db.changePassword(username, newPassword);
+        res.json({ success: true });
+    } catch (e) {
+        console.error('改密码失败:', e);
+        res.status(500).json({ success: false, message: e.message });
+    }
 });
 
 // 6. 清空日志 (Admin用)
@@ -338,6 +492,15 @@ app.get('/api/admin/orders', requireAdmin, async (req, res) => {
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+// SPA 回退：非 /api 的 GET 一律交给前端（刷新页面、直接输网址都要能用）。
+// 必须放在所有 API 路由之后，否则会把接口请求也吞掉。
+// 用负向前瞻排除 /api，比「靠注册顺序」更稳——日后有人在下面加接口也不会踩坑。
+if (HAS_DIST) {
+    app.get(/^\/(?!api\/).*/, (req, res) => {
+        res.sendFile(path.join(DIST_DIR, 'index.html'));
+    });
+}
 
 // 全局错误处理中间件
 app.use((err, req, res, next) => {

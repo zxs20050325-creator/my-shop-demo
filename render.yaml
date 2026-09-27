@@ -8,7 +8,11 @@ services:
     repo: https://github.com/zxs20050325-creator/my-shop-demo.git
     branch: main
     rootDir: backend
-    buildCommand: npm install
+    # 前端已改为 Vue + Vite：构建产物 frontend/dist 由后端同一服务托管
+    # （backend/index.js 里的 DIST_DIR），所以构建阶段要先把前端编出来。
+    # rootDir 是 backend，因此要 cd ../frontend 回到仓库根再进前端目录。
+    # 若前端构建失败，后端仍会启动，只是 /api 可用而页面 404 —— 见 index.js 的 HAS_DIST 判断。
+    buildCommand: cd ../frontend && npm install && npm run build
     startCommand: node index.js
     healthCheckPath: /health
     envVars:
