@@ -441,51 +441,8 @@ module.exports = {
     service: dbService
 };
 
-// 使用 IIFE 立即执行函数进行同步阻塞初始化（兼容 Render 平台）
-(function() {
-    // 创建数据库服务实例
-    const dbService = new DatabaseService();
-    
-    // 同步阻塞式初始化数据库
-    try {
-        let initialized = false;
-        let initError = null;
-        
-        initializeDatabase().then(() => {
-            initialized = true;
-            console.log('✅ 数据库初始化完成');
-        }).catch(err => {
-            initError = err;
-            console.error('❌ 数据库初始化失败:', err);
-            process.exit(1);
-        });
-        
-        // 使用简单的忙等待（最多等待 10 秒）
-        const maxWaitTime = 10000; // 10 秒
-        const startTime = Date.now();
-        
-        while (!initialized && !initError) {
-            if (Date.now() - startTime > maxWaitTime) {
-                console.error('❌ 数据库初始化超时');
-                process.exit(1);
-            }
-            // 简单的忙等待，让出事件循环
-            const start = Date.now();
-            while (Date.now() - start < 10) {
-                // 空转 10ms
-            }
-        }
-        
-        if (initError) {
-            throw initError;
-        }
-        
-        // 导出数据库服务对象
-        module.exports = dbService;
-        
-        console.log('✅ 数据库服务已就绪');
-    } catch (err) {
-        console.error('❌ 数据库初始化失败:', err.message);
-        process.exit(1);
-    }
-})();
+// 【已删除】此处原有一段「IIFE + while 忙等待」的同步阻塞初始化代码。
+// 它会堵死 Node 事件循环，导致 initializeDatabase() 的 .then 回调永远无法执行，
+// initialized 永远为 false，10 秒后必然打印「❌ 数据库初始化超时」并 process.exit(1)，
+// 表现为 Render 上「Build successful 🎉」之后立刻「Exited with status 1」并反复重启。
+// 数据库初始化统一走上面的 dbReady promise，由 index.js 在 app.listen 之前 await。
