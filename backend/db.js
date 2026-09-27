@@ -423,45 +423,51 @@ class DatabaseService {
     }
 }
 
-// 使用 IIFE 立即执行函数进行初始化（兼容 Render 平台）
+// 使用 IIFE 立即执行函数进行同步阻塞初始化（兼容 Render 平台）
 (function() {
-    // 标记数据库是否正在初始化
-    let isInitializing = false;
-    let initPromise = null;
-    
     // 创建数据库服务实例
     const dbService = new DatabaseService();
     
-    // 包装所有方法，确保在调用前数据库已初始化
-    const wrappedService = {};
-    
-    // 获取所有可枚举的方法名
-    const methodNames = Object.getOwnPropertyNames(Object.getPrototypeOf(dbService));
-    
-    // 为每个方法创建包装函数
-    methodNames.forEach(methodName => {
-        if (typeof dbService[methodName] === 'function' && methodName !== 'constructor') {
-            wrappedService[methodName] = async function(...args) {
-                // 如果数据库尚未初始化，先初始化
-                if (!db || !SQL) {
-                    if (!initPromise) {
-                        isInitializing = true;
-                        initPromise = initializeDatabase().catch(err => {
-                            console.error('❌ 数据库初始化失败:', err);
-                            process.exit(1);
-                        });
-                    }
-                    await initPromise;
-                }
-                
-                // 执行实际方法
-                return dbService[methodName].apply(dbService, args);
-            };
+    // 同步阻塞式初始化数据库
+    try {
+        let initialized = false;
+        let initError = null;
+        
+        initializeDatabase().then(() => {
+            initialized = true;
+            console.log('✅ 数据库初始化完成');
+        }).catch(err => {
+            initError = err;
+            console.error('❌ 数据库初始化失败:', err);
+            process.exit(1);
+        });
+        
+        // 使用简单的忙等待（最多等待 10 秒）
+        const maxWaitTime = 10000; // 10 秒
+        const startTime = Date.now();
+        
+        while (!initialized && !initError) {
+            if (Date.now() - startTime > maxWaitTime) {
+                console.error('❌ 数据库初始化超时');
+                process.exit(1);
+            }
+            // 简单的忙等待，让出事件循环
+            const start = Date.now();
+            while (Date.now() - start < 10) {
+                // 空转 10ms
+            }
         }
-    });
-    
-    // 导出包装后的服务对象
-    module.exports = wrappedService;
-    
-    console.log('✅ 数据库服务已准备就绪（将在首次请求时初始化）');
+        
+        if (initError) {
+            throw initError;
+        }
+        
+        // 导出数据库服务对象
+        module.exports = dbService;
+        
+        console.log('✅ 数据库服务已就绪');
+    } catch (err) {
+        console.error('❌ 数据库初始化失败:', err.message);
+        process.exit(1);
+    }
 })();
