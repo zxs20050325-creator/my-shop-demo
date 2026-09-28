@@ -119,19 +119,13 @@ onMounted(async () => {
                             <span>数字建模 / 3D RECONSTRUCTION</span>
                             <strong>建筑结构独立复原</strong>
                         </article>
-                        <article class="reference-crop crop-photo">
-                            <img :src="'/images/huata-real.jpg'" alt="广惠寺华塔实景">
-                            <span>实景档案 / REAL SCENE</span>
-                            <strong>广惠寺华塔历史环境</strong>
-                        </article>
                     </div>
                     <div class="archive-watermark">筑</div>
                     <div class="archive-crosshair crosshair-a"></div>
                     <div class="archive-crosshair crosshair-b"></div>
-                    <div class="feature-scan"></div>
                     <div class="archive-legend">
-                        <span>DIGITAL MODEL → REAL ARCHITECTURE</span>
-                        <strong>数字复原与实景档案对照</strong>
+                        <span>3D DIGITAL RECONSTRUCTION / SCANNING</span>
+                        <strong>广惠寺华塔数字结构重建</strong>
                     </div>
                 </div>
                 <span class="featured-code">FEATURED RECORD · {{ formatCode(activeProduct?.id) }}</span>
@@ -266,20 +260,20 @@ onMounted(async () => {
 .blueprint-grid { position: absolute; inset: 0; opacity: .42; background-image: linear-gradient(rgba(47,72,66,.2) 1px, transparent 1px), linear-gradient(90deg, rgba(47,72,66,.2) 1px, transparent 1px); background-size: 42px 42px; }
 .reference-collage {
     position: absolute;
-    inset: 64px 38px 104px;
+    inset: 0;
     z-index: 3;
     display: grid;
-    grid-template-columns: 1.12fr .88fr;
+    grid-template-columns: 1fr;
     grid-template-rows: 1fr;
-    gap: 20px;
+    gap: 0;
 }
 .reference-crop {
     position: relative;
     overflow: hidden;
     min-height: 0;
-    border: 1px solid rgba(255,255,255,.72);
+    border: 0;
     background: #dfe8e4;
-    box-shadow: 0 10px 26px rgba(31,52,47,.13);
+    box-shadow: none;
 }
 .reference-crop::before {
     content: "";
@@ -297,7 +291,7 @@ onMounted(async () => {
     object-fit: cover;
 }
 .crop-render > img {
-    object-fit: contain;
+    object-fit: cover;
     object-position: 50% 48%;
     background: #2f3434;
 }
@@ -335,20 +329,28 @@ onMounted(async () => {
     font-size: 11px;
 }
 .reference-collage::after {
-    content: "→";
+    content: "";
     position: absolute;
-    left: calc(56% - 14px);
-    top: 50%;
+    left: 0;
+    right: 0;
+    top: -18%;
     z-index: 5;
-    width: 32px;
-    height: 32px;
-    display: grid;
-    place-items: center;
-    transform: translateY(-50%);
-    border: 1px solid rgba(255,255,255,.75);
-    background: #31544d;
-    color: #e7d4a8;
-    box-shadow: 0 8px 18px rgba(31,52,47,.2);
+    height: 18%;
+    pointer-events: none;
+    background: linear-gradient(
+        to bottom,
+        transparent,
+        rgba(231,212,168,.12),
+        rgba(231,212,168,.42),
+        rgba(255,255,255,.34),
+        transparent
+    );
+    box-shadow: 0 0 30px rgba(193,162,104,.3);
+    animation: modelScan 4.4s linear infinite;
+}
+@keyframes modelScan {
+    from { top: -18%; }
+    to { top: 100%; }
 }
 .tower-blueprint { position: absolute; left: 50%; bottom: 14%; width: 240px; height: 360px; transform: translateX(-50%); filter: drop-shadow(14px 18px 0 rgba(193,162,104,.22)); }
 .tower-blueprint i { position: absolute; left: 50%; transform: translateX(-50%); display: block; background: rgba(49,84,77,.82); border: 2px solid #d3b66f; }
