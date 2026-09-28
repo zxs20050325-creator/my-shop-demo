@@ -296,7 +296,11 @@ onMounted(async () => {
     display: block;
     object-fit: cover;
 }
-.crop-render > img { object-position: 50% 48%; }
+.crop-render > img {
+    object-fit: contain;
+    object-position: 50% 48%;
+    background: #2f3434;
+}
 .crop-photo > img { object-position: 50% 52%; }
 .crop-render::before,
 .crop-photo::before {
