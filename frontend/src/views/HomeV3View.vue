@@ -115,20 +115,14 @@ onMounted(async () => {
                     <div class="blueprint-grid"></div>
                     <div class="reference-collage">
                         <article class="reference-crop crop-render">
-                            <span>01 / 数字建模</span>
-                            <strong>建筑结构重建</strong>
-                        </article>
-                        <article class="reference-crop crop-wireframe">
-                            <span>02 / AR 调整</span>
-                            <strong>虚拟模型校对</strong>
-                        </article>
-                        <article class="reference-crop crop-qr">
-                            <span>03 / 扫码入口</span>
-                            <strong>打开数字相机</strong>
+                            <img :src="'/images/model-render.jpg'" alt="广惠寺华塔数字模型">
+                            <span>数字建模 / 3D RECONSTRUCTION</span>
+                            <strong>建筑结构独立复原</strong>
                         </article>
                         <article class="reference-crop crop-photo">
-                            <span>04 / 实景呈现</span>
-                            <strong>广惠寺华塔</strong>
+                            <img :src="'/images/huata-real.jpg'" alt="广惠寺华塔实景">
+                            <span>实景档案 / REAL SCENE</span>
+                            <strong>广惠寺华塔历史环境</strong>
                         </article>
                     </div>
                     <div class="archive-watermark">筑</div>
@@ -136,8 +130,8 @@ onMounted(async () => {
                     <div class="archive-crosshair crosshair-b"></div>
                     <div class="feature-scan"></div>
                     <div class="archive-legend">
-                        <span>3D MODEL → AR CAPTURE → REAL SCENE</span>
-                        <strong>数字化建模与实景还原流程</strong>
+                        <span>DIGITAL MODEL → REAL ARCHITECTURE</span>
+                        <strong>数字复原与实景档案对照</strong>
                     </div>
                 </div>
                 <span class="featured-code">FEATURED RECORD · {{ formatCode(activeProduct?.id) }}</span>
@@ -275,9 +269,9 @@ onMounted(async () => {
     inset: 64px 38px 104px;
     z-index: 3;
     display: grid;
-    grid-template-columns: 1.08fr 1.08fr;
-    grid-template-rows: 1.05fr .95fr;
-    gap: 12px;
+    grid-template-columns: 1.12fr .88fr;
+    grid-template-rows: 1fr;
+    gap: 20px;
 }
 .reference-crop {
     position: relative;
@@ -295,6 +289,18 @@ onMounted(async () => {
     background-image: url('/images/archive-reference.jpg');
     background-repeat: no-repeat;
     background-size: 800px 450px;
+}
+.reference-crop > img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+}
+.crop-render > img { object-position: 50% 48%; }
+.crop-photo > img { object-position: 50% 52%; }
+.crop-render::before,
+.crop-photo::before {
+    display: none;
 }
 .crop-render::before { left: -34px; top: -122px; }
 .crop-wireframe::before { left: -268px; top: -122px; }
@@ -323,6 +329,22 @@ onMounted(async () => {
 .reference-crop > strong {
     bottom: 10px;
     font-size: 11px;
+}
+.reference-collage::after {
+    content: "→";
+    position: absolute;
+    left: calc(56% - 14px);
+    top: 50%;
+    z-index: 5;
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    transform: translateY(-50%);
+    border: 1px solid rgba(255,255,255,.75);
+    background: #31544d;
+    color: #e7d4a8;
+    box-shadow: 0 8px 18px rgba(31,52,47,.2);
 }
 .tower-blueprint { position: absolute; left: 50%; bottom: 14%; width: 240px; height: 360px; transform: translateX(-50%); filter: drop-shadow(14px 18px 0 rgba(193,162,104,.22)); }
 .tower-blueprint i { position: absolute; left: 50%; transform: translateX(-50%); display: block; background: rgba(49,84,77,.82); border: 2px solid #d3b66f; }
