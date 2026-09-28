@@ -70,6 +70,11 @@ function toggleCategories() {
     categoryOpen.value = !categoryOpen.value
 }
 
+function toggleSidebar() {
+    sidebarExpanded.value = !sidebarExpanded.value
+    localStorage.setItem('jiyi_sidebar_expanded', String(sidebarExpanded.value))
+}
+
 function isQuickActive(link) {
     if (link.to === '/') return route.path === '/'
     return route.path.startsWith(link.to)
@@ -77,7 +82,10 @@ function isQuickActive(link) {
 
 onMounted(async () => {
     document.addEventListener('click', onDocClick)
-    sidebarExpanded.value = window.innerWidth > 1100
+    const stored = localStorage.getItem('jiyi_sidebar_expanded')
+    sidebarExpanded.value = stored
+        ? stored === 'true'
+        : window.innerWidth > 1100
     try {
         categories.value = (await api.listCategories()).items || []
     } catch {
@@ -90,6 +98,10 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
 
 <template>
     <aside class="sidebar" :class="{ compact: !sidebarExpanded }">
+        <button class="sidebar-edge-toggle" :title="sidebarExpanded ? '收起侧边栏' : '展开侧边栏'"
+                @click="toggleSidebar">
+            <i class="fa" :class="sidebarExpanded ? 'fa-angle-left' : 'fa-angle-right'"></i>
+        </button>
         <div class="sidebar-top">
             <RouterLink to="/" class="brand-seal" title="冀遗筑梦">
                 <span class="brand-mark">冀</span>
@@ -103,7 +115,7 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
 
         <nav class="sidebar-primary">
             <span class="side-section-label">主要内容</span>
-            <button class="sidebar-quick" :class="{ active: cart.drawerOpen }"
+            <button class="sidebar-quick" :class="{ active: cart.drawerOpen }" data-label="博古架"
                     @click="cart.toggleDrawer(true)">
                 <i class="fa fa-shopping-bag"></i>
                 <span>博古架</span>
@@ -112,6 +124,7 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
             <RouterLink v-for="link in quickLinks" :key="link.to"
                         class="sidebar-quick"
                         :class="{ active: isQuickActive(link) }"
+                        :data-label="link.label"
                         :to="link.to">
                 <i class="fa" :class="link.icon"></i>
                 <span>{{ link.label }}</span>
@@ -122,7 +135,7 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
         <div class="sidebar-spacer"></div>
 
         <section class="sidebar-categories" :class="{ open: categoryOpen }">
-            <button class="category-toggle" @click="toggleCategories">
+            <button class="category-toggle" data-label="藏品分类" @click="toggleCategories">
                 <i class="fa fa-th-large"></i>
                 <span>藏品分类</span>
                 <em>{{ categories.length }}</em>
@@ -131,6 +144,7 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
             <div class="category-list">
                 <RouterLink v-for="item in categories" :key="item.category"
                             class="series-node"
+                            :data-label="item.category"
                             :class="{ active: route.name === 'category' && route.params.name === item.category }"
                             :to="`/category/${encodeURIComponent(item.category)}`">
                     <i class="fa" :class="iconFor(item.category)"></i>
@@ -202,7 +216,41 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
         </header>
 
         <main><slot /></main>
-        <footer class="site-footer">© 2026 JIYI ZHUMENG DIGITAL TECHNOLOGY. ALL RIGHTS RESERVED.</footer>
+        <footer class="site-footer">
+            <div class="footer-grid">
+                <section class="footer-brand">
+                    <span class="footer-seal">冀</span>
+                    <div>
+                        <strong>冀遗筑梦</strong>
+                        <p>以数字档案方式整理、保存和传播河北古建筑与非遗文化。</p>
+                    </div>
+                </section>
+                <section>
+                    <h3>快速导航</h3>
+                    <RouterLink to="/">首页档案</RouterLink>
+                    <RouterLink to="/search">藏品检索</RouterLink>
+                    <RouterLink to="/favorites">我的珍藏</RouterLink>
+                    <RouterLink to="/orders">我的订单</RouterLink>
+                </section>
+                <section>
+                    <h3>服务支持</h3>
+                    <RouterLink to="/refunds">退款记录</RouterLink>
+                    <RouterLink to="/addresses">收货地址</RouterLink>
+                    <RouterLink to="/profile">个人中心</RouterLink>
+                    <RouterLink v-if="user.isAdmin" to="/admin">管理后台</RouterLink>
+                </section>
+                <section>
+                    <h3>数字档案</h3>
+                    <p>已编目藏品 {{ totalCatalog }} 件</p>
+                    <p>当前分类 {{ categories.length }} 个</p>
+                    <p>状态：数字档案在线</p>
+                </section>
+            </div>
+            <div class="footer-bottom">
+                <span>© 2026 JIYI ZHUMENG DIGITAL TECHNOLOGY.</span>
+                <span>数字文化展示与课程设计项目</span>
+            </div>
+        </footer>
     </div>
     <CartDrawer />
 </template>
@@ -213,7 +261,7 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
     align-items: stretch;
     padding: 18px 10px;
     transition: width .28s ease, padding .28s ease;
-    overflow-x: hidden;
+    overflow: visible;
 }
 
 .sidebar.compact {
@@ -242,6 +290,146 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
 
 .sidebar.compact .brand-seal {
     justify-content: center;
+}
+
+.sidebar-edge-toggle {
+    position: absolute;
+    right: -13px;
+    top: 50%;
+    z-index: 10;
+    width: 26px;
+    height: 62px;
+    padding: 0;
+    transform: translateY(-50%);
+    border: 1px solid var(--c-grid);
+    border-left: 0;
+    border-radius: 0 8px 8px 0;
+    background: rgba(255,253,248,.96);
+    color: var(--c-primary);
+    box-shadow: 5px 0 16px rgba(31,52,47,.08);
+}
+
+.sidebar-edge-toggle:hover {
+    border-color: var(--c-accent);
+    color: #9b7a38;
+}
+
+.sidebar.compact .sidebar-quick,
+.sidebar.compact .category-toggle,
+.sidebar.compact .series-node {
+    position: relative;
+}
+
+.sidebar.compact .sidebar-quick::after,
+.sidebar.compact .category-toggle::after,
+.sidebar.compact .series-node::after {
+    content: attr(data-label);
+    position: absolute;
+    left: calc(100% + 14px);
+    top: 50%;
+    z-index: 7000;
+    padding: 7px 10px;
+    transform: translateY(-50%) translateX(-4px);
+    opacity: 0;
+    visibility: hidden;
+    white-space: nowrap;
+    border: 1px solid var(--c-grid);
+    border-radius: 5px;
+    background: #fffdf8;
+    color: var(--c-primary);
+    box-shadow: 0 8px 22px rgba(31,52,47,.12);
+    font-size: 10px;
+    transition: opacity .15s ease, transform .15s ease, visibility .15s ease;
+}
+
+.sidebar.compact .sidebar-quick:hover::after,
+.sidebar.compact .category-toggle:hover::after,
+.sidebar.compact .series-node:hover::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(-50%) translateX(0);
+}
+
+.site-footer {
+    margin-top: 60px;
+    padding: 46px 54px 22px;
+    border-top: 1px solid var(--c-grid);
+    background: #fbfaf7;
+    color: var(--c-primary);
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: 1.5fr repeat(3, .7fr);
+    gap: 42px;
+    max-width: 1440px;
+    margin: 0 auto 38px;
+}
+
+.footer-brand {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+.footer-seal {
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+    display: grid;
+    place-items: center;
+    border-radius: 4px;
+    background: #a33b32;
+    color: #fff;
+    font-family: var(--f-art);
+    font-size: 24px;
+}
+
+.footer-brand strong {
+    font-size: 16px;
+    letter-spacing: 2px;
+}
+
+.footer-brand p {
+    max-width: 380px;
+    margin-top: 10px;
+    color: var(--c-ink-soft);
+    font-size: 11px;
+    line-height: 1.9;
+}
+
+.footer-grid h3 {
+    margin-bottom: 14px;
+    color: #9b7a38;
+    font-family: var(--f-mono);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+}
+
+.footer-grid a,
+.footer-grid section > p {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--c-ink-soft);
+    font-size: 11px;
+}
+
+.footer-grid a:hover {
+    color: var(--c-primary);
+}
+
+.footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding-top: 18px;
+    border-top: 1px solid var(--c-grid);
+    color: #a39d93;
+    font-family: var(--f-mono);
+    font-size: 9px;
+    letter-spacing: .8px;
 }
 
 .sidebar-top .brand-seal {
@@ -651,6 +839,19 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
 }
 
 @media (max-width: 760px) {
+    .sidebar-edge-toggle {
+        display: none;
+    }
+    .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 26px;
+    }
+    .site-footer {
+        padding: 36px 24px 20px;
+    }
+    .footer-bottom {
+        flex-direction: column;
+    }
     .sidebar,
     .sidebar:not(.compact) {
         width: 72px;

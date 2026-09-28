@@ -13,6 +13,7 @@ const jumpPage = ref(1)
 
 const activeProduct = computed(() => products.value[activeIndex.value] || products.value[0] || null)
 const totalCatalogSlots = TOTAL_PAGES * PAGE_SIZE
+const heroRecordImage = '/images/006.jpg'
 const formatCode = (id) => `JY-${String(id || 1).padStart(4, '0')}`
 
 const catalogItems = computed(() =>
@@ -113,7 +114,7 @@ onMounted(async () => {
             <div class="featured-visual"
                  @mousemove="handleArtifactMove"
                  @mouseleave="resetArtifact">
-                <img :src="imageUrl(activeProduct?.img || '/images/001.jpg')"
+                <img :src="heroRecordImage"
                      :alt="activeProduct?.name || '数字藏品'">
                 <div class="feature-scan"></div>
                 <span class="featured-code">FEATURED RECORD · {{ formatCode(activeProduct?.id) }}</span>

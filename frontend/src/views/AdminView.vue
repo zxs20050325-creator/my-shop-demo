@@ -107,7 +107,20 @@ const categoryStats = computed(() => {
             stats.set(category, current)
         })
     })
-    return [...stats.entries()].map(([category, value]) => ({ category, ...value }))
+    const values = [...stats.entries()].map(([category, value]) => ({ category, ...value }))
+    if (values.length) return values
+
+    const fallback = new Map()
+    for (const item of dashboard.value?.topProducts || []) {
+        const product = products.value.find(product => product.name === item.name)
+        const category = product?.category || '其他'
+        fallback.set(category, (fallback.get(category) || 0) + Number(item.sales || 0))
+    }
+    return [...fallback.entries()].map(([category, amount]) => ({
+        category,
+        amount,
+        quantity: amount
+    }))
 })
 const userTrend = computed(() => {
     const days = 30
@@ -124,14 +137,14 @@ const userTrend = computed(() => {
     }
     return { labels, values }
 })
-const lowStockItems = computed(() =>
+const inventoryItems = computed(() =>
     products.value.flatMap(product =>
         (product.skus || []).map(sku => ({
             productName: product.name,
             specText: sku.specText,
             stock: sku.stock
         }))
-    ).filter(item => item.stock <= 20).sort((a, b) => a.stock - b.stock).slice(0, 8))
+    ).sort((a, b) => a.stock - b.stock).slice(0, 10))
 const searchText = computed(() => adminSearch.value.trim().toLowerCase())
 const filteredProducts = computed(() => {
     if (!searchText.value) return products.value
@@ -374,11 +387,11 @@ function renderCharts() {
     charts.inventory = new Chart(inventoryEl.value, {
         type: 'bar',
         data: {
-            labels: lowStockItems.value.map(item => `${item.productName} · ${item.specText}`),
+            labels: inventoryItems.value.map(item => `${item.productName} · ${item.specText}`),
             datasets: [{
                 label: '库存',
-                data: lowStockItems.value.map(item => item.stock),
-                backgroundColor: lowStockItems.value.map(item =>
+                data: inventoryItems.value.map(item => item.stock),
+                backgroundColor: inventoryItems.value.map(item =>
                     item.stock <= 5 ? '#b85048' : '#c1a268'),
                 borderRadius: 4
             }]
@@ -656,7 +669,7 @@ onMounted(async () => {
                                 <div class="chart-canvas"><canvas ref="statusEl"></canvas></div>
                             </div>
                             <div class="chart-card chart-wide">
-                                <div class="chart-head"><div><h3>商品销量排行</h3><p>已支付订单中的热销商品</p></div><span>BAR</span></div>
+                                <div class="chart-head"><div><h3>商品销量排行</h3><p>订单销量数据，历史明细缺失时使用浏览热度</p></div><span>BAR</span></div>
                                 <div class="chart-canvas"><canvas ref="productsEl"></canvas></div>
                             </div>
                             <div class="chart-card">
@@ -668,9 +681,9 @@ onMounted(async () => {
                                 <div class="chart-canvas"><canvas ref="usersEl"></canvas></div>
                             </div>
                             <div class="chart-card">
-                                <div class="chart-head"><div><h3>库存预警</h3><p>库存不高于 20 的 SKU</p></div><span>STOCK</span></div>
+                                <div class="chart-head"><div><h3>库存概览</h3><p>库存最低的 10 个 SKU</p></div><span>STOCK</span></div>
                                 <div class="chart-canvas"><canvas ref="inventoryEl"></canvas></div>
-                                <p v-if="!lowStockItems.length" class="chart-empty-note">当前没有低库存 SKU</p>
+                                <p v-if="!inventoryItems.length" class="chart-empty-note">当前没有 SKU 库存数据</p>
                             </div>
                         </div>
                     </section>
