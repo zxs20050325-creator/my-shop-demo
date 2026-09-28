@@ -217,34 +217,40 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
 
         <main><slot /></main>
         <footer class="site-footer">
-            <div class="footer-grid">
-                <section class="footer-brand">
+            <div class="footer-command">
+                <div class="footer-command-copy">
                     <span class="footer-seal">冀</span>
                     <div>
-                        <strong>冀遗筑梦</strong>
-                        <p>以数字档案方式整理、保存和传播河北古建筑与非遗文化。</p>
+                        <span class="archive-label">DIGITAL ARCHIVE SERVICE</span>
+                        <h2>继续探索你的文化档案</h2>
+                        <p>保存收藏、追踪订单、管理地址，或直接搜索下一件想了解的河北古建筑藏品。</p>
                     </div>
-                </section>
-                <section>
-                    <h3>快速导航</h3>
-                    <RouterLink to="/">首页档案</RouterLink>
-                    <RouterLink to="/search">藏品检索</RouterLink>
-                    <RouterLink to="/favorites">我的珍藏</RouterLink>
-                    <RouterLink to="/orders">我的订单</RouterLink>
-                </section>
-                <section>
-                    <h3>服务支持</h3>
-                    <RouterLink to="/refunds">退款记录</RouterLink>
-                    <RouterLink to="/addresses">收货地址</RouterLink>
-                    <RouterLink to="/profile">个人中心</RouterLink>
-                    <RouterLink v-if="user.isAdmin" to="/admin">管理后台</RouterLink>
-                </section>
-                <section>
-                    <h3>数字档案</h3>
-                    <p>已编目藏品 {{ totalCatalog }} 件</p>
-                    <p>当前分类 {{ categories.length }} 个</p>
-                    <p>状态：数字档案在线</p>
-                </section>
+                </div>
+                <form class="footer-search" @submit.prevent="onSearch">
+                    <i class="fa fa-search"></i>
+                    <input v-model="keyword" placeholder="输入华塔、榫卯、城关或分类名称">
+                    <button type="submit">检索档案</button>
+                </form>
+            </div>
+            <div class="footer-action-row">
+                <RouterLink to="/orders">
+                    <i class="fa fa-file-text-o"></i><div><strong>订单服务</strong><span>查看支付、发货和订单状态</span></div>
+                </RouterLink>
+                <RouterLink to="/favorites">
+                    <i class="fa fa-heart-o"></i><div><strong>珍藏档案</strong><span>继续查看已收藏的藏品</span></div>
+                </RouterLink>
+                <RouterLink to="/addresses">
+                    <i class="fa fa-map-marker"></i><div><strong>收货地址</strong><span>管理默认地址和联系人</span></div>
+                </RouterLink>
+                <RouterLink to="/refunds">
+                    <i class="fa fa-undo"></i><div><strong>退款进度</strong><span>查看售后申请和处理结果</span></div>
+                </RouterLink>
+            </div>
+            <div class="footer-insight">
+                <span>已编目藏品 {{ totalCatalog }} 件</span>
+                <span>内容分类 {{ categories.length }} 个</span>
+                <span>数字档案在线</span>
+                <RouterLink v-if="user.isAdmin" to="/admin">进入管理后台</RouterLink>
             </div>
             <div class="footer-bottom">
                 <span>© 2026 JIYI ZHUMENG DIGITAL TECHNOLOGY.</span>
@@ -430,6 +436,138 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
     font-family: var(--f-mono);
     font-size: 9px;
     letter-spacing: .8px;
+}
+
+.footer-command {
+    max-width: 1440px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr minmax(360px, 520px);
+    gap: 48px;
+    align-items: center;
+}
+
+.footer-command-copy {
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+}
+
+.footer-command-copy h2 {
+    margin: 9px 0 12px;
+    font-size: 28px;
+    letter-spacing: 1px;
+}
+
+.footer-command-copy p {
+    max-width: 620px;
+    color: var(--c-ink-soft);
+    font-size: 12px;
+    line-height: 1.9;
+}
+
+.footer-search {
+    display: grid;
+    grid-template-columns: 20px 1fr auto;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 10px 10px 16px;
+    background: #fff;
+    border: 1px solid var(--c-grid);
+    box-shadow: 8px 8px 0 rgba(193,162,104,.14);
+}
+
+.footer-search i {
+    color: #9b7a38;
+}
+
+.footer-search input {
+    min-width: 0;
+    padding: 8px 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--c-primary);
+}
+
+.footer-search button {
+    padding: 11px 16px;
+    border: 1px solid var(--c-primary);
+    background: var(--c-primary);
+    color: #fff;
+}
+
+.footer-action-row {
+    max-width: 1440px;
+    margin: 32px auto 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.footer-action-row a {
+    display: grid;
+    grid-template-columns: 34px 1fr;
+    align-items: center;
+    gap: 12px;
+    min-height: 82px;
+    padding: 15px 17px;
+    border: 1px solid var(--c-grid);
+    background: #fff;
+    transition: border-color .18s ease, transform .18s ease, box-shadow .18s ease;
+}
+
+.footer-action-row a:hover {
+    border-color: var(--c-accent);
+    transform: translateY(-2px);
+    box-shadow: 6px 8px 0 rgba(193,162,104,.12);
+}
+
+.footer-action-row > a > i {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    color: #9b7a38;
+    border: 1px solid rgba(193,162,104,.45);
+}
+
+.footer-action-row strong,
+.footer-action-row span {
+    display: block;
+}
+
+.footer-action-row strong {
+    font-size: 12px;
+}
+
+.footer-action-row span {
+    margin-top: 5px;
+    color: var(--c-ink-soft);
+    font-size: 9px;
+    line-height: 1.5;
+}
+
+.footer-insight {
+    max-width: 1440px;
+    margin: 18px auto 0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 14px;
+    flex-wrap: wrap;
+    color: var(--c-ink-soft);
+    font-size: 10px;
+}
+
+.footer-insight span,
+.footer-insight a {
+    padding: 6px 9px;
+    border: 1px solid var(--c-grid);
+    background: rgba(255,255,255,.7);
+}
+
+.footer-insight a {
+    color: #9b7a38;
 }
 
 .sidebar-top .brand-seal {
@@ -845,6 +983,19 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
     .footer-grid {
         grid-template-columns: 1fr;
         gap: 26px;
+    }
+    .footer-command,
+    .footer-action-row {
+        grid-template-columns: 1fr;
+    }
+    .footer-command {
+        gap: 24px;
+    }
+    .footer-search {
+        grid-template-columns: 20px 1fr;
+    }
+    .footer-search button {
+        grid-column: 1 / -1;
     }
     .site-footer {
         padding: 36px 24px 20px;

@@ -113,20 +113,31 @@ onMounted(async () => {
                  @mouseleave="resetArtifact">
                 <div class="feature-archive-art">
                     <div class="blueprint-grid"></div>
-                    <div class="tower-blueprint">
-                        <i class="tower-spire"></i>
-                        <i class="tower-floor floor-one"></i>
-                        <i class="tower-floor floor-two"></i>
-                        <i class="tower-floor floor-three"></i>
-                        <i class="tower-base"></i>
+                    <div class="reference-collage">
+                        <article class="reference-crop crop-render">
+                            <span>01 / 数字建模</span>
+                            <strong>建筑结构重建</strong>
+                        </article>
+                        <article class="reference-crop crop-wireframe">
+                            <span>02 / AR 调整</span>
+                            <strong>虚拟模型校对</strong>
+                        </article>
+                        <article class="reference-crop crop-qr">
+                            <span>03 / 扫码入口</span>
+                            <strong>打开数字相机</strong>
+                        </article>
+                        <article class="reference-crop crop-photo">
+                            <span>04 / 实景呈现</span>
+                            <strong>广惠寺华塔</strong>
+                        </article>
                     </div>
                     <div class="archive-watermark">筑</div>
                     <div class="archive-crosshair crosshair-a"></div>
                     <div class="archive-crosshair crosshair-b"></div>
                     <div class="feature-scan"></div>
                     <div class="archive-legend">
-                        <span>ARCHITECTURAL DIGITAL RECONSTRUCTION</span>
-                        <strong>HUATA / HEBEI / 01</strong>
+                        <span>3D MODEL → AR CAPTURE → REAL SCENE</span>
+                        <strong>数字化建模与实景还原流程</strong>
                     </div>
                 </div>
                 <span class="featured-code">FEATURED RECORD · {{ formatCode(activeProduct?.id) }}</span>
@@ -259,6 +270,60 @@ onMounted(async () => {
 .featured-visual { position: relative; min-height: 620px; overflow: hidden; background: #e8ece9; perspective: 1000px; }
 .feature-archive-art { position: absolute; inset: 0; overflow: hidden; transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)); transition: transform .15s ease; background: radial-gradient(circle at 62% 42%, #fffdf8 0 18%, #dce8e2 48%, #b9cfc6 100%); }
 .blueprint-grid { position: absolute; inset: 0; opacity: .42; background-image: linear-gradient(rgba(47,72,66,.2) 1px, transparent 1px), linear-gradient(90deg, rgba(47,72,66,.2) 1px, transparent 1px); background-size: 42px 42px; }
+.reference-collage {
+    position: absolute;
+    inset: 64px 38px 104px;
+    z-index: 3;
+    display: grid;
+    grid-template-columns: 1.08fr 1.08fr;
+    grid-template-rows: 1.05fr .95fr;
+    gap: 12px;
+}
+.reference-crop {
+    position: relative;
+    overflow: hidden;
+    min-height: 0;
+    border: 1px solid rgba(255,255,255,.72);
+    background: #dfe8e4;
+    box-shadow: 0 10px 26px rgba(31,52,47,.13);
+}
+.reference-crop::before {
+    content: "";
+    position: absolute;
+    width: 800px;
+    height: 450px;
+    background-image: url('/images/archive-reference.jpg');
+    background-repeat: no-repeat;
+    background-size: 800px 450px;
+}
+.crop-render::before { left: -34px; top: -122px; }
+.crop-wireframe::before { left: -268px; top: -122px; }
+.crop-qr::before { left: -625px; top: -108px; }
+.crop-photo::before { left: -605px; top: -226px; }
+.reference-crop::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(21,38,34,.72), transparent 58%);
+}
+.reference-crop > span,
+.reference-crop > strong {
+    position: absolute;
+    left: 12px;
+    z-index: 2;
+    color: #fff;
+}
+.reference-crop > span {
+    bottom: 28px;
+    color: #e7d4a8;
+    font-family: var(--f-mono);
+    font-size: 8px;
+    letter-spacing: 1px;
+}
+.reference-crop > strong {
+    bottom: 10px;
+    font-size: 11px;
+}
 .tower-blueprint { position: absolute; left: 50%; bottom: 14%; width: 240px; height: 360px; transform: translateX(-50%); filter: drop-shadow(14px 18px 0 rgba(193,162,104,.22)); }
 .tower-blueprint i { position: absolute; left: 50%; transform: translateX(-50%); display: block; background: rgba(49,84,77,.82); border: 2px solid #d3b66f; }
 .tower-spire { bottom: 314px; width: 16px; height: 46px; clip-path: polygon(50% 0, 100% 100%, 0 100%); }
